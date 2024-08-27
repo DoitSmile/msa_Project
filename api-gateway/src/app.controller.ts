@@ -1,5 +1,18 @@
-import { Controller, Get, Inject, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { CreateUserInput } from './dto/create-user.input.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { AuthLoginInput } from './authdto/auth-login.Input';
+
 // import { AppService } from './app.service';
 
 @Controller()
@@ -11,23 +24,61 @@ export class AppController {
     private readonly clientResourceService: ClientProxy,
   ) {}
 
+  // 회원가입
   @Post('/user/create')
-  CreateUser() {
+  async createUser(@Body() createUserInput: CreateUserInput) {
     // auth-service로 트래픽 넘겨줌
-    const test = this.clientResourceService.send(
+    console.log('createUserInput:', createUserInput);
+    return await this.clientResourceService.send(
       // return : 브라우저로 보내줌
       { cmd: 'createUser' }, // cmd:xx 넘길 패턴 이름
-      { email: 'a@a.com', password: '1234' }, //넘길 data
+      { createUserInput }, //넘길 data
     );
-    console.log('test:', test);
-    return test;
+
     // `cmd`에는 앞서 각각의 API에서 작성했던 메세지 패턴을 적습니다.
     //API에 넘겨줄 데이터 값이 있다면 두번째 인자로 정할 수 있습니다. 넘겨줄 데이터 값이 없을 경우 빈 객체`{}`로 작성합니다.
   }
 
-  @Get('/boards')
-  fetchBoards() {
+  // 회원조회
+  @UseGuards(AuthGuard('access')) // UseGuards- > 로그인을 한 유저면 api 실행
+  @Post('/user/fetch')
+  async fetchUser(@Req() req) {
+    const id = req.user.id;
     // resource-service로 트래픽 넘겨줌
-    return this.clientResourceService.send({ cmd: 'fetchBoards' }, {});
+    return await this.clientResourceService.send(
+      { cmd: 'fetchBoards' },
+      { id },
+    );
   }
+
+  // 로그인 api
+  @Post('/user/login')
+  async login(@Body() authLoginInput: AuthLoginInput) {
+    // res.send(token);
+    console.log('시작:');
+    console.log('authLoginInput:', authLoginInput);
+    const test = await this.clientAuthService.send(
+      { cmd: 'login' },
+      { authLoginInput },
+    );
+    console.log('test:', test);
+    return test;
+  }
+
+  // // 토큰 재발급 api
+  // @UseGuards(AuthGuard('refresh'))
+  // @Post('/user/reissueToken')
+  // restoreAccessToken(@Req() req) {
+  //   console.log('req.user:', req.user);
+  //   return this.clientAuthService.send(
+  //     { cmd: 'restoreAccessToken' },
+  //     { user: req.user },
+  //   );
+  // }
+  // 리프레시 토큰 쿠키로 보내기
+  // res.cookie('Authentication', refreshToken, {
+  //   domain: 'localhost',
+  //   path: '/',
+  //   httpOnly: true,
+  // });
 }

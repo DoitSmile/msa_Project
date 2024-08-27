@@ -1,0 +1,10 @@
+{
+  "name": "share",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@nestjs/typeorm": "^10.0.2",
+    "typeorm": "^0.3.20"
+  }
+}

@@ -1,0 +1,66 @@
+version: '3.7'
+
+services:
+  # my-auth-database: 컴퓨터이름
+  my-auth-database:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: 'myauth' #env 파일과 동일해야함
+      MYSQL_ROOT_PASSWORD: '12345678' #env 파일과 동일해야함
+    ports:
+      - 3307:3306
+    env_file:
+      - ./services/auth/.env.docker
+
+  my-user-database:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: 'myuser'
+      MYSQL_ROOT_PASSWORD: 'root'
+    ports:
+      - 3308:3306
+    env_file:
+      - ./services/resource/.env.docker
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    volumes:
+      - ./api-gateway/src:/api-gateway/src
+    ports:
+      - 3000:3000
+
+  auth-service: # module에 있는 host 이름이랑 같음
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_HOST: 'my-auth-database'
+      DATABASE_PORT: '3306'
+      DATABASE_USER: 'root'
+      DATABASE_PASSWORD: '12345678'
+      DATABASE_NAME: 'myauth'
+    volumes:
+      - ./services/auth/src:/auth-service/src
+    # ports:
+    #   - 3001:3000
+    env_file:
+      - ./services/auth/.env.docker
+
+  resource-service:
+    build:
+      context: ./services/resource
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_HOST: 'my-user-database'
+      DATABASE_PORT: '3306'
+      DATABASE_USER: 'root'
+      DATABASE_PASSWORD: 'root'
+      DATABASE_NAME: 'myuser'
+    volumes:
+      - ./services/resource/src:/resource-service/src
+    # ports:
+    #   - 3002:3000
+    env_file:
+      - ./services/resource/.env.docker

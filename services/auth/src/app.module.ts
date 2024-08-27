@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-
+import { AuthModule } from './apis/auth.module';
 @Module({
   imports: [
+    AuthModule,
     ConfigModule.forRoot(), // 환경변수
     TypeOrmModule.forRoot({
       type: process.env.DATABASE_TYPE as 'mysql',
@@ -19,7 +18,5 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       logging: true,
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
