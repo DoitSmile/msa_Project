@@ -6,7 +6,7 @@ import { PhoneAuthentication } from './checkphone';
 import { JwtRefreshStrategy } from '../strategies/jwt-refresh-strategy';
 import { JWtAccessStrategy } from '../strategies/jwt-access.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from '../../../../shared/entites/user/user.entity';
+import { User } from '@shared/entites/user/user.entity';
 
 @Module({
   imports: [JwtModule.register({}), TypeOrmModule.forFeature([User])],

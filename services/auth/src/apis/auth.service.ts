@@ -1,8 +1,8 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { IAuthLoginInput } from '../../../../shared/interfaces/auth/auth-service.interface';
+import { IAuthLoginInput } from '@shared/interfaces/auth/auth-service.interface';
 import * as bcrypt from 'bcrypt';
-import { User } from '../../../../shared/entites/user/user.entity';
+import { User } from '@shared/entites/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 

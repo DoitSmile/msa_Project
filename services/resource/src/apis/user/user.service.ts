@@ -4,13 +4,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { User } from '../../../../../shared/entites/user/user.entity';
+import { User } from '@shared/entites/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import {
   IUserEmail,
   IUserUpdatePassword,
-} from '../../../../../shared/interfaces/user/user-service.interface';
+} from '@shared/interfaces/user/user-service.interface';
 
 @Injectable()
 export class UserService {
