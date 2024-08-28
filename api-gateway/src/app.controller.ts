@@ -12,6 +12,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { CreateUserInput } from './dto/create-user.input.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthLoginInput } from './authdto/auth-login.Input';
+import { lastValueFrom } from 'rxjs';
 
 // import { AppService } from './app.service';
 
@@ -53,32 +54,35 @@ export class AppController {
 
   // 로그인 api
   @Post('/user/login')
-  async login(@Body() authLoginInput: AuthLoginInput) {
+  async login(
+    @Body() authLoginInput: AuthLoginInput,
+    @Res({ passthrough: true }) res,
+  ) {
     // res.send(token);
-    console.log('시작:');
-    console.log('authLoginInput:', authLoginInput);
-    const test = await this.clientAuthService.send(
-      { cmd: 'login' },
-      { authLoginInput },
+    const { refreshToken, accessToken } = await lastValueFrom(
+      this.clientAuthService.send({ cmd: 'login' }, { authLoginInput }),
     );
-    console.log('test:', test);
-    return test;
+
+    res.cookie('Authentication', refreshToken, {
+      domain: 'localhost',
+      path: '/',
+      httpOnly: true,
+    });
+    return accessToken;
   }
 
-  // // 토큰 재발급 api
-  // @UseGuards(AuthGuard('refresh'))
-  // @Post('/user/reissueToken')
-  // restoreAccessToken(@Req() req) {
-  //   console.log('req.user:', req.user);
-  //   return this.clientAuthService.send(
-  //     { cmd: 'restoreAccessToken' },
-  //     { user: req.user },
-  //   );
-  // }
-  // 리프레시 토큰 쿠키로 보내기
-  // res.cookie('Authentication', refreshToken, {
-  //   domain: 'localhost',
-  //   path: '/',
-  //   httpOnly: true,
-  // });
+  // 토큰 재발급 api
+  @UseGuards(AuthGuard('refresh'))
+  @Post('/user/reissueToken')
+  async restoreAccessToken(@Req() req) {
+    console.log('req.user:', req.user);
+
+    // console.log('refreshToken:', refreshToken);
+    // 리프레시 토큰 쿠키로 보내기
+
+    return await this.clientAuthService.send(
+      { cmd: 'restoreAccessToken' },
+      { user: req.user },
+    );
+  }
 }

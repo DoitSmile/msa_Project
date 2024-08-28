@@ -10,21 +10,16 @@ export class AuthController {
   // 로그인
   @MessagePattern({ cmd: 'login' })
   async login(data) {
-    console.log('token:', data);
-
-    const token = await this.authService.login(data.authLoginInput);
-    return 'accessToken!!!';
+    return this.authService.login(data);
   }
 
   logout() {
     // 로그아웃 진행
   }
+
   // 토큰 재발급
-
-  // @MessagePattern({ cmd: 'restoreAccessToken' })
-  // restoreAccessToken(data) {
-  //   data
-  //   return this.authService.restoreAccessToken({ user: req.user });
-
-  // }
+  @MessagePattern({ cmd: 'restoreAccessToken' })
+  async restoreAccessToken(user) {
+    return await this.authService.restoreAccessToken({ user: user.id });
+  }
 }

@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './apis/auth.module';
+import { User } from '@shared/entites/user/user.entity';
+
 @Module({
   imports: [
     AuthModule,
@@ -13,7 +15,8 @@ import { AuthModule } from './apis/auth.module';
       username: process.env.DATABASE_USERNAME,
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_DATABASE, // env파일에서 수정
-      entities: [__dirname + '/apis/**/*.entity.*'], // 수정
+      // entities: [__dirname + '/apis/**/*.entity.*'], // 수정
+      entities: [User],
       synchronize: true,
       logging: true,
     }),

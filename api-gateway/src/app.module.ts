@@ -4,9 +4,13 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { JWtAccessStrategy } from './strategies/jwt-access.strategy';
+import { JwtRefreshStrategy } from './strategies/jwt-refresh-strategy';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
+    JwtModule.register({}),
     ClientsModule.register([
       {
         name: 'AUTH_SERVICE',
@@ -22,6 +26,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     ]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JWtAccessStrategy, JwtRefreshStrategy],
 })
 export class AppModule {}
