@@ -4,7 +4,7 @@ export class PhoneAuthentication {
 
   checkphone(myphone) {
     if (myphone.length < 10 || myphone.length > 11) {
-      console.log('error');
+      console.log('유효하지 않은 핸드폰 번호');
       return false;
     } else {
       true;

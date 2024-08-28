@@ -62,6 +62,5 @@ services:
       - ./services/resource/src:/resource-service/resource/src
       # - ./services/resource/tsconfig.json:/resource-service/services/resource/tsconfig.json
       - ./shared:/resource-service/shared
-
     env_file:
       - ./services/resource/.env.docker

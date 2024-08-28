@@ -1,0 +1,40 @@
+<head>
+  <title>회원가입 연습하기</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    function sendToken() {
+      // 1. 입력한 휴대폰번호 가져오기
+      const myphone = document.getElementById('myphone').value;
+      console.log('나의 핸드폰번호: ', myphone);
+
+      // 2. 해당 휴대폰번호로 인증번호API 요청하기
+      axios
+        .post('http://localhost:3000/user/sendPhone', {
+          qqq: myphone,
+        })
+        .then((res) => {
+          console.log(res);
+          document.getElementById('status').innerText = res.data;
+        });
+    }
+    function tokenCheck() {
+      const input = document.getElementById('input').value;
+      axios
+        .post('http://localhost:3000/user/checkPhone', {
+          qqq: input,
+        })
+        .then((res) => {
+          console.log(res);
+          document.getElementById('status').innerText = res.data;
+        });
+    }
+  </script>
+</head>
+<body>
+  휴대폰번호: <input type="text" id="myphone" />
+  <button onclick="sendToken()">전송</button><br />
+  인증번호: <input type="text" id="input" />
+  <button onclick="tokenCheck()">인증하기</button><br />
+  <div id="status">인증상태</div>
+  <button>회원가입하기</button>
+</body>

@@ -13,6 +13,7 @@ import { CreateUserInput } from './dto/create-user.input.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthLoginInput } from './authdto/auth-login.Input';
 import { lastValueFrom } from 'rxjs';
+import { AuthPhoneInput } from './authdto/check-phone.Input';
 
 // import { AppService } from './app.service';
 
@@ -24,8 +25,9 @@ export class AppController {
     @Inject('RESOURCE_SERVICE')
     private readonly clientResourceService: ClientProxy,
   ) {}
+  // ---------------------------- user  --------------------------------------------
 
-  // 회원가입
+  // 회원가입 api
   @Post('/user/create')
   async createUser(@Body() createUserInput: CreateUserInput) {
     // auth-service로 트래픽 넘겨줌
@@ -45,12 +47,15 @@ export class AppController {
   @Post('/user/fetch')
   async fetchUser(@Req() req) {
     const id = req.user.id;
+    console.log(' app / id:', id);
     // resource-service로 트래픽 넘겨줌
     return await this.clientResourceService.send(
-      { cmd: 'fetchBoards' },
-      { id },
+      { cmd: 'fetchUser' },
+      { id: req.user.id },
     );
   }
+
+  // ---------------------------- auth --------------------------------------------
 
   // 로그인 api
   @Post('/user/login')
@@ -63,6 +68,7 @@ export class AppController {
       this.clientAuthService.send({ cmd: 'login' }, { authLoginInput }),
     );
 
+    //res.cookie를 통해 클라이언트한테 쿠키를 전달 가능
     res.cookie('Authentication', refreshToken, {
       domain: 'localhost',
       path: '/',
@@ -76,13 +82,30 @@ export class AppController {
   @Post('/user/reissueToken')
   async restoreAccessToken(@Req() req) {
     console.log('req.user:', req.user);
-
-    // console.log('refreshToken:', refreshToken);
-    // 리프레시 토큰 쿠키로 보내기
-
     return await this.clientAuthService.send(
       { cmd: 'restoreAccessToken' },
       { user: req.user },
+    );
+  }
+
+  // 핸드폰 인증번호 발송 api
+  @Post('/auth/sendPhone')
+  async sendPhone(@Body('phone_num') phone_num: string) {
+    console.log('phone_num:', phone_num);
+    return await this.clientAuthService.send(
+      { cmd: 'sendPhone' },
+      { phone_num },
+    );
+  }
+
+  // 핸드폰 인증번호 확인 로직 api
+  @Post('/auth/checkPhone')
+  async checkValidPhone(@Body() authPhoneInput: AuthPhoneInput) {
+    console.log('auth_num:', authPhoneInput);
+
+    return await this.clientAuthService.send(
+      { cmd: 'checkValidPhone' },
+      { authPhoneInput },
     );
   }
 }
