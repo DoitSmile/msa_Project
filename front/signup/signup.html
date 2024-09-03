@@ -9,7 +9,10 @@
     <title>Document</title>
   </head>
   <body>
-    <script type="text/javascript" src="phone.js"></script>
+   <main>
+    <script type="text/javascript" src="phone.js" defer></script>
+    <script type="text/javascript" src="id.js" defer></script>
+    <script type="text/javascript" src="password.js" defer></script>
     <div class="wrapper">
       <div class="container">
         <div class="sign-up-container">
@@ -32,10 +35,14 @@
             </div>
             <span>or use your email for registration</span>
 
-            <input type="text" placeholder="이름" />
-            <input type="email" placeholder="이메일" />
-            <input type="password" placeholder="비밀번호" />
-            <input type="password" placeholder="비밀번호확인" />
+            <input type="text" id="username" placeholder="아이디" />
+            <div class="success-message hide">사용할 수 있는 아이디입니다.</div>
+            <div class="failure-message hide">아이디는 4~12글자이어야 합니다.</div>
+            <div class="failure-message2 hide">영어 또는 숫자만 가능합니다.</div>
+            <input type="password" id="password" placeholder="비밀번호" />
+            <div class="strongPassword-message hide">8글자 이상, 영문, 숫자, 특수문자(@$!%*#?&)를 사용하세요.</div>
+            <input type="password" id="password-retype" placeholder="비밀번호확인" />
+            <div class="mismatch-message hide">비밀번호가 일치하지 않습니다</div>
             <div class="form_phone">
               <input id="myphone" type="text" placeholder="핸드폰번호" />
               <button class="form_phone_btn" onclick="sendToken()">전송</button>
@@ -49,5 +56,8 @@
         </div>
       </div>
     </div>
+   </main>
+   
   </body>
+  
 </html>

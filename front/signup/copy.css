@@ -69,6 +69,11 @@ button {
   cursor: pointer;
   transition: transform 80ms ease-in;
 }
+
+.hide {
+  display: none;
+}
+
 .strong_btn {
   color: brown;
 }
@@ -141,4 +146,15 @@ span {
 }
 .social-links div:active {
   box-shadow: inset 1px 1px 2px #babebc, inset -1px -1px 2px #fff;
+}
+
+main > div {
+  color: brown;
+  font-size: 14px;
+  padding: 0px 30px 0px 30px;
+}
+.success-message {
+  color: rgb(8, 8, 8);
+  font-size: 14px;
+  padding: 0px 30px 0px 30px;
 }
