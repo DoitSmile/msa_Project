@@ -29,7 +29,6 @@ export class AuthController {
   async sendPhone(data) {
     console.log('phone_num:', data);
     const phone_num = await data.phone_num;
-    console.log('에러찾기5:');
     return await this.authService.sendPhone(phone_num);
   }
 

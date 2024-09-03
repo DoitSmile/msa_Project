@@ -69,7 +69,7 @@ export class AuthService {
   // 핸드폰 인증번호 전송
   async sendPhone(phone_num: string): Promise<any> {
     const checkValid = await this.authPhone.checkphone(phone_num);
-    if (!checkValid) throw new ConflictException('유효하지 않은 핸드폰 번호');
+    if (checkValid) throw new ConflictException('유효하지 않은 핸드폰 번호');
     const myToken = await this.authPhone.getToken();
     // const expiry = Date.now() + 300000; // 5분 후 만료
     // console.log('expiry:', expiry);

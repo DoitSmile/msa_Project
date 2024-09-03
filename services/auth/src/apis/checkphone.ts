@@ -7,6 +7,7 @@ export class PhoneAuthentication {
       console.log('유효하지 않은 핸드폰 번호');
       return false;
     } else {
+      console.log('유효한 번호');
       true;
     }
   }

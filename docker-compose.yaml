@@ -64,3 +64,10 @@ services:
       - ./shared:/resource-service/shared
     env_file:
       - ./services/resource/.env.docker
+
+  # signup-front:
+  #   build:
+  #     context: ./front/signup
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./front/signup/src:/front/signup
