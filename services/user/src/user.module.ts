@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './apis/user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { User } from '@shared/entites/user/user.entity';
+import { UserController } from './apis/user/user.controller';
+import { UserService } from './apis/user/user.service';
+// import { Category } from '@shared/entites/category/category.entity';
+// import { Board } from '@shared/entites/board/board.entity';
 @Module({
   imports: [
-    UsersModule,
     ConfigModule.forRoot(), // 환경변수
     TypeOrmModule.forRoot({
       type: process.env.DATABASE_TYPE as 'mysql',
@@ -19,6 +21,10 @@ import { User } from '@shared/entites/user/user.entity';
       synchronize: true,
       logging: true,
     }),
+    TypeOrmModule.forFeature([User])
   ],
+  controllers: [UserController],
+  providers: [UserService],
+  exports: [UserService],
 })
-export class AppModule {}
+export class UserModule {}

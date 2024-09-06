@@ -21,6 +21,7 @@ export class JWtAccessStrategy extends PassportStrategy(Strategy, 'access') {
   async validate(payload) {
     return {
       id: payload.id,
+      name: payload.name,
     };
   }
   // return : fetchUser API로 return 되는 것이 아님

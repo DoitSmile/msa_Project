@@ -1,17 +1,6 @@
 version: "3.7"
 
 services:
-  # my-auth-database: 컴퓨터이름
-  # my-auth-database:
-  #   image: mysql:latest
-  #   environment:
-  #     MYSQL_DATABASE: 'myauth' #env 파일과 동일해야함
-  #     MYSQL_ROOT_PASSWORD: '12345678' #env 파일과 동일해야함
-  #   ports:
-  #     - 3307:3306
-  #   env_file:
-  #     - ./services/auth/.env.docker
-
   my-user-database:
     image: mysql:latest
     environment:
@@ -20,7 +9,17 @@ services:
     ports:
       - 3308:3306
     env_file:
-      - ./services/resource/.env.docker
+      - ./services/user/.env.docker
+
+  my-board-database:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: "myboard"
+      MYSQL_ROOT_PASSWORD: "root"
+    ports:
+      - 3309:3306
+    env_file:
+      - ./board/.env.docker
 
   api-gateway:
     build:
@@ -35,36 +34,31 @@ services:
     build:
       context: ./services/auth
       dockerfile: Dockerfile
-    environment:
-      DATABASE_HOST: "my-user-database"
-      DATABASE_PORT: "3306"
-      DATABASE_USER: "root"
-      DATABASE_PASSWORD: "root"
-      DATABASE_NAME: "myuser"
     volumes:
       - ./services/auth/src:/auth-service/auth/src
-      # - ./services/auth/tsconfig.json:/resource-service/services/auth/
       - ./shared:/auth-service/shared
     env_file:
-      - ./services/resource/.env.docker
+      - ./services/auth/.env.docker
 
-  resource-service:
+  user-service:
     build:
-      context: ./services/resource
+      context: ./services/user
       dockerfile: Dockerfile
-    environment:
-      DATABASE_HOST: "my-user-database"
-      DATABASE_PORT: "3306"
-      DATABASE_USER: "root"
-      DATABASE_PASSWORD: "root"
-      DATABASE_NAME: "myuser"
     volumes:
-      - ./services/resource/src:/resource-service/resource/src
-      # - ./services/resource/tsconfig.json:/resource-service/services/resource/tsconfig.json
-      - ./shared:/resource-service/shared
+      - ./services/user/src:/user-service/user/src
+      - ./shared:/user-service/shared
     env_file:
-      - ./services/resource/.env.docker
+      - ./services/user/.env.docker
 
+  board-service:
+    build:
+      context: ./board
+      dockerfile: Dockerfile
+    volumes:
+      - ./board/src:/board-service/src
+      - ./shared:/board-service/shared
+    env_file:
+      - ./board/.env.docker
   # signup-front:
   #   build:
   #     context: ./front/signup

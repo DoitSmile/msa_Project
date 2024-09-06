@@ -3,6 +3,8 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './apis/auth.module';
 import { User } from '@shared/entites/user/user.entity';
+import { Category } from '@shared/entites/category/category.entity';
+import { Board } from '@shared/entites/board/board.entity';
 
 @Module({
   imports: [

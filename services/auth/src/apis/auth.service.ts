@@ -44,8 +44,9 @@ export class AuthService {
   // 토큰 발급
   async getAccessToken({ user }) {
     console.log('user.id', user.id);
+    console.log('user.name', user.name);
     const test = this.jwtService.sign(
-      { id: user.id }, //payload엔 보여줘도 되는 값만 입력
+      { id: user.id, name:user.name }, //payload엔 보여줘도 되는 값만 입력
       { secret: '나의비밀번호', expiresIn: '10m' },
     ); // return 타입: 발급받은 토큰
 

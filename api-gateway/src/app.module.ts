@@ -1,12 +1,14 @@
 // app.module.ts
 
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
+import { UserController } from './controller/user.controller';
 import { AppService } from './app.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { JWtAccessStrategy } from './strategies/jwt-access.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh-strategy';
 import { JwtModule } from '@nestjs/jwt';
+import { AuthController } from './controller/auth.controller';
+import { BoardController } from './controller/board.controller';
 
 @Module({
   imports: [
@@ -19,13 +21,19 @@ import { JwtModule } from '@nestjs/jwt';
       },
 
       {
-        name: 'RESOURCE_SERVICE',
+        name: 'USER_SERVICE',
         transport: Transport.TCP,
-        options: { host: 'resource-service', port: 3002 }, // 게이트웨이와 서비스를 똑같이 입력
+        options: { host: 'user-service', port: 3002 }, // 게이트웨이와 서비스를 똑같이 입력
+      },
+
+      {
+        name: 'BOARD_SERVICE',
+        transport: Transport.TCP,
+        options: { host: 'board-service', port: 3003 }, // 게이트웨이와 서비스를 똑같이 입력
       },
     ]),
   ],
-  controllers: [AppController],
+  controllers: [UserController, AuthController, BoardController],
   providers: [AppService, JWtAccessStrategy, JwtRefreshStrategy],
 })
 export class AppModule {}
