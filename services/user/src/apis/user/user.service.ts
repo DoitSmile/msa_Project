@@ -9,7 +9,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import {
   IUserEmail,
-  IUserUpdatePassword,
 } from '@shared/interfaces/user/user-service.interface';
 
 @Injectable()

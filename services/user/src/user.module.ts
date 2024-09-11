@@ -21,7 +21,7 @@ import { UserService } from './apis/user/user.service';
       synchronize: true,
       logging: true,
     }),
-    TypeOrmModule.forFeature([User])
+    TypeOrmModule.forFeature([User]),
   ],
   controllers: [UserController],
   providers: [UserService],

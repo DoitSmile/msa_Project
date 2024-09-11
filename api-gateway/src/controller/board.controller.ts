@@ -34,4 +34,14 @@ export class BoardController {
   }
 
   // 전체 게시물 조회
+  @Post('/board/fetch/all')
+  fetchBoards(@Req() req) {
+    return this.clientBoardService.send({ cmd: 'fetchBoards' }, {});
+  }
+
+  // 카테고리 전체 조회
+  @Post('/board/category')
+  fetchCategory() {
+    return this.clientBoardService.send({ cmd: 'fetchBoards' }, {});
+  }
 }

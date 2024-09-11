@@ -1,11 +1,16 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
+// UseGuards : 로그인을 한 유저면  API를 실행시키고
+// 로그인을 하지 않은 유저면 fetchUser API가 실행되지 못하게할 방어막
+// 아래는 'access'라는 이름을 가진 Guard이다.
+
 export class JWtAccessStrategy extends PassportStrategy(Strategy, 'access') {
   //PassportStrategy(인가를처리할방식,설정한인증방식이름)
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), //jwtFromRequest로 헤더에 존재하는 jwtToken을 가져옴 (fromAuthHeaderAsBearerToken())
+
       secretOrKey: '나의비밀번호',
     });
   }

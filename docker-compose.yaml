@@ -59,6 +59,13 @@ services:
       - ./shared:/board-service/shared
     env_file:
       - ./board/.env.docker
+
+  # 컴퓨터이름
+  my-auth-redis:
+    image: redis:latest
+    ports:
+      - 6380:6379
+
   # signup-front:
   #   build:
   #     context: ./front/signup

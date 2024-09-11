@@ -1,17 +1,20 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { IAuthLoginInput } from '@shared/interfaces/auth/auth-service.interface';
 import * as bcrypt from 'bcrypt';
 import { User } from '@shared/entites/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PhoneAuthentication } from './checkphone';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(CACHE_MANAGER)
+    private readonly cacheManager: Cache,
     // private readonly authphone: PhoneAuthentication,
-    private readonly jwtService: JwtService, // jwt 관련 비지니스로직 사용가능
+    private readonly jwtService: JwtService, // jwt 관련 비지니스로직 사용가능.
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private readonly authPhone: PhoneAuthentication,
@@ -41,12 +44,19 @@ export class AuthService {
     }
   }
 
+  // 로그아웃
+  async logout() {
+    const refreshToken = '';
+    const accessToken = '';
+    return { refreshToken, accessToken };
+  }
+
   // 토큰 발급
   async getAccessToken({ user }) {
     console.log('user.id', user.id);
     console.log('user.name', user.name);
     const test = this.jwtService.sign(
-      { id: user.id, name:user.name }, //payload엔 보여줘도 되는 값만 입력
+      { id: user.id, name: user.name }, //payload엔 보여줘도 되는 값만 입력
       { secret: '나의비밀번호', expiresIn: '10m' },
     ); // return 타입: 발급받은 토큰
 
@@ -57,20 +67,30 @@ export class AuthService {
   async setRefreshToken({ user }) {
     const test = await this.jwtService.sign(
       { id: user.id },
-      { secret: '리프레시비밀번호', expiresIn: '2w' },
+      { secret: '리프레시비밀번호', expiresIn: '1w' },
     );
+    await this.cacheManager.set(`refresh_token:${user.id}`, test, 604800);
     return test;
   }
 
+  // cookie에 refreshToken이 저장되어 있으면 @UseGuards(AuthGuard('refresh'))를 통과하고 발급 가능 .
   // 토큰 재발급
-  restoreAccessToken({ user }) {
-    return this.getAccessToken({ user });
+  async restoreAccessToken({ user, refreshToken }) {
+    console.log('ㅎㅎ user:', user);
+    console.log('ㅎㅎ refreshToken:', refreshToken);
+    const redisToken = await this.cacheManager.get(`refresh_token:${user.id}`);
+    console.log('ㅎㅎ redisToken:', refreshToken);
+    if (redisToken === refreshToken) {
+      return this.getAccessToken({ user });
+    } else {
+      throw new ConflictException('다시 로그인해주세요');
+    }
   }
 
-  // 핸드폰 인증번호 전송
+  // 핸드폰 인증번호 전송.
   async sendPhone(phone_num: string): Promise<any> {
     const checkValid = await this.authPhone.checkphone(phone_num);
-    if (checkValid) throw new ConflictException('유효하지 않은 핸드폰 번호');
+    if (!checkValid) throw new ConflictException('유효하지 않은 핸드폰 번호');
     const myToken = await this.authPhone.getToken();
     // const expiry = Date.now() + 300000; // 5분 후 만료
     // console.log('expiry:', expiry);

@@ -10,6 +10,7 @@ export class BoardService {
         private readonly boardRepository: Repository<Board>,
     ) {}
 
+    // 글 작성
     async createBoard(createBoardInput, name, userId) {
         console.log('createBoardInput:', createBoardInput);
         const { title, content } = createBoardInput;
@@ -22,9 +23,18 @@ export class BoardService {
         });
     }
 
+    // 내 게시글 보기
+    async fetchBoards() {
+        return await this.boardRepository.find();
+    }
+
+    // 전체 게시글 보기
     async fetchMyBoard(Id) {
+        console.log('Id:', Id);
         return await this.boardRepository.find({
             where: { userId: Id },
         });
     }
+
+    // 카테고리 조회
 }

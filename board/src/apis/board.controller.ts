@@ -6,6 +6,7 @@ import { BoardService } from './board.service';
 export class BoardController {
     constructor(private readonly boardService: BoardService) {}
 
+    // 게시물 생성
     @MessagePattern({ cmd: 'createBoard' })
     async createBoard(data) {
         console.log('data:', data);
@@ -16,9 +17,16 @@ export class BoardController {
         );
     }
 
+    // 내 게시물 조회
     @MessagePattern({ cmd: 'fetchMyBoard' })
     async fetchMyBoard(data) {
         console.log('data:', data);
-        return await this.boardService.fetchMyBoard(data.id);
+        return await this.boardService.fetchMyBoard(data.userId);
+    }
+
+    // 전체 게시글 조회
+    @MessagePattern({ cmd: 'fetchBoards' })
+    async fetchBoards() {
+        return await this.boardService.fetchBoards();
     }
 }
