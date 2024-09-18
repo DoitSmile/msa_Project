@@ -45,10 +45,9 @@ export class AuthService {
   }
 
   // 로그아웃
-  async logout() {
-    const refreshToken = '';
-    const accessToken = '';
-    return { refreshToken, accessToken };
+  async logout(id) {
+    console.log('logout id', id);
+    await this.cacheManager.del(`refresh_token:${id}`);
   }
 
   // 토큰 발급
@@ -69,22 +68,23 @@ export class AuthService {
       { id: user.id },
       { secret: '리프레시비밀번호', expiresIn: '1w' },
     );
-    await this.cacheManager.set(`refresh_token:${user.id}`, test, 604800);
+    // await this.cacheManager.set(
+    //   `refresh_token:${user.id}`,
+    //   test,
+    //   7 * 24 * 60 * 60, // 1주일
+    // );
     return test;
   }
 
   // cookie에 refreshToken이 저장되어 있으면 @UseGuards(AuthGuard('refresh'))를 통과하고 발급 가능 .
   // 토큰 재발급
-  async restoreAccessToken({ user, refreshToken }) {
-    console.log('ㅎㅎ user:', user);
-    console.log('ㅎㅎ refreshToken:', refreshToken);
-    const redisToken = await this.cacheManager.get(`refresh_token:${user.id}`);
-    console.log('ㅎㅎ redisToken:', refreshToken);
-    if (redisToken === refreshToken) {
-      return this.getAccessToken({ user });
-    } else {
-      throw new ConflictException('다시 로그인해주세요');
-    }
+  async restoreAccessToken({ user }) {
+    // const redisToken = await this.cacheManager.get(`refresh_token:${user.id}`);
+    // if (redisToken === refreshToken) {
+    return this.getAccessToken({ user });
+    // } else {
+    //   throw new ConflictException('다시 로그인해주세요');
+    // }
   }
 
   // 핸드폰 인증번호 전송.

@@ -4,8 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { User } from '@shared/entites/user/user.entity';
 import { UserController } from './apis/user/user.controller';
 import { UserService } from './apis/user/user.service';
-// import { Category } from '@shared/entites/category/category.entity';
-// import { Board } from '@shared/entites/board/board.entity';
+
 @Module({
   imports: [
     ConfigModule.forRoot(), // 환경변수

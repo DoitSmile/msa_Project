@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString, Length } from 'class-validator';
 
-export class CreateBoardInput {
+export class CreatPostInput {
   @IsString()
   @IsNotEmpty({ message: '제목을 입력해주세요' })
   title: string;

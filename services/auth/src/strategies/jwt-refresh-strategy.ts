@@ -9,6 +9,7 @@ export class JwtRefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
       jwtFromRequest: (req) => {
         // console.log(req);
         const cookie = req.headers.cookie;
+        //req.headers.cookie: 미들웨어(cookie-paser)를 사용하지 않는 경우에도 쿠키에 접근할 수 있습니다.
         const refreshToken = cookie.replace('Authentication=', '');
         return refreshToken;
       },

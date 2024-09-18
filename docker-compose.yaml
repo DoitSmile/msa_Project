@@ -11,15 +11,15 @@ services:
     env_file:
       - ./services/user/.env.docker
 
-  my-board-database:
+  my-post-database:
     image: mysql:latest
     environment:
-      MYSQL_DATABASE: "myboard"
+      MYSQL_DATABASE: "mypost"
       MYSQL_ROOT_PASSWORD: "root"
     ports:
       - 3309:3306
     env_file:
-      - ./board/.env.docker
+      - ./post/.env.docker
 
   api-gateway:
     build:
@@ -50,15 +50,15 @@ services:
     env_file:
       - ./services/user/.env.docker
 
-  board-service:
+  post-service:
     build:
-      context: ./board
+      context: ./post
       dockerfile: Dockerfile
     volumes:
-      - ./board/src:/board-service/src
-      - ./shared:/board-service/shared
+      - ./post/src:/post-service/src
+      - ./shared:/post-service/shared
     env_file:
-      - ./board/.env.docker
+      - ./post/.env.docker
 
   # 컴퓨터이름
   my-auth-redis:

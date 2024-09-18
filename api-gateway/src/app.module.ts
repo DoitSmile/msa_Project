@@ -8,7 +8,7 @@ import { JWtAccessStrategy } from './strategies/jwt-access.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh-strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthController } from './controller/auth.controller';
-import { BoardController } from './controller/board.controller';
+import { PostController } from './controller/post.controller';
 
 @Module({
   imports: [
@@ -27,13 +27,13 @@ import { BoardController } from './controller/board.controller';
       },
 
       {
-        name: 'BOARD_SERVICE',
+        name: 'POST_SERVICE',
         transport: Transport.TCP,
-        options: { host: 'board-service', port: 3003 }, // 게이트웨이와 서비스를 똑같이 입력
+        options: { host: 'post-service', port: 3003 }, // 게이트웨이와 서비스를 똑같이 입력
       },
     ]),
   ],
-  controllers: [UserController, AuthController, BoardController],
+  controllers: [UserController, AuthController, PostController],
   providers: [AppService, JWtAccessStrategy, JwtRefreshStrategy],
 })
 export class AppModule {}

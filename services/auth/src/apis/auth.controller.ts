@@ -18,8 +18,8 @@ export class AuthController {
 
   @MessagePattern({ cmd: 'logout' })
   // 로그아웃 진행
-  async logout() {
-    return this.authService.logout();
+  async logout(data) {
+    return this.authService.logout(data.id);
   }
 
   // 토큰 재발급
@@ -28,10 +28,9 @@ export class AuthController {
     console.log('data:', data);
     const user = data.user;
     // console.log('restoreAccessToken user:', user);
-    const refreshToken = data.refreshToken;
+    // const refreshToken = data.refreshToken;
     return await this.authService.restoreAccessToken({
       user: user,
-      refreshToken,
     });
   }
 

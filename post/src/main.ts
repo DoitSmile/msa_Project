@@ -1,14 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { BoardModule } from './board.module';
+import { PostModule } from './post.module';
 
-// board
+// post
 async function bootstrap() {
     const app = await NestFactory.createMicroservice<MicroserviceOptions>(
-        BoardModule,
+        PostModule,
         {
             transport: Transport.TCP,
-            options: { host: 'board-service', port: 3003 }, // 게이트웨이와 서비스를 똑같이 입력 네임 리졸루션
+            options: { host: 'post-service', port: 3003 }, // 게이트웨이와 서비스를 똑같이 입력 네임 리졸루션
         },
     );
     await app.listen();
