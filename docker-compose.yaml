@@ -4,7 +4,7 @@ services:
   my-user-database:
     image: mysql:latest
     environment:
-      MYSQL_DATABASE: "myuser"
+      MYSQL_DATABASE: "user"
       MYSQL_ROOT_PASSWORD: "root"
     ports:
       - 3308:3306
@@ -14,12 +14,12 @@ services:
   my-post-database:
     image: mysql:latest
     environment:
-      MYSQL_DATABASE: "mypost"
+      MYSQL_DATABASE: "post"
       MYSQL_ROOT_PASSWORD: "root"
     ports:
-      - 3309:3306
+      - 3307:3306
     env_file:
-      - ./post/.env.docker
+      - ./services/post/.env.docker
 
   api-gateway:
     build:
@@ -52,13 +52,13 @@ services:
 
   post-service:
     build:
-      context: ./post
+      context: ./services/post
       dockerfile: Dockerfile
     volumes:
-      - ./post/src:/post-service/src
+      - ./services/post/src:/post-service/src
       - ./shared:/post-service/shared
     env_file:
-      - ./post/.env.docker
+      - ./services/post/.env.docker
 
   # 컴퓨터이름
   my-auth-redis:
@@ -71,4 +71,3 @@ services:
   #     context: ./front/signup
   #     dockerfile: Dockerfile
   #   volumes:
-  #     - ./front/signup/src:/front/signup

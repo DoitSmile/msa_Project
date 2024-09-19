@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { Post } from '@shared/entites/post/post.entity';
-import { User } from '@shared/entites/user/user.entity';
+import { Comment } from '@shared/entites/post/post-comment.entity';
+import { PostTag } from '@shared/entites/post/post-tag.entity';
 import { PostController } from './apis/post.controller';
 import { PostService } from './apis/post.service';
 // import { Category } from '@shared/entites/category/category.entity';
@@ -18,11 +19,11 @@ import { PostService } from './apis/post.service';
             password: process.env.DATABASE_PASSWORD,
             database: process.env.DATABASE_DATABASE, // env파일에서 수정
             // entities: [__dirname + '/apis/**/*.entity.*'], // 수정
-            entities: [Post],
+            entities: [Post, Comment, PostTag],
             synchronize: true,
             logging: true,
         }),
-        TypeOrmModule.forFeature([Post]),
+        TypeOrmModule.forFeature([Post, Comment, PostTag]),
     ],
     controllers: [PostController],
     providers: [PostService],

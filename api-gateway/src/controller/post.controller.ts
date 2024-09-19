@@ -1,14 +1,7 @@
-import {
-  Body,
-  Controller,
-  Inject,
-  Post,
-  Query,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Inject, Post, Req, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
+import { CreateCommentInput } from 'src/dto/postdto/create-comment.input-dto';
 import { CreatPostInput } from 'src/dto/postdto/create-post.input-dto';
 import { UpdatePostInput } from 'src/dto/postdto/update-post.input-dto';
 
@@ -49,6 +42,7 @@ export class PostController {
   }
 
   // 게시글 삭제
+  @UseGuards(AuthGuard('access'))
   @Post('/post/delete')
   deletePosts(@Body('postId') postId: string) {
     return this.clientPostService.send({ cmd: 'deletePost' }, { postId });
@@ -64,14 +58,40 @@ export class PostController {
   }
 
   // 전체 게시물 조회
-  @Post('/post/fetchs')
+  @Post('/post/fetch/all')
   fetchPosts() {
     return this.clientPostService.send({ cmd: 'fetchPosts' }, {});
   }
 
-  // 카테고리 전체 조회
-  @Post('/post/category')
-  fetchCategory() {
-    return this.clientPostService.send({ cmd: 'fetchCategory' }, {});
+  // ---------------------------- comment  ----------------------------
+  // 댓글 생성
+  @UseGuards(AuthGuard('access'))
+  @Post('/post/comment/create')
+  createComment(@Body() createCommentInput: CreateCommentInput, @Req() req) {
+    const userId = req.user.id;
+    return this.clientPostService.send(
+      { cmd: 'createComment' },
+      { createCommentInput, userId },
+    );
+  }
+
+  // 댓글 조회
+  @UseGuards(AuthGuard('access'))
+  @Post('/post/comment/fetch')
+  fetchComment(@Body() postId) {
+    console.log('postId:', postId);
+    return this.clientPostService.send({ cmd: 'fetchComment' }, { postId });
+  }
+
+  // 댓글 수정
+  @Post('/post/comment/update')
+  updateComment() {
+    return this.clientPostService.send({ cmd: 'updateComment' }, {});
+  }
+
+  // 댓글 삭제
+  @Post('/post/comment/create')
+  deleteComment() {
+    return this.clientPostService.send({ cmd: 'deleteComment' }, {});
   }
 }

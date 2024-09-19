@@ -18,7 +18,6 @@ export class PostController {
     }
 
     // 게시글 수정
-
     @MessagePattern({ cmd: 'updatePost' })
     async updatePost(data) {
         console.log('data:', data);
@@ -45,4 +44,24 @@ export class PostController {
     async fetchPosts() {
         return await this.postService.fetchPosts();
     }
+
+    // ---------------------------- comment  ----------------------------
+    // 댓글 생성
+    @MessagePattern({ cmd: 'createComment' })
+    async createComment(data) {
+        console.log('data:', data);
+        return await this.postService.createComment(
+            data.createCommentInput,
+            data.userId,
+        );
+    }
+    // 댓글 조회
+
+    @MessagePattern({ cmd: 'fetchComment' })
+    async fetchComment(data) {
+        console.log('data:', data);
+        return await this.postService.fetchComment(data.postId);
+    }
+    // 댓글 수정
+    // 댓글 삭제
 }
