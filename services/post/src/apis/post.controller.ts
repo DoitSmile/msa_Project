@@ -63,5 +63,19 @@ export class PostController {
         return await this.postService.fetchComment(data.postId);
     }
     // 댓글 수정
+    @MessagePattern({ cmd: 'updateComment' })
+    async updateComment(data) {
+        console.log('data:', data);
+        return await this.postService.updateComment(
+            data.commentId,
+            data.content,
+        );
+    }
     // 댓글 삭제
+
+    @MessagePattern({ cmd: 'deleteComment' })
+    async deleteComment(data) {
+        console.log('data:', data);
+        return await this.postService.deleteComment(data.commentId);
+    }
 }

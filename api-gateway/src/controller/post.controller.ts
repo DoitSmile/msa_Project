@@ -76,7 +76,6 @@ export class PostController {
   }
 
   // 댓글 조회
-  @UseGuards(AuthGuard('access'))
   @Post('/post/comment/fetch')
   fetchComment(@Body() postId) {
     console.log('postId:', postId);
@@ -85,13 +84,19 @@ export class PostController {
 
   // 댓글 수정
   @Post('/post/comment/update')
-  updateComment() {
-    return this.clientPostService.send({ cmd: 'updateComment' }, {});
+  updateComment(
+    @Body('commentId') commentId: string,
+    @Body('content') content: string,
+  ) {
+    return this.clientPostService.send(
+      { cmd: 'updateComment' },
+      { commentId, content },
+    );
   }
 
   // 댓글 삭제
-  @Post('/post/comment/create')
-  deleteComment() {
-    return this.clientPostService.send({ cmd: 'deleteComment' }, {});
+  @Post('/post/comment/delete')
+  deleteComment(@Body('commentId') commentId: string) {
+    return this.clientPostService.send({ cmd: 'deleteComment' }, { commentId });
   }
 }
