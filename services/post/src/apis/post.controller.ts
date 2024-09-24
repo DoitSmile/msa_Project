@@ -45,6 +45,12 @@ export class PostController {
         return await this.postService.fetchPosts();
     }
 
+    // 카테고리별  게시글 조회
+    @MessagePattern({ cmd: 'fetchCategoryPosts' })
+    async fetchCategoryPosts(data) {
+        return await this.postService.fetchCategoryPosts(data.categoryId);
+    }
+
     // ---------------------------- comment  ----------------------------
     // 댓글 생성
     @MessagePattern({ cmd: 'createComment' })
@@ -72,7 +78,6 @@ export class PostController {
         );
     }
     // 댓글 삭제
-
     @MessagePattern({ cmd: 'deleteComment' })
     async deleteComment(data) {
         console.log('data:', data);

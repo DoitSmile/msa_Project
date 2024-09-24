@@ -4,10 +4,10 @@ import { ConfigModule } from '@nestjs/config';
 import { Post } from '@shared/entites/post/post.entity';
 import { Comment } from '@shared/entites/post/post-comment.entity';
 import { PostTag } from '@shared/entites/post/post-tag.entity';
+import { Category } from '@shared/entites/post/post-category.entity';
 import { PostController } from './apis/post.controller';
 import { PostService } from './apis/post.service';
-// import { Category } from '@shared/entites/category/category.entity';
-// import { Board } from '@shared/entites/board/board.entity';
+
 @Module({
     imports: [
         ConfigModule.forRoot(), // 환경변수
@@ -19,11 +19,11 @@ import { PostService } from './apis/post.service';
             password: process.env.DATABASE_PASSWORD,
             database: process.env.DATABASE_DATABASE, // env파일에서 수정
             // entities: [__dirname + '/apis/**/*.entity.*'], // 수정
-            entities: [Post, Comment, PostTag],
+            entities: [Post, Comment, PostTag, Category],
             synchronize: true,
             logging: true,
         }),
-        TypeOrmModule.forFeature([Post, Comment, PostTag]),
+        TypeOrmModule.forFeature([Post, Comment, PostTag, Category]),
     ],
     controllers: [PostController],
     providers: [PostService],

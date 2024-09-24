@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>진대 - 게시글 작성</title>
+    <link rel="stylesheet" href="write.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="header-content">
+        <div class="logo-category">
+          <h1><a href="index.html">TalkTime</a></h1>
+          <nav>
+            <ul>
+              <li><a href="#">홈</a></li>
+              <li><a href="#">보관함</a></li>
+              <li class="category">
+                <button class="category-btn">카테고리</button>
+                <div class="category-content">
+                  <a href="#">자유</a>
+                  <a href="#">친목</a>
+                  <a href="#">연애</a>
+                  <a href="#">게임</a>
+                  <a href="#">스터디모집</a>
+                </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <form action="#" method="get" class="search-form">
+          <input
+            type="search"
+            name="q"
+            placeholder="검색어를 입력하세요"
+            required
+          />
+          <button type="submit">검색</button>
+        </form>
+      </div>
+    </header>
+    <div class="container">
+      <form action="#" method="post" enctype="multipart/form-data">
+        <div class="write-header">
+          <div class="select-wrapper">
+            <select name="board" id="boardSelect" required class="placeholder">
+              <option value="" disabled selected hidden>게시판 선택</option>
+              <option value="free">자유</option>
+              <option value="friend">친목</option>
+              <option value="qna">연애</option>
+              <option value="review">게임</option>
+              <option value="notice">스터디모집</option>
+            </select>
+            <input
+              type="text"
+              name="title"
+              placeholder="제목을 입력해 주세요."
+              required
+            />
+          </div>
+        </div>
+        <div class="write-body">
+          <textarea
+            name="content"
+            placeholder="내용을 입력해 주세요. 
+
+게시글 작성 시 주의사항:
+1. 타인의 권리를 침해하거나 명예를 훼손하는 내용
+2. 음란물, 욕설, 비방 등 공서양속에 반하는 내용
+3. 범죄행위와 관련되거나 법령을 위반하는 내용
+4. 영리목적의 광고성 내용
+5. 개인정보 노출 및 거래 관련 내용
+위와 같은 내용이 포함되지 않도록 주의하여 작성해 주세요."
+            required
+          ></textarea>
+        </div>
+        <div class="write-footer">
+          <div class="additional-options">
+            <label class="upload-btn">
+              <input type="file" name="image" accept="image/*" multiple />
+              <i class="fas fa-image"></i> 사진첨부
+            </label>
+          </div>
+          <button type="submit" class="submit-btn">등록</button>
+        </div>
+      </form>
+    </div>
+
+    <footer>
+      <p>&copy; 2024 김가연 All rights reserved.</p>
+    </footer>
+  </body>
+  <script src="write.js"></script>
+</html>

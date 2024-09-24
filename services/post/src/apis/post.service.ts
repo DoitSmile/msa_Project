@@ -6,6 +6,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from '@shared/entites/post/post.entity';
 import { Comment } from '@shared/entites/post/post-comment.entity';
+import { Category } from '@shared/entites/post/post-category.entity';
 import { IsNull, Repository } from 'typeorm';
 
 @Injectable()
@@ -15,16 +16,19 @@ export class PostService {
         private readonly postRepository: Repository<Post>,
         @InjectRepository(Comment)
         private readonly commentRepository: Repository<Comment>,
+        @InjectRepository(Category)
+        private readonly categoryRepository: Repository<Category>,
     ) {}
 
     // ---------------------------- post  ----------------------------
     // 게시물 생성
     async createPost(createPostInput, name, userId) {
         console.log('createPostInput:', createPostInput);
-        const { title, content } = createPostInput;
+        const { title, content, categoryId } = createPostInput;
 
         return await this.postRepository.save({
             userId: userId,
+            category: categoryId,
             name: name,
             title,
             content,
@@ -48,6 +52,14 @@ export class PostService {
     // 전체 게시글 보기
     async fetchPosts() {
         return await this.postRepository.find();
+    }
+
+    // 카테고리별 게시글 보기
+    async fetchCategoryPosts(categoryId) {
+        return await this.categoryRepository.find({
+            where: { id: categoryId },
+            relations: ['post'],
+        });
     }
 
     // 내 게시글 보기

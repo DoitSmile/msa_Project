@@ -57,11 +57,21 @@ export class PostController {
     return this.clientPostService.send({ cmd: 'fetchPost' }, { userId });
   }
 
+  
+  // 카테고리별 게시물 조회
+  @Post('/post/fetch/category')
+  fetchCategoryPosts(categoryId) {
+    return this.clientPostService.send({ cmd: 'fetchCategoryPosts' }, {categoryId});
+  }
+
+
   // 전체 게시물 조회
   @Post('/post/fetch/all')
   fetchPosts() {
     return this.clientPostService.send({ cmd: 'fetchPosts' }, {});
   }
+
+  // 카테고리 생성 
 
   // ---------------------------- comment  ----------------------------
   // 댓글 생성

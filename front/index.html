@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>진대</title>
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-content">
+        <div class="logo-category">
+          <h1><a href="index.html">TalkTime</a></h1>
+          <nav>
+            <ul>
+              <li><a href="#">홈</a></li>
+              <li><a href="#">보관함</a></li>
+              <li class="category">
+                <button class="category-btn">카테고리</button>
+                <div class="category-content">
+                  <a href="#">자유</a>
+                  <a href="#">친목</a>
+                  <a href="#">연애</a>
+                  <a href="#">게임</a>
+                  <a href="#">스터디모집</a>
+                </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <form action="#" method="get" class="search-form">
+          <input
+            type="search"
+            name="q"
+            placeholder="검색어를 입력하세요"
+            required
+          />
+          <button type="submit">검색</button>
+        </form>
+      </div>
+    </header>
+
+    <div class="container">
+      <div class="main-content">
+        <section class="post-section featured-posts">
+          <h2>인기 게시물</h2>
+          <ul class="post-list">
+            <li>
+              <a href="#" class="post-item">
+                <div class="post-info">
+                  <h3>인기 게시물 1</h3>
+                  <p>게시물 1의 간단한 설명이 여기에 들어갑니다.</p>
+                </div>
+                <img
+                  src="/api/placeholder/100/100"
+                  alt="게시물 1 썸네일"
+                  class="post-thumbnail"
+                />
+              </a>
+            </li>
+            <li>
+              <a href="#" class="post-item">
+                <div class="post-info">
+                  <h3>인기 게시물 2</h3>
+                  <p>게시물 2의 간단한 설명이 여기에 들어갑니다.</p>
+                </div>
+                <img
+                  src="/api/placeholder/100/100"
+                  alt="게시물 2 썸네일"
+                  class="post-thumbnail"
+                />
+              </a>
+            </li>
+          </ul>
+        </section>
+        <section class="post-section recent-posts">
+          <h2>최근 게시물</h2>
+          <ul class="post-list">
+            <li>
+              <a href="#" class="post-item">
+                <div class="post-info">
+                  <h3>최근 게시물 1</h3>
+                  <p>게시물 1의 간단한 설명이 여기에 들어갑니다.</p>
+                </div>
+                <img
+                  src="/api/placeholder/100/100"
+                  alt="게시물 1 썸네일"
+                  class="post-thumbnail"
+                />
+              </a>
+            </li>
+            <li>
+              <a href="#" class="post-item">
+                <div class="post-info">
+                  <h3>최근 게시물 2</h3>
+                  <p>게시물 2의 간단한 설명이 여기에 들어갑니다.</p>
+                </div>
+                <img
+                  src="/api/placeholder/100/100"
+                  alt="게시물 2 썸네일"
+                  class="post-thumbnail"
+                />
+              </a>
+            </li>
+          </ul>
+        </section>
+      </div>
+      <div class="sidebar">
+        <section class="mypage">
+          <h3>마이페이지</h3>
+          <div class="profile-info">
+            <img
+              src="/api/placeholder/150/150"
+              alt="프로필 사진"
+              class="profile-image"
+            />
+            <p class="profile-name">사용자 이름</p>
+            <p class="profile-description">간단한 자기 소개를 입력하세요.</p>
+          </div>
+          <div class="blog-stats">
+            <p>내가 쓴 글</p>
+            <p>내가 쓴 댓글</p>
+            <p>활동알림</p>
+            <p>계정관리</p>
+            <p>로그아웃</p>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2024 김가연 All rights reserved.</p>
+    </footer>
+  </body>
+  <script src="index.js"></script>
+</html>

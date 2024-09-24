@@ -19,9 +19,6 @@ export class Comment {
   @Column("text")
   content: string;
 
-  // @Column()
-  // name: string;
-
   //사용자 정보(userId)는 외부 서비스에서 관리되며, 이 서비스에서는 ID만 참조합니다.
   @Column()
   userId: string;
