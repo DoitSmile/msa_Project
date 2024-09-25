@@ -6,43 +6,47 @@
     <title>진대- 게시글목록</title>
     <link rel="stylesheet" href="post_list.css" />
   </head>
-  <header>
-    <div class="header-content">
-      <div class="logo-category">
-        <h1><a href="index.html">TalkTime</a></h1>
-        <nav>
-          <ul>
-            <li><a href="#">홈</a></li>
-            <li><a href="#">보관함</a></li>
-            <li class="category">
-              <button class="category-btn">카테고리</button>
-              <div class="category-content">
-                <a href="#">자유</a>
-                <a href="#">친목</a>
-                <a href="#">연애</a>
-                <a href="#">게임</a>
-                <a href="#">스터디모집</a>
-              </div>
-            </li>
-          </ul>
-        </nav>
-      </div>
-      <form action="#" method="get" class="search-form">
-        <input
-          type="search"
-          name="q"
-          placeholder="검색어를 입력하세요"
-          required
-        />
-        <button type="submit">검색</button>
-      </form>
-    </div>
-  </header>
 
   <body>
+    <header>
+      <div class="header-content">
+        <div class="logo-category">
+          <h1><a href="index.html">TalkTime</a></h1>
+          <nav>
+            <ul>
+              <li><a href="#">홈</a></li>
+              <li><a href="#">보관함</a></li>
+              <li class="category">
+                <button class="category-btn">카테고리</button>
+                <div class="category-content">
+                  <a href="#">자유</a>
+                  <a href="#">친목</a>
+                  <a href="#">연애</a>
+                  <a href="#">게임</a>
+                  <a href="#">스터디모집</a>
+                </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <form action="#" method="get" class="search-form">
+          <input
+            type="search"
+            name="q"
+            placeholder="검색어를 입력하세요"
+            required
+          />
+          <button type="submit">검색</button>
+        </form>
+      </div>
+    </header>
     <div class="container">
       <div class="list-body">
-        <h1>자유 게시판</h1>
+        <div class="board-header">
+          <h1>자유 게시판</h1>
+          <a href="#" class="write-btn">글쓰기</a>
+        </div>
+
         <table class="board-table">
           <thead>
             <tr>
@@ -61,6 +65,7 @@
         </div>
       </div>
     </div>
+
     <script src="post_list.js"></script>
   </body>
   <footer>

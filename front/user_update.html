@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>진대 - 유저 계정 관리</title>
+    <link rel="stylesheet" href="user_update.css" />
+  </head>
+
+  <body>
+    <header>
+      <div class="header-content">
+        <div class="logo-category">
+          <h1><a href="index.html">TalkTime</a></h1>
+          <nav>
+            <ul>
+              <li><a href="#">홈</a></li>
+              <li><a href="#">보관함</a></li>
+              <li class="category">
+                <button class="category-btn">카테고리</button>
+                <div class="category-content">
+                  <a href="#">자유</a>
+                  <a href="#">친목</a>
+                  <a href="#">연애</a>
+                  <a href="#">게임</a>
+                  <a href="#">스터디모집</a>
+                </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <form action="#" method="get" class="search-form">
+          <input
+            type="search"
+            name="q"
+            placeholder="검색어를 입력하세요"
+            required
+          />
+          <button type="submit">검색</button>
+        </form>
+      </div>
+    </header>
+    <div class="detail-body">
+      <div class="container">
+        <h1>계정 관리</h1>
+        <div class="profile-pic-container">
+          <img
+            src="/api/placeholder/150/150"
+            alt="프로필 사진"
+            class="profile-pic"
+            id="profile-pic"
+          />
+          <label for="profile-pic-input" class="profile-pic-upload">+</label>
+          <input
+            type="file"
+            id="profile-pic-input"
+            style="display: none"
+            accept="image/*"
+          />
+        </div>
+        <form id="account-form">
+          <div class="form-group">
+            <label for="nickname">닉네임</label>
+            <input type="text" id="nickname" name="nickname" value="길동이" />
+          </div>
+          <div class="form-group">
+            <label for="phone">전화번호</label>
+            <input type="tel" id="phone" name="phone" value="010-1234-5678" />
+          </div>
+          <div class="form-group">
+            <label for="email">이메일</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value="hong@example.com"
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">비밀번호 확인</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              placeholder="변경사항 저장을 위해 비밀번호를 입력하세요"
+            />
+          </div>
+          <div class="btn-group">
+            <div class="btn-pair">
+              <button type="button" class="btn btn-primary" id="save-changes">
+                변경사항 저장
+              </button>
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="change-password"
+              >
+                비밀번호 변경
+              </button>
+            </div>
+            <button type="button" class="btn btn-secondary" id="delete-account">
+              탈퇴
+            </button>
+          </div>
+        </form>
+        <div class="last-modified">
+          마지막 수정일: <span id="last-modified-date">2023-05-10</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="passwordChangeModal" class="modal">
+      <div class="modal-content">
+        <h2>비밀번호 변경</h2>
+        <div class="form-group">
+          <label for="current-password">현재 비밀번호</label>
+          <input type="password" id="current-password" required />
+        </div>
+        <div class="form-group">
+          <label for="new-password">새 비밀번호</label>
+          <input type="password" id="new-password" required />
+        </div>
+        <div class="form-group">
+          <label for="confirm-new-password">새 비밀번호 확인</label>
+          <input type="password" id="confirm-new-password" required />
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary"
+          id="confirm-password-change"
+        >
+          변경 확인
+        </button>
+      </div>
+    </div>
+
+    <div id="deleteAccountModal" class="modal">
+      <div class="modal-content">
+        <h2>계정 탈퇴</h2>
+        <p>정말로 탈퇴하시겠습니까? 이 작업은 취소할 수 없습니다.</p>
+        <div class="form-group">
+          <label for="delete-password">비밀번호 확인</label>
+          <input type="password" id="delete-password" required />
+        </div>
+        <button type="button" class="btn btn-primary" id="confirm-delete">
+          탈퇴 확인
+        </button>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2024 김가연 All rights reserved.</p>
+    </footer>
+  </body>
+
+  <script src="user_update.js"></script>
+</html>

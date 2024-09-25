@@ -102,6 +102,32 @@ nav ul li a,
   font-size: 14px;
 }
 
+/* UI 요소 hover 효과 */
+
+/* 카테고리 내용 링크 hover 효과  */
+.category-content a:hover {
+  background-color: #f0f0f0;
+  transition: background-color 0.3s ease;
+}
+
+/* 게시물 항목 hover 효과  */
+.post-item:hover {
+  background-color: #f5f5f5;
+  transition: background-color 0.3s ease;
+}
+
+/* 마이페이지 링크 hover 효과  */
+.blog-stats p:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* 전체적인 링크 hover 효과  */
+a:hover {
+  text-decoration: none;
+}
+
 /* 메인 레이아웃  */
 
 .container {

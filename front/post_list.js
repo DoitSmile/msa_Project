@@ -1,39 +1,54 @@
 const itemsPerPage = 20;
 let currentPage = 1;
 
-function renderPosts() {
+function renderPosts(isSpecialPage = false) {
+  // 1. DOM에서 게시물 목록을 표시할 요소를 가져옵니다.
   const boardList = document.getElementById("boardList");
+
+  // 2. 기존 내용을 지웁니다.
   boardList.innerHTML = "";
 
+  // 3. 현재 페이지에 표시할 게시물의 범위를 계산합니다.
   const start = (currentPage - 1) * itemsPerPage;
   const end = Math.min(start + itemsPerPage, posts.length);
+
+  // 4. 현재 페이지에 표시할 게시물만 선택합니다.
   const paginatedPosts = posts.slice(start, end);
 
+  // 5. 각 게시물에 대해 HTML 요소를 생성합니다.
   paginatedPosts.forEach((post) => {
     const tr = document.createElement("tr");
+
+    // 6. 게시물의 HTML 구조를 생성합니다.
     tr.innerHTML = `
-                <td class="title">
-                    <div class="title-wrapper">
-                        ${
-                          post.hasImage
-                            ? '<svg class="has-image" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 16L8.586 11.414C8.96106 11.0391 9.46967 10.8284 10 10.8284C10.5303 10.8284 11.0389 11.0391 11.414 11.414L16 16M14 14L15.586 12.414C15.9611 12.0391 16.4697 11.8284 17 11.8284C17.5303 11.8284 18.0389 12.0391 18.414 12.414L20 14M14 8H14.01M6 20H18C18.5304 20 19.0391 19.7893 19.4142 19.4142C19.7893 19.0391 20 18.5304 20 18V6C20 5.46957 19.7893 4.96086 19.4142 4.58579C19.0391 4.21071 18.5304 4 18 4H6C5.46957 4 4.96086 4.21071 4.58579 4.58579C4.21071 4.96086 4 5.46957 4 6V18C4 18.5304 4.21071 19.0391 4.58579 19.4142C4.96086 19.7893 5.46957 20 6 20Z" stroke="#888888" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-                            : ""
-                        }
-                        <a href="#post-${post.id}">${post.title}</a>
-                        ${
-                          post.comments > 0
-                            ? `<span class="comments">${post.comments}</span>`
-                            : ""
-                        }
-                    </div>
-                </td>
-                <td class="author">${post.author}</td>
-                <td class="date">${post.date}</td>
-                <td class="views">${post.views}</td>
-            `;
+      <td class="title">
+        <div class="title-wrapper">
+        ${
+          isSpecialPage
+            ? `<a href="post_list.html?type=${getBoardTypeKey(
+                post.boardType
+              )}" class="board-type">${post.boardType}</a>`
+            : ""
+        }
+          <a href="#post-${post.id}">${post.title}</a>
+          ${
+            post.comments > 0
+              ? `<span class="comments">${post.comments}</span>`
+              : ""
+          }
+          ${post.hasImage ? '<svg class="has-image">...</svg>' : ""}
+        </div>
+      </td>
+      <td class="author">${post.author}</td>
+      <td class="date">${post.date}</td>
+      <td class="views">${post.views}</td>
+    `;
+
+    // 7. 생성한 요소를 DOM에 추가합니다.
     boardList.appendChild(tr);
   });
 
+  // 8. 페이지네이션을 렌더링합니다.
   renderPagination();
 }
 
@@ -69,6 +84,7 @@ const posts = [
     comments: 5,
     views: 120,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 2,
@@ -78,6 +94,7 @@ const posts = [
     comments: 3,
     views: 80,
     hasImage: false,
+    boardType: "친목게시판",
   },
   {
     id: 3,
@@ -87,6 +104,7 @@ const posts = [
     comments: 0,
     views: 50,
     hasImage: true,
+    boardType: "스터디게시판",
   },
   {
     id: 4,
@@ -96,6 +114,7 @@ const posts = [
     comments: 2,
     views: 90,
     hasImage: false,
+    boardType: "친목게시판",
   },
   {
     id: 5,
@@ -105,6 +124,7 @@ const posts = [
     comments: 7,
     views: 150,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 6,
@@ -114,6 +134,7 @@ const posts = [
     comments: 1,
     views: 70,
     hasImage: false,
+    boardType: "자유게시판",
   },
   {
     id: 7,
@@ -123,6 +144,7 @@ const posts = [
     comments: 4,
     views: 110,
     hasImage: true,
+    boardType: "친목게시판",
   },
   {
     id: 8,
@@ -132,6 +154,7 @@ const posts = [
     comments: 6,
     views: 130,
     hasImage: false,
+    boardType: "스터디게시판",
   },
   {
     id: 9,
@@ -141,6 +164,7 @@ const posts = [
     comments: 0,
     views: 40,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 10,
@@ -150,6 +174,7 @@ const posts = [
     comments: 8,
     views: 180,
     hasImage: false,
+    boardType: "친목게시판",
   },
   {
     id: 11,
@@ -159,6 +184,7 @@ const posts = [
     comments: 2,
     views: 95,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 12,
@@ -168,6 +194,7 @@ const posts = [
     comments: 3,
     views: 85,
     hasImage: false,
+    boardType: "자유게시판",
   },
   {
     id: 13,
@@ -177,6 +204,7 @@ const posts = [
     comments: 5,
     views: 140,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 14,
@@ -186,6 +214,7 @@ const posts = [
     comments: 1,
     views: 60,
     hasImage: false,
+    boardType: "자유게시판",
   },
   {
     id: 15,
@@ -195,6 +224,7 @@ const posts = [
     comments: 9,
     views: 200,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 16,
@@ -204,6 +234,7 @@ const posts = [
     comments: 2,
     views: 75,
     hasImage: false,
+    boardType: "자유게시판",
   },
   {
     id: 17,
@@ -213,6 +244,7 @@ const posts = [
     comments: 4,
     views: 100,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 18,
@@ -222,6 +254,7 @@ const posts = [
     comments: 7,
     views: 160,
     hasImage: false,
+    boardType: "게임게시판",
   },
   {
     id: 19,
@@ -231,6 +264,7 @@ const posts = [
     comments: 3,
     views: 90,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 20,
@@ -240,6 +274,7 @@ const posts = [
     comments: 6,
     views: 130,
     hasImage: false,
+    boardType: "자유게시판",
   },
   {
     id: 21,
@@ -249,6 +284,7 @@ const posts = [
     comments: 5,
     views: 110,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 22,
@@ -258,6 +294,7 @@ const posts = [
     comments: 8,
     views: 170,
     hasImage: false,
+    boardType: "친목게시판",
   },
   {
     id: 23,
@@ -267,6 +304,7 @@ const posts = [
     comments: 4,
     views: 95,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 24,
@@ -276,6 +314,7 @@ const posts = [
     comments: 1,
     views: 55,
     hasImage: false,
+    boardType: "자유게시판",
   },
   {
     id: 25,
@@ -285,6 +324,7 @@ const posts = [
     comments: 7,
     views: 145,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 26,
@@ -294,6 +334,7 @@ const posts = [
     comments: 2,
     views: 80,
     hasImage: false,
+    boardType: "스터디게시판",
   },
   {
     id: 27,
@@ -303,6 +344,7 @@ const posts = [
     comments: 0,
     views: 45,
     hasImage: true,
+    boardType: "친목게시판",
   },
   {
     id: 28,
@@ -312,6 +354,7 @@ const posts = [
     comments: 3,
     views: 100,
     hasImage: false,
+    boardType: "자유게시판",
   },
   {
     id: 29,
@@ -321,6 +364,7 @@ const posts = [
     comments: 6,
     views: 135,
     hasImage: true,
+    boardType: "자유게시판",
   },
   {
     id: 30,
@@ -330,8 +374,58 @@ const posts = [
     comments: 4,
     views: 105,
     hasImage: false,
+    boardType: "자유게시판",
   },
 ];
 
-// 초기 렌더링
-renderPosts();
+// URL 파라미터를 가져오는 함수
+function getUrlParameter(name) {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
+  var results = regex.exec(location.search);
+  return results === null
+    ? ""
+    : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+// boardType 문자열을 URL 파라미터에 맞는 키로 변환하는 함수
+function getBoardTypeKey(boardType) {
+  const lowerBoardType = boardType
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace("게시판", "");
+  for (const [key, value] of Object.entries(boardTypes)) {
+    if (
+      value.toLowerCase().replace(/\s+/g, "").replace("게시판", "") ===
+      lowerBoardType
+    ) {
+      return key;
+    }
+  }
+  return "free"; // 기본값으로 자유 게시판 반환
+}
+
+// 게시판 정보를 관리하는 객체
+const boardTypes = {
+  free: "자유 게시판",
+  friendship: "친목 게시판",
+  dating: "연애 게시판",
+  gaming: "게임 게시판",
+  study: "스터디모집 게시판",
+  popular: "인기 게시물",
+  recent: "최근 게시물",
+};
+
+// 페이지 로드 시 실행되는 함수
+window.onload = function () {
+  const postType = getUrlParameter("type");
+  const pageTitle = document.querySelector(".board-header h1");
+
+  if (boardTypes.hasOwnProperty(postType)) {
+    pageTitle.textContent = boardTypes[postType];
+    renderPosts(postType === "popular" || postType === "recent");
+  } else {
+    pageTitle.textContent = "게시판";
+    renderPosts(false);
+  }
+};

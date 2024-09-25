@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>진대 - 유저페이지</title>
+    <link rel="stylesheet" href="user_page.css" />
+  </head>
+  <body>
+    <header>
+      <div class="header-content">
+        <div class="logo-category">
+          <h1><a href="index.html">TalkTime</a></h1>
+          <nav>
+            <ul>
+              <li><a href="#">홈</a></li>
+              <li><a href="#">보관함</a></li>
+              <li class="category">
+                <button class="category-btn">카테고리</button>
+                <div class="category-content">
+                  <a href="#">자유</a>
+                  <a href="#">친목</a>
+                  <a href="#">연애</a>
+                  <a href="#">게임</a>
+                  <a href="#">스터디모집</a>
+                </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <form action="#" method="get" class="search-form">
+          <input
+            type="search"
+            name="q"
+            placeholder="검색어를 입력하세요"
+            required
+          />
+          <button type="submit">검색</button>
+        </form>
+      </div>
+    </header>
+    <div class="detail-body">
+      <div class="container">
+        <div class="profile-header">
+          <img
+            src="/api/placeholder/120/120"
+            alt="프로필 이미지"
+            class="profile-image"
+          />
+          <div class="profile-info">
+            <div class="profile-info-header">
+              <h1>김가연</h1>
+              <a href="/account-management" class="account-link">
+                <svg
+                  class="account-icon"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                  ></path>
+                </svg>
+                계정관리
+              </a>
+            </div>
+            <div class="profile-stats">
+              <div class="stat">가입일: 2023.09.15</div>
+              <div class="stat">
+                작성글: <span class="stat-highlight">42</span>
+              </div>
+              <div class="stat">
+                작성댓글: <span class="stat-highlight">128</span>
+              </div>
+            </div>
+            <!-- <div class="bio">안녕하세요. 조깅 좋아해요 :> 같이 뛰실 분 !</div> -->
+          </div>
+        </div>
+
+        <nav class="content-nav">
+          <ul>
+            <li class="active" data-tab="posts">내가 쓴 글</li>
+            <li data-tab="comments">내가 쓴 댓글</li>
+          </ul>
+        </nav>
+
+        <div class="content-area">
+          <div id="posts" class="content-tab">
+            <!-- 게시글 목록은 JavaScript로 동적 생성됩니다 -->
+          </div>
+
+          <div id="comments" class="content-tab" style="display: none">
+            <!-- 댓글 목록은 JavaScript로 동적 생성됩니다 -->
+          </div>
+        </div>
+
+        <div class="pagination">
+          <!-- 페이지네이션 버튼은 JavaScript로 동적 생성됩니다 -->
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2024 김가연 All rights reserved.</p>
+    </footer>
+  </body>
+  <script src="user_page.js"></script>
+</html>
