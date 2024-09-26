@@ -3,7 +3,7 @@ import {
   DeleteDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  OneToOne,
+  OneToMany,
 } from "typeorm";
 import { Like } from "../post/post-like.entity";
 
@@ -24,8 +24,8 @@ export class User {
   @Column()
   password: string;
 
-  @OneToOne(() => Like, (like) => like.user)
-  like: Like;
+  @OneToMany(() => Like, (like) => like.user)
+  like: Like[];
 
   //직접 구현했을 때와 다르게, 데이터를 조회할때 조건을 주지 않아도 삭제 되지 않은 데이터만 조회됨
   @DeleteDateColumn()

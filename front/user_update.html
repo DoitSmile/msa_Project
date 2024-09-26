@@ -1,10 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>진대 - 유저 계정 관리</title>
     <link rel="stylesheet" href="user_update.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
   </head>
 
   <body>
@@ -19,11 +24,11 @@
               <li class="category">
                 <button class="category-btn">카테고리</button>
                 <div class="category-content">
-                  <a href="#">자유</a>
-                  <a href="#">친목</a>
-                  <a href="#">연애</a>
-                  <a href="#">게임</a>
-                  <a href="#">스터디모집</a>
+                  <a href="post_list.html?type=free">자유</a>
+                  <a href="post_list.html?type=friendship">친목</a>
+                  <a href="post_list.html?type=dating">연애</a>
+                  <a href="post_list.html?type=gaming">게임</a>
+                  <a href="post_list.html?type=study">스터디모집</a>
                 </div>
               </li>
             </ul>
@@ -145,6 +150,17 @@
         <button type="button" class="btn btn-primary" id="confirm-delete">
           탈퇴 확인
         </button>
+      </div>
+    </div>
+
+    <div id="cropModal" class="modal">
+      <div class="modal-content">
+        <h2>프로필 사진 조정</h2>
+        <div>
+          <img id="cropImage" src="" alt="이미지 크롭" />
+        </div>
+        <button id="cropButton" class="btn btn-primary">저장</button>
+        <button id="cancelCropButton" class="btn btn-secondary">취소</button>
       </div>
     </div>
 

@@ -21,6 +21,13 @@ window.onclick = function (event) {
   if (event.target == deleteAccountModal) {
     deleteAccountModal.style.display = "none";
   }
+  if (event.target == cropModal) {
+    cropModal.style.display = "none";
+    if (cropper) {
+      cropper.destroy();
+      cropper = null;
+    }
+  }
 };
 
 function showNotification(message) {
@@ -32,6 +39,8 @@ function updateLastModifiedDate() {
   lastModifiedDate.textContent = now.toISOString().split("T")[0];
 }
 
+let cropper;
+
 document
   .getElementById("profile-pic-input")
   .addEventListener("change", function (e) {
@@ -39,10 +48,42 @@ document
     if (file) {
       const reader = new FileReader();
       reader.onload = function (e) {
-        document.getElementById("profile-pic").src = e.target.result;
+        document.getElementById("cropImage").src = e.target.result;
+        document.getElementById("cropModal").style.display = "block";
+
+        if (cropper) {
+          cropper.destroy();
+        }
+
+        cropper = new Cropper(document.getElementById("cropImage"), {
+          aspectRatio: 1,
+          viewMode: 1,
+          minCropBoxWidth: 150,
+          minCropBoxHeight: 150,
+        });
       };
       reader.readAsDataURL(file);
     }
+  });
+
+document.getElementById("cropButton").addEventListener("click", function () {
+  const croppedCanvas = cropper.getCroppedCanvas({
+    width: 150,
+    height: 150,
+  });
+
+  document.getElementById("profile-pic").src = croppedCanvas.toDataURL();
+  document.getElementById("cropModal").style.display = "none";
+  cropper.destroy();
+  cropper = null;
+});
+
+document
+  .getElementById("cancelCropButton")
+  .addEventListener("click", function () {
+    document.getElementById("cropModal").style.display = "none";
+    cropper.destroy();
+    cropper = null;
   });
 
 function saveChanges() {

@@ -232,3 +232,14 @@ footer {
   border-top: 1px solid #eee;
   color: #777;
 }
+
+/* 이미지 크롭 관련 스타일 */
+#cropImage {
+  max-width: 100%;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.modal-content {
+  max-width: 500px;
+}

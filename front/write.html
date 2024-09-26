@@ -5,30 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>진대 - 게시글 작성</title>
     <link rel="stylesheet" href="write.css" />
+    <!-- Cropper.js 라이브러리 스타일 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css"
+    />
+    <!-- Font Awesome 아이콘 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+    />
   </head>
 
   <body>
+    <!-- 헤더 영역 -->
     <header>
       <div class="header-content">
         <div class="logo-category">
           <h1><a href="index.html">TalkTime</a></h1>
+          <!-- 네비게이션 메뉴 -->
           <nav>
             <ul>
               <li><a href="#">홈</a></li>
               <li><a href="#">보관함</a></li>
               <li class="category">
                 <button class="category-btn">카테고리</button>
+                <!-- 카테고리 드롭다운 메뉴 -->
                 <div class="category-content">
-                  <a href="#">자유</a>
-                  <a href="#">친목</a>
-                  <a href="#">연애</a>
-                  <a href="#">게임</a>
-                  <a href="#">스터디모집</a>
+                  <a href="post_list.html?type=free">자유</a>
+                  <a href="post_list.html?type=friendship">친목</a>
+                  <a href="post_list.html?type=dating">연애</a>
+                  <a href="post_list.html?type=gaming">게임</a>
+                  <a href="post_list.html?type=study">스터디모집</a>
                 </div>
               </li>
             </ul>
           </nav>
         </div>
+        <!-- 검색 폼 -->
         <form action="#" method="get" class="search-form">
           <input
             type="search"
@@ -40,10 +54,14 @@
         </form>
       </div>
     </header>
+
+    <!-- 메인 컨텐츠 영역 -->
     <div class="container">
       <form action="#" method="post" enctype="multipart/form-data">
+        <!-- 글 작성 헤더 -->
         <div class="write-header">
           <div class="select-wrapper">
+            <!-- 게시판 선택 드롭다운 -->
             <select name="board" id="boardSelect" required class="placeholder">
               <option value="" disabled selected hidden>게시판 선택</option>
               <option value="free">자유</option>
@@ -52,6 +70,7 @@
               <option value="review">게임</option>
               <option value="notice">스터디모집</option>
             </select>
+            <!-- 제목 입력 필드 -->
             <input
               type="text"
               name="title"
@@ -60,10 +79,29 @@
             />
           </div>
         </div>
+        <!-- 글 작성 본문 -->
         <div class="write-body">
-          <textarea
-            name="content"
-            placeholder="내용을 입력해 주세요. 
+          <!-- 에디터 툴바 -->
+          <div class="editor-toolbar">
+            <button type="button" id="boldBtn">
+              <i class="fas fa-bold"></i>
+            </button>
+            <button type="button" id="italicBtn">
+              <i class="fas fa-italic"></i>
+            </button>
+            <button type="button" id="underlineBtn">
+              <i class="fas fa-underline"></i>
+            </button>
+            <button type="button" id="imageBtn">
+              <i class="fas fa-image"></i>
+            </button>
+          </div>
+          <!-- 리치 텍스트 에디터 -->
+          <div
+            id="editor"
+            contenteditable="true"
+            class="editor-content"
+            data-placeholder="내용을 입력해 주세요. 
 
 게시글 작성 시 주의사항:
 1. 타인의 권리를 침해하거나 명예를 훼손하는 내용
@@ -71,25 +109,42 @@
 3. 범죄행위와 관련되거나 법령을 위반하는 내용
 4. 영리목적의 광고성 내용
 5. 개인정보 노출 및 거래 관련 내용
+
 위와 같은 내용이 포함되지 않도록 주의하여 작성해 주세요."
-            required
-          ></textarea>
+          ></div>
+          <!-- 이미지 업로드를 위한 숨겨진 input -->
+          <input
+            type="file"
+            id="imageUpload"
+            accept="image/*"
+            style="display: none"
+          />
         </div>
+        <!-- 글 작성 푸터 -->
         <div class="write-footer">
-          <div class="additional-options">
-            <label class="upload-btn">
-              <input type="file" name="image" accept="image/*" multiple />
-              <i class="fas fa-image"></i> 사진첨부
-            </label>
-          </div>
           <button type="submit" class="submit-btn">등록</button>
         </div>
       </form>
     </div>
 
+    <!-- 이미지 크롭을 위한 모달 -->
+    <div id="cropModal" class="modal">
+      <div class="modal-content">
+        <h2>이미지 크기 조절</h2>
+        <div>
+          <img id="cropImage" src="" alt="이미지 크롭" />
+        </div>
+        <button id="cropButton" class="btn btn-primary">저장</button>
+        <button id="cancelCropButton" class="btn btn-secondary">취소</button>
+      </div>
+    </div>
+
+    <!-- 푸터 -->
     <footer>
       <p>&copy; 2024 김가연 All rights reserved.</p>
     </footer>
   </body>
+  <!-- Cropper.js 라이브러리 스크립트 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
   <script src="write.js"></script>
 </html>

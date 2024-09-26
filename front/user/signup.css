@@ -200,7 +200,7 @@ a:hover {
   margin-bottom: 1rem;
 }
 .input-group input {
-  width: 100%;
+  width: 94%;
   padding: 0.8rem;
   border: 2px solid var(--border-color);
   border-radius: 8px;

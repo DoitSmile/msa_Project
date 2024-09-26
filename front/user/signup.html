@@ -92,7 +92,7 @@
 
           <div class="input-group input-group-button">
             <input
-              type="tel"
+              type="text"
               id="phone"
               name="phone"
               required
@@ -104,6 +104,7 @@
               type="button"
               id="sendVerification"
               class="verify-button"
+              onclick="sendToken()"
             >
               인증번호 전송
             </button>
@@ -120,6 +121,7 @@
             <label for="verificationCode">인증번호</label>
             <button
               class="sign_button"
+              onclick="tokenCheck()"
               type="button"
               id="verifyCode"
               class="verify-button"
@@ -146,5 +148,6 @@
       <p>&copy; 2024 김가연 All rights reserved.</p>
     </footer>
   </body>
+  <script type="text/javascript" src="phone.js" defer></script>
   <script src="signup.js"></script>
 </html>

@@ -5,6 +5,7 @@ import { Post } from '@shared/entites/post/post.entity';
 import { Comment } from '@shared/entites/post/post-comment.entity';
 import { PostTag } from '@shared/entites/post/post-tag.entity';
 import { Category } from '@shared/entites/post/post-category.entity';
+import { Like } from '@shared/entites/post/post-like.entity';
 import { PostController } from './apis/post.controller';
 import { PostService } from './apis/post.service';
 
@@ -19,11 +20,11 @@ import { PostService } from './apis/post.service';
             password: process.env.DATABASE_PASSWORD,
             database: process.env.DATABASE_DATABASE, // env파일에서 수정
             // entities: [__dirname + '/apis/**/*.entity.*'], // 수정
-            entities: [Post, Comment, PostTag, Category],
+            entities: [Post, Comment, PostTag, Category, Like],
             synchronize: true,
             logging: true,
         }),
-        TypeOrmModule.forFeature([Post, Comment, PostTag, Category]),
+        TypeOrmModule.forFeature([Post, Comment, PostTag, Category, Like]),
     ],
     controllers: [PostController],
     providers: [PostService],
