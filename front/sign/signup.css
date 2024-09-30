@@ -127,7 +127,7 @@ a:hover {
   --accent-color: #333333;
   --text-color: #333333;
   --border-color: #cccccc;
-  --error-color: #ff3b30;
+  --failure-color: #ff3b30;
   --success-color: #34c759;
   --disabled-color: #999999;
 }
@@ -258,8 +258,11 @@ a:hover {
   margin-top: -0.5rem;
   margin-bottom: 0.5rem;
 }
-.error-message {
-  color: var(--error-color);
+.failure-message {
+  color: var(--failure-color);
+}
+.failure-message2 {
+  color: var(--failure-color);
 }
 .success-message {
   color: var(--success-color);
@@ -285,4 +288,8 @@ footer {
   margin-top: 2rem;
   border-top: 1px solid #eee;
   color: #777;
+}
+
+.hide {
+  display: none;
 }

@@ -25,6 +25,7 @@ export class UserController {
     // API에 넘겨줄 데이터 값이 있다면, 두 번째 인자로 정할 수 있습니다. 넘겨줄 데이터 값이 없을 경우 빈 객체`{}`로 작성합니다.
   }
 
+  
   // 회원조회
   @UseGuards(AuthGuard('access')) // UseGuards- > 로그인을 한 유저면 api 실행
   @Post('/user/fetch')
@@ -37,4 +38,21 @@ export class UserController {
       { id: req.user.id },
     );
   }
+
+
+  // // 핸드폰 인증번호 발송 api
+  // @Post('/user/sendPhone')
+  // async sendPhone(@Body('qqq') qqq: string, @Res() res): Promise<void> {
+  //   const myphone = qqq;
+  //   const result = await this.authService.sendPhone(myphone);
+  //   res.send(result);
+  // }
+
+  // // 핸드폰 인증번호 확인 로직 api
+  // @Post('/user/checkPhone')
+  // async checkValidPhone(@Body('qqq') qqq: string, @Res() res): Promise<void> {
+  //   const in_num = qqq;
+  //   const result = await this.authService.checkValidPhone(in_num);
+  //   res.send(result);
+  // }
 }

@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>진대-회원가입</title>
     <link rel="stylesheet" href="signup.css" />
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   </head>
+
   <body>
     <header>
       <div class="header-content">
@@ -46,18 +48,6 @@
           <div class="input-group">
             <input
               type="text"
-              id="username"
-              name="username"
-              required
-              placeholder="아이디"
-            />
-            <label for="username">아이디</label>
-          </div>
-          <div id="username-message" class="message"></div>
-
-          <div class="input-group">
-            <input
-              type="text"
               id="nickname"
               name="nickname"
               required
@@ -65,6 +55,26 @@
             />
             <label for="nickname">닉네임</label>
           </div>
+          <div class="input-group">
+            <input
+              type="text"
+              id="email"
+              name="email"
+              required
+              placeholder="이메일"
+            />
+            <label for="email">이메일 (로그인시 사용) </label>
+          </div>
+          <div class="message success-message hide">
+            사용할 수 있는 이메일입니다.
+          </div>
+          <div class="message failure-message hide">
+            이메일은 4~12글자이어야 합니다.
+          </div>
+          <div class="message failure-message2 hide">
+            영어 또는 숫자만 가능합니다.
+          </div>
+
           <div id="nickname-message" class="message"></div>
 
           <div class="input-group">
@@ -99,36 +109,36 @@
               placeholder="핸드폰 번호"
             />
             <label for="phone">핸드폰 번호</label>
-            <button
-              class="sign_button"
-              type="button"
-              id="sendVerification"
-              class="verify-button"
-              onclick="sendToken()"
-            >
-              인증번호 전송
-            </button>
+            <!-- <button
+                class="sign_button"
+                type="button"
+                id="sendVerification"
+                class="verify-button"
+                onclick="sendToken()"
+              >
+                인증번호 전송
+              </button> -->
           </div>
 
-          <div class="input-group input-group-button">
-            <input
-              type="text"
-              id="verificationCode"
-              name="verificationCode"
-              required
-              placeholder="인증번호"
-            />
-            <label for="verificationCode">인증번호</label>
-            <button
-              class="sign_button"
-              onclick="tokenCheck()"
-              type="button"
-              id="verifyCode"
-              class="verify-button"
-            >
-              인증 확인
-            </button>
-          </div>
+          <!-- <div class="input-group input-group-button">
+              <input
+                type="text"
+                id="verificationCode"
+                name="verificationCode"
+                required
+                placeholder="인증번호"
+              />
+              <label for="verificationCode">인증번호</label>
+              <button
+                class="sign_button"
+                onclick="tokenCheck()"
+                type="button"
+                id="verifyCode"
+                class="verify-button"
+              >
+                인증 확인
+              </button>
+            </div> -->
 
           <button type="submit" class="sign_button" id="signupButton" disabled>
             가입하기
@@ -143,11 +153,7 @@
         </button>
       </div>
     </div>
-
-    <footer>
-      <p>&copy; 2024 김가연 All rights reserved.</p>
-    </footer>
+    <script type="text/javascript" src="signup.js" defer></script>
+    <script type="text/javascript" src="id.js" defer></script>
   </body>
-  <script type="text/javascript" src="phone.js" defer></script>
-  <script src="signup.js"></script>
 </html>

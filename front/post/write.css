@@ -181,13 +181,18 @@ a:hover {
 /* 리치 텍스트 에디터 스타일 */
 .editor-content {
   min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
   border: 1px solid #ccc;
   padding: 10px;
   margin-bottom: 10px;
-  position: relative;
+  font-size: 16px; /* 기본 글꼴 크기를 16px로 설정 */
+  line-height: 1.6; /* 줄 간격을 조정하여 가독성 개선 */
 }
 
 .editor-toolbar {
+  display: flex;
+  align-items: center;
   margin-bottom: 10px;
 }
 
@@ -197,24 +202,47 @@ a:hover {
   font-size: 16px;
   margin-right: 10px;
   cursor: pointer;
+  padding: 5px;
 }
 
-.editor-toolbar button:hover {
-  color: #007bff;
+.editor-toolbar select {
+  margin-left: 0;
+  margin-right: 10px;
+  padding: 5px 20px 5px 5px;
+  font-size: 16px;
+  border: none;
+  background-color: transparent;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="%23000000" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0 center;
+  background-size: 20px;
 }
 
+/* 이미지 스타일 수정 */
 .editor-content img {
   max-width: 100%;
   height: auto;
   max-height: 300px;
+  border: 2px solid #000000;
+  padding: 2px;
+  transition: border-color 0.3s ease;
+}
+
+/* 선택되지 않은 이미지 스타일 */
+.editor-content img.not-selected {
+  border-color: transparent;
 }
 
 /* 플레이스홀더 스타일 */
 .editor-content:empty:not(:focus):before {
   content: attr(data-placeholder);
   color: #999;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 14px; /* 플레이스홀더 글꼴 크기도 16px로 설정 */
+  line-height: 1.6;
   white-space: pre-wrap;
 }
 
@@ -245,14 +273,6 @@ a:hover {
 select {
   padding: 5px;
   font-size: 16px;
-}
-
-select option:first-child {
-  color: gray;
-}
-
-select option:not(:first-child) {
-  color: black;
 }
 
 /* 푸터 스타일 */
@@ -308,22 +328,4 @@ footer {
 .btn-secondary {
   background-color: #f0f0f0;
   color: #333;
-}
-
-.editor-content {
-  min-height: 300px;
-  max-height: 500px; /* 최대 높이 설정 */
-  overflow-y: auto; /* 세로 스크롤 추가 */
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-bottom: 10px;
-}
-
-.editable-image {
-  transition: border 0.3s ease;
-}
-
-.editable-image.selected {
-  border: 2px solid #000000;
-  padding: 2px;
 }

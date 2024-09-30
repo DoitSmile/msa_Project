@@ -29,7 +29,7 @@ underlineBtn.addEventListener("click", () =>
 );
 imageBtn.addEventListener("click", () => imageUpload.click());
 
-/// 이미지 업로드 처리
+// 이미지 업로드 처리
 imageUpload.addEventListener("change", function (e) {
   const file = e.target.files[0];
   if (file) {
@@ -40,7 +40,6 @@ imageUpload.addEventListener("change", function (e) {
       img.style.maxWidth = "100%";
       img.style.height = "auto";
       img.style.cursor = "nwse-resize";
-      img.classList.add("editable-image");
       img.setAttribute("contenteditable", "false");
 
       // 현재 커서 위치에 이미지 삽입
@@ -53,29 +52,40 @@ imageUpload.addEventListener("change", function (e) {
         editor.appendChild(img);
       }
 
-      // 이미지 클릭 이벤트 리스너 추가
-      img.addEventListener("click", toggleImageBorder);
       // 이미지 리사이즈 이벤트 리스너 추가
       img.addEventListener("mousedown", initResize, false);
+
+      // 이미지 클릭 이벤트 리스너 추가
+      img.addEventListener("click", selectImage);
     };
     reader.readAsDataURL(file);
   }
 });
 
-// 이미지 테두리 토글 함수
-function toggleImageBorder(e) {
-  const images = editor.querySelectorAll(".editable-image");
-  images.forEach((img) => img.classList.remove("selected"));
-  e.target.classList.add("selected");
+// 이미지 선택 함수
+function selectImage(e) {
+  e.stopPropagation(); // 이벤트 버블링 방지
+  const images = editor.querySelectorAll("img");
+  images.forEach((img) => img.classList.add("not-selected"));
+  e.target.classList.remove("not-selected");
 }
 
-// 에디터 영역 외 클릭 시 이미지 테두리 제거
-document.addEventListener("click", function (e) {
-  if (!editor.contains(e.target)) {
-    const images = editor.querySelectorAll(".editable-image");
-    images.forEach((img) => img.classList.remove("selected"));
+// 에디터 영역 클릭 시 모든 이미지 테두리 제거
+editor.addEventListener("click", function (e) {
+  if (e.target.tagName !== "IMG") {
+    const images = editor.querySelectorAll("img");
+    images.forEach((img) => img.classList.add("not-selected"));
   }
 });
+
+// 문서 전체 클릭 시 모든 이미지 테두리 제거
+document.addEventListener("click", function (e) {
+  if (!editor.contains(e.target)) {
+    const images = editor.querySelectorAll("img");
+    images.forEach((img) => img.classList.add("not-selected"));
+  }
+});
+
 // 이미지 리사이즈 관련 변수
 let isResizing = false;
 let currentImage = null;
@@ -130,7 +140,7 @@ managePlaceholder();
 
 // 폼 제출 시 placeholder 제거 및 내용 저장
 document.querySelector("form").addEventListener("submit", function (e) {
-  if (editor.classList.add("empty")) {
+  if (editor.classList.contains("empty")) {
     editor.textContent = "";
   }
   const content = editor.innerHTML;
@@ -140,3 +150,25 @@ document.querySelector("form").addEventListener("submit", function (e) {
   hiddenInput.value = content;
   this.appendChild(hiddenInput);
 });
+
+// 글씨 크기 조절 드롭다운 요소 선택
+const fontSizeSelect = document.getElementById("fontSizeSelect");
+
+// 글씨 크기 변경 이벤트 리스너
+fontSizeSelect.addEventListener("change", function () {
+  document.execCommand("fontSize", false, this.value);
+});
+
+// 에디터 내용 변경 시 현재 글씨 크기 반영
+editor.addEventListener("keyup", updateFontSizeSelect);
+editor.addEventListener("mouseup", updateFontSizeSelect);
+
+function updateFontSizeSelect() {
+  const fontSize = document.queryCommandValue("fontSize");
+  if (fontSize) {
+    fontSizeSelect.value = fontSize;
+  }
+}
+
+// 초기 글씨 크기 설정 (14px)
+document.execCommand("fontSize", false, "4");

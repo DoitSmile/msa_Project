@@ -10,7 +10,7 @@ export class Category {
   @Column()
   name: string;
 
-  //   ManyToOne의 경우 관계정의가 필수적이지만, OneToMany의 경우 생략이 가능하다.
+  //  ManyToOne의 경우 관계정의가 필수적이지만, OneToMany의 경우 생략이 가능하다.
   @OneToMany(() => Post, (post) => post.category)
   post: Post[];
 }
