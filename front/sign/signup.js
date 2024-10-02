@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const passwordInput = document.getElementById("password");
   const confirmPasswordInput = document.getElementById("confirmPassword");
   const passwordMessage = document.getElementById("password-message");
-
+  const nameInput = document.getElementById("name");
+  const email = document.getElementById("email");
   function checkFormValidity() {
     let isValid = true;
     inputs.forEach((input) => {
@@ -39,27 +40,25 @@ document.addEventListener("DOMContentLoaded", function () {
   passwordInput.addEventListener("input", checkPasswordMatch);
   confirmPasswordInput.addEventListener("input", checkPasswordMatch);
 
-  // 중복 확인
-  function checkDuplicate(field) {
-    const value = document.getElementById(field).value;
-    if (!value) {
-      showMessage(field, "", "");
-      return;
-    }
-    // 실제로는 서버에 중복 확인 요청을 보내야 합니다.
-    setTimeout(() => {
-      const isDuplicate = Math.random() < 0.5; // 50% 확률로 중복 여부 결정
-      if (isDuplicate) {
-        showMessage(
-          field,
-          "이미 사용 중입니다. 다른 값을 입력해주세요.",
-          "error"
-        );
-      } else {
-        showMessage(field, "사용 가능합니다.", "success");
-      }
-    }, 500);
-  }
+  // // 이메일 중복 확인
+  // function checkDuplicate(!email) {
+  //   if (!email) {
+  //     showMessage(field, "", "");
+  //     return;
+  //   }
+  //   // 실제로는 서버에 중복 확인 요청을 보내야 합니다.
+  //   setTimeout(() => {
+  //     if () {
+  //       showMessage(
+  //         field,
+  //         "이미 사용 중입니다. 다른 값을 입력해주세요.",
+  //         "error"
+  //       );
+  //     } else {
+  //       showMessage(field, "사용 가능합니다.", "success");
+  //     }
+  //   }, 500);
+  // }
 
   function showMessage(field, message, type) {
     const messageElement = document.getElementById(`${field}-message`);

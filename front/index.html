@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>진대</title>
     <link rel="stylesheet" href="index.css" />
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   </head>
   <body>
     <header>
@@ -43,7 +44,7 @@
     <div class="container">
       <div class="main-content">
         <section class="post-section featured-posts">
-          <h2><a href="post_list.html?type=popular">인기 게시물</a></h2>
+          <h2><a href="post/post_list.html?type=popular">인기 게시물</a></h2>
           <ul class="post-list">
             <li>
               <a href="#" class="post-item">
@@ -74,10 +75,10 @@
           </ul>
         </section>
         <section class="post-section recent-posts">
-          <h2><a href="post_list.html?type=recent">최근 게시물</a></h2>
+          <h2><a href="post/post_list.html?type=recent">최근 게시물</a></h2>
           <ul class="post-list">
             <li>
-              <a href="#" class="post-item">
+              <a href="" class="post-item">
                 <div class="post-info">
                   <h3>최근 게시물 1</h3>
                   <p>게시물 1의 간단한 설명이 여기에 들어갑니다.</p>
@@ -111,12 +112,7 @@
           <div id="loginContent" style="display: none">
             <form id="loginForm">
               <div class="input-group">
-                <input
-                  type="text"
-                  id="username"
-                  placeholder="아이디"
-                  required
-                />
+                <input type="text" id="email" placeholder="이메일" required />
               </div>
               <div class="input-group">
                 <input

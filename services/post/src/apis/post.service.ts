@@ -49,9 +49,15 @@ export class PostService {
     async deletePosts(postId) {
         return await this.postRepository.softRemove({ id: postId });
     }
-    // 전체 게시글 보기
+
+    // 전체 게시글 보기 (최신순)
     async fetchPosts() {
-        return await this.postRepository.find();
+        return await this.postRepository.find({
+            order: {
+                createdAt: 'DESC', // 생성일 기준 내림차순 정렬 (최신순)
+            },
+            take: 100, // 최대 100개의 게시글만 가져옴
+        });
     }
 
     // 카테고리별 게시글 보기
@@ -63,13 +69,20 @@ export class PostService {
     }
 
     // 내 게시글 보기
-    async fetchPost(Id) {
-        console.log('Id:', Id);
+    async fetchMyPost(userId) {
+        console.log('userId:', userId);
         return await this.postRepository.find({
-            where: { userId: Id },
+            where: { id: userId },
         });
     }
 
+    // 특정 게시글 보기
+    async fetchPost(postId) {
+        console.log('postId:', postId);
+        return await this.postRepository.find({
+            where: { id: postId },
+        });
+    }
     // ---------------------------- comment  ----------------------------
 
     // 댓글 생성

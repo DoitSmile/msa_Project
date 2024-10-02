@@ -3,17 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <title>진대 - 게시판 상세</title>
-    <link rel="stylesheet" href="post_detail.css" />
+    <link rel="stylesheet" href="post_view.css" />
   </head>
   <body>
     <header>
       <div class="header-content">
         <div class="logo-category">
-          <h1><a href="index.html">TalkTime</a></h1>
+          <h1><a href="/msa_Project/front/index.html">TalkTime</a></h1>
           <nav>
             <ul>
-              <li><a href="#">홈</a></li>
+              <li><a href="/msa_Project/front/index.html">홈</a></li>
               <li><a href="#">보관함</a></li>
               <li class="category">
                 <button class="category-btn">카테고리</button>
@@ -43,7 +44,7 @@
       <div class="container">
         <div class="post-header">
           <a href="/category/자유" class="category-link">자유</a>
-          <h1 class="post-title">오늘 낮잠을 너무 잤네요</h1>
+          <h1 id="post-title" class="post-title">오늘 낮잠을 너무 잤네요</h1>
           <div class="post-info">
             작성자: <a href="/profile/김가연" class="user-link">김가연</a> |
             작성일: 2024-09-25 14:30
@@ -54,13 +55,15 @@
           </div>
         </div>
 
-        <div class="post-content">
+        <div id="post-content" class="post-content">
           <p>여기에 게시글 내용이 들어갑니다. 기분좋은 하루 되세요^^</p>
         </div>
 
         <div class="post-actions">
           <div class="post-stats">
-            조회수: 1,234 | 찜수: <span id="likeCount">56</span> | 댓글수: 10
+            조회수: <span id="post-views">1,234</span> | 찜수:
+            <span id="likeCount">56</span> | 댓글수:
+            <span id="comment-count">10</span>
           </div>
           <div
             class="heart-icon"
@@ -72,41 +75,8 @@
 
         <div class="comments">
           <h3>댓글</h3>
-          <div class="comment">
-            <img
-              src="/api/placeholder/40/40"
-              alt="user1"
-              class="comment-avatar"
-            />
-            <div class="comment-content">
-              <div class="comment-header">
-                <a href="/profile/사용자1" class="user-link-comment">허각</a>
-                <span class="comment-time">2024-09-25 15:00</span>
-              </div>
-              <p class="comment-text">ㅋㅋㅋ 저도 종종 깊게 잠들어요</p>
-              <div class="comment-actions">
-                <a href="#" onclick="editComment(1)">수정</a>
-                <a href="#" onclick="deleteComment(1)">삭제</a>
-              </div>
-            </div>
-          </div>
-          <div class="comment">
-            <img
-              src="/api/placeholder/40/40"
-              alt="user2"
-              class="comment-avatar"
-            />
-            <div class="comment-content">
-              <div class="comment-header">
-                <a href="/profile/사용자2" class="user-link-comment">사용자2</a>
-                <span class="comment-time">2024-09-25 16:30</span>
-              </div>
-              <p class="comment-text">저녁에 못 자겠군요.</p>
-              <div class="comment-actions">
-                <a href="#" onclick="editComment(2)">수정</a>
-                <a href="#" onclick="deleteComment(2)">삭제</a>
-              </div>
-            </div>
+          <div id="comments-container">
+            <!-- 댓글이 여기에 동적으로 추가됩니다 -->
           </div>
 
           <div class="comment-form">
@@ -135,5 +105,5 @@
       <p>&copy; 2024 김가연 All rights reserved.</p>
     </footer>
   </body>
-  <script src="post_detail.js"></script>
+  <script src="post_view.js"></script>
 </html>

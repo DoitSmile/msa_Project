@@ -26,7 +26,7 @@ import * as redisStore from 'cache-manager-redis-store'; // 추가
       password: process.env.DATABASE_PASSWORD,
       database: process.env.DATABASE_DATABASE, // env파일에서 수정
       // entities: [__dirname + '/apis/**/*.entity.*'], // 수정
-      entities: [__dirname + './shared/entites/user/*.entity.*'], //동적 import 사용
+      entities: [User], //동적 import 사용
       synchronize: true,
       logging: true,
     }),

@@ -1,4 +1,4 @@
-import { Body, Controller, Inject, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Inject, Post,Get,Delete, Put,Req, UseGuards,Param } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateCommentInput } from 'src/dto/postdto/create-comment.input-dto';
@@ -28,7 +28,7 @@ export class PostController {
 
   // 게시글 수정
   @UseGuards(AuthGuard('access'))
-  @Post('/post/update')
+  @Put('/post/update')
   updatePost(
     @Body('postId') postId: string,
     @Body('updatePostInput') updatePostInput: UpdatePostInput,
@@ -43,30 +43,38 @@ export class PostController {
 
   // 게시글 삭제
   @UseGuards(AuthGuard('access'))
-  @Post('/post/delete')
+  @Delete('/post/delete')
   deletePosts(@Body('postId') postId: string) {
     return this.clientPostService.send({ cmd: 'deletePost' }, { postId });
   }
 
   // 내 게시물 조회
   @UseGuards(AuthGuard('access'))
-  @Post('/post/fetch')
-  fetchPost(@Req() req) {
+  @Get('/post/user_fetch/:id')
+  fetchMyPost(@Req() req) {
     const userId = req.user.id;
     console.log('userId:', userId);
-    return this.clientPostService.send({ cmd: 'fetchPost' }, { userId });
+   
+    return this.clientPostService.send({ cmd: 'fetchMyPost' }, { userId });
   }
+
+    // 특정 게시물 조회
+    @Get('/post/fetch/:id')
+    fetchPost(@Param('id') postId:string) {
+      console.log('postId:', postId);
+      return this.clientPostService.send({ cmd: 'fetchPost' }, { postId });
+    }
 
   
   // 카테고리별 게시물 조회
-  @Post('/post/fetch/category')
+  @Get('/post/fetch/category')
   fetchCategoryPosts(categoryId) {
     return this.clientPostService.send({ cmd: 'fetchCategoryPosts' }, {categoryId});
   }
 
 
   // 전체 게시물 조회
-  @Post('/post/fetch/all')
+  @Get('/posts/fetch/all')
   fetchPosts() {
     return this.clientPostService.send({ cmd: 'fetchPosts' }, {});
   }
@@ -86,14 +94,14 @@ export class PostController {
   }
 
   // 댓글 조회
-  @Post('/post/comment/fetch')
+  @Get('/post/comment/fetch')
   fetchComment(@Body() postId) {
     console.log('postId:', postId);
     return this.clientPostService.send({ cmd: 'fetchComment' }, { postId });
   }
 
   // 댓글 수정
-  @Post('/post/comment/update')
+  @Put('/post/comment/update')
   updateComment(
     @Body('commentId') commentId: string,
     @Body('content') content: string,
@@ -105,7 +113,7 @@ export class PostController {
   }
 
   // 댓글 삭제
-  @Post('/post/comment/delete')
+  @Delete('/post/comment/delete')
   deleteComment(@Body('commentId') commentId: string) {
     return this.clientPostService.send({ cmd: 'deleteComment' }, { commentId });
   }

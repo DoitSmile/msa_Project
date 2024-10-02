@@ -35,7 +35,7 @@ export class UserService {
   // 회원가입
   async createUser(createUserInput): Promise<User> {
     console.log('service:', createUserInput);
-    const { email, nickname, phone, password } = createUserInput;
+    const { email, name, phone, password } = createUserInput;
     console.log('email:', email);
     const user = await this.findEmail({ email });
 
@@ -45,7 +45,7 @@ export class UserService {
     console.log(hashPassword);
     return await this.userRepository.save({
       email,
-      nickname,
+      name,
       phone,
       password: hashPassword,
     });

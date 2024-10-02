@@ -32,7 +32,14 @@ export class PostController {
         console.log('data:', data);
         return await this.postService.deletePosts(data.postId);
     }
-    // 내 게시물 조회
+    // 내게시물 조회
+    @MessagePattern({ cmd: 'fetchMyPost' })
+    async fetchMyPost(data) {
+        console.log('data:', data);
+        return await this.postService.fetchMyPost(data.userId);
+    }
+
+    // 특정 게시물 조회
     @MessagePattern({ cmd: 'fetchPost' })
     async fetchPost(data) {
         console.log('data:', data);
@@ -61,8 +68,8 @@ export class PostController {
             data.userId,
         );
     }
-    // 댓글 조회
 
+    // 댓글 조회
     @MessagePattern({ cmd: 'fetchComment' })
     async fetchComment(data) {
         console.log('data:', data);
