@@ -67,8 +67,9 @@ export class PostController {
 
   
   // 카테고리별 게시물 조회
-  @Get('/post/fetch/category')
-  fetchCategoryPosts(categoryId) {
+  @Get('/post/fetch/category/:categoryId')
+  fetchCategoryPosts(@Param() categoryId) {
+    console.log("categoryId:",categoryId)
     return this.clientPostService.send({ cmd: 'fetchCategoryPosts' }, {categoryId});
   }
 
@@ -79,7 +80,6 @@ export class PostController {
     return this.clientPostService.send({ cmd: 'fetchPosts' }, {});
   }
 
-  // 카테고리 생성 
 
   // ---------------------------- comment  ----------------------------
   // 댓글 생성

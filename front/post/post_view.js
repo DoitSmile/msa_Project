@@ -40,6 +40,7 @@ function fetchPostDetails(id) {
         throw new Error("게시글 데이터가 없습니다.");
       }
 
+      setElementText("category-link", post.category);
       setElementText("post-title", post.title);
       setElementText("post-content", post.content);
       setElementHTML(

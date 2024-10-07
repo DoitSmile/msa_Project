@@ -68,13 +68,20 @@
         <div class="write-header">
           <div class="select-wrapper">
             <!-- 게시판 선택 드롭다운 -->
-            <select name="board" id="boardSelect" required class="placeholder">
+            <select
+              name="categoryId"
+              id="categoryId"
+              required
+              class="placeholder"
+            >
               <option value="" disabled selected hidden>게시판 선택</option>
-              <option value="free">자유</option>
-              <option value="friend">친목</option>
-              <option value="qna">연애</option>
-              <option value="review">게임</option>
-              <option value="notice">스터디모집</option>
+              <option value="a39a5e4b-847d-11ef-84d2-0242ac120007">자유</option>
+              <option value="afaf3aaf-847d-11ef-84d2-0242ac120007">친목</option>
+              <option value="0dcf3371-7996-11ef-b2ad-0242ac120004">연애</option>
+              <option value="b7b56a55-847d-11ef-84d2-0242ac120007">게임</option>
+              <option value="b2e6f193-847d-11ef-84d2-0242ac120007">
+                스터디모집
+              </option>
             </select>
             <!-- 제목 입력 필드 -->
             <input
@@ -115,7 +122,7 @@
           </div>
           <!-- 리치 텍스트 에디터 -->
           <div
-            id="editor"
+            id="content"
             contenteditable="true"
             class="editor-content"
             data-placeholder="내용을 입력해 주세요. 
@@ -163,5 +170,6 @@
   </body>
   <!-- Cropper.js 라이브러리 스크립트 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-  <script src="write.js"></script>
+  <script type="module" src="/msa_Project/front/auth.js"></script>
+  <script type="module" src="write.js"></script>
 </html>

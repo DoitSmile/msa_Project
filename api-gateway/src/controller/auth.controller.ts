@@ -6,12 +6,14 @@ import {
   Req,
   Res,
   UseGuards,
+  UnauthorizedException, InternalServerErrorException
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 import { lastValueFrom } from 'rxjs';
 import { AuthLoginInput } from 'src/dto/authdto/auth-login.Input';
 import { AuthPhoneInput } from 'src/dto/authdto/check-phone.Input';
+
 
 @Controller()
 export class AuthController {
@@ -29,23 +31,31 @@ export class AuthController {
     @Res({ passthrough: true }) res,
     //passthrough 는 @Res데코레이터와 함께 쓰임,  NestJS의 자동 응답 처리 기능을 사용할 수 있게된다. 쓰지 않을 경우  res.send(), res.json() 등을 직접 호출해야 함
   ) {
-    const { refreshToken, accessToken } = await lastValueFrom(
-      // lastValueFrom: 마지막으로 나온 값을 잡아서 돌려줌
-      // 로그인 프로세스에서는 일반적으로 하나의 최종 결과(성공 또는 실패)만을 기대
-      // lastValueFrom은 이 최종 결과를 캡처하는데 이상적
-      this.clientAuthService.send({ cmd: 'login' }, { authLoginInput }),
-    );
+    try {
+      const { refreshToken, accessToken } = await lastValueFrom(
+        this.clientAuthService.send({ cmd: 'login' }, { authLoginInput }),
+      );
 
-    // 클라이언트한테 쿠키 전달
-    res
-      .header('Authorization', accessToken)
-      .cookie('refreshToken', refreshToken, {
-        // Set-Cookie 헤더에 저장
+      res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60, // 1주일 (7일 * 24시간 * 60분 * 60초 = 604,800초).
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
+        domain: 'localhost'
       });
-    return accessToken;
+
+      res.header('Authorization', `Bearer ${accessToken}`);
+
+      return { accessToken };
+    } catch (error) {
+      // 에러 처리
+      if (error instanceof UnauthorizedException) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
+      throw new InternalServerErrorException('Login failed');
+    }
   }
+  
+  
 
   // 로그아웃 api
   @UseGuards(AuthGuard('access'))

@@ -1,8 +1,4 @@
-import {
-    Injectable,
-    InternalServerErrorException,
-    NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from '@shared/entites/post/post.entity';
 import { Comment } from '@shared/entites/post/post-comment.entity';
@@ -16,8 +12,6 @@ export class PostService {
         private readonly postRepository: Repository<Post>,
         @InjectRepository(Comment)
         private readonly commentRepository: Repository<Comment>,
-        @InjectRepository(Category)
-        private readonly categoryRepository: Repository<Category>,
     ) {}
 
     // ---------------------------- post  ----------------------------
@@ -27,9 +21,9 @@ export class PostService {
         const { title, content, categoryId } = createPostInput;
 
         return await this.postRepository.save({
-            userId: userId,
+            userId,
             category: categoryId,
-            name: name,
+            name,
             title,
             content,
         });
@@ -62,9 +56,9 @@ export class PostService {
 
     // 카테고리별 게시글 보기
     async fetchCategoryPosts(categoryId) {
-        return await this.categoryRepository.find({
-            where: { id: categoryId },
-            relations: ['post'],
+        console.log('최종:', categoryId);
+        return await this.postRepository.find({
+            where: { category: categoryId },
         });
     }
 

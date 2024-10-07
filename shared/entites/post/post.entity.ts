@@ -34,7 +34,7 @@ export class Post {
   @Column()
   userId: string;
 
-  // @JoinColumn({ name: "categoryId" }) //칼럼명을 Id가 아닌 내가 원하는 대로 정하고 싶다면
+  @JoinColumn({ name: "categoryId" }) //칼럼명을 Id가 아닌 내가 원하는 대로 정하고 싶다면
   // @Column({ nullable: true })
   @ManyToOne(() => Category, (category) => category.post)
   category: Category;

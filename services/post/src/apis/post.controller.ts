@@ -55,6 +55,7 @@ export class PostController {
     // 카테고리별  게시글 조회
     @MessagePattern({ cmd: 'fetchCategoryPosts' })
     async fetchCategoryPosts(data) {
+        console.log('data', data);
         return await this.postService.fetchCategoryPosts(data.categoryId);
     }
 

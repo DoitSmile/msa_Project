@@ -1,20 +1,16 @@
-const axiosInstance = axios.create({
-  baseURL: "http://localhost:3000", // 실제 서버 URL
-  timeout: 5000, // 타임아웃 설정
-});
+// 전역 변수 선언
+let posts = []; // 게시물 목록을 저장할 배열
+let categories = new Set(); // 카테고리 정보를 저장할 Set
+const itemsPerPage = 20; // 한 페이지에 표시할 게시물 수
+let currentPage = 1; // 현재 페이지 번호
 
-// 전역 변수로 posts 선언
-let posts = [];
-const itemsPerPage = 20;
-let currentPage = 1;
-
+// 게시물 목록을 화면에 렌더링하는 함수
 function renderPosts(isSpecialPage = false) {
   const boardList = document.getElementById("boardList");
-  boardList.innerHTML = "";
+  boardList.innerHTML = ""; // 기존 목록 초기화
 
   const start = (currentPage - 1) * itemsPerPage;
   const end = Math.min(start + itemsPerPage, posts.length);
-
   const paginatedPosts = posts.slice(start, end);
 
   paginatedPosts.forEach((post) => {
@@ -24,12 +20,12 @@ function renderPosts(isSpecialPage = false) {
         <div class="title-wrapper">
         ${
           isSpecialPage
-            ? `<a href="post_list.html?type=${getBoardTypeKey(
-                post.boardType
-              )}" class="board-type">${post.boardType}</a>`
+            ? `<a href="post_list.html?type=${encodeURIComponent(
+                post.categoryId
+              )}" class="board-type">${post.categoryId}</a>`
             : ""
         }
-        <a href="post_view.html?id=${post.id}">${post.title}</a>
+        <a href="post_view.html?id=${post.id}">${post.title || "제목 없음"}</a>
           ${
             post.comments > 0
               ? `<span class="comments">${post.comments}</span>`
@@ -38,11 +34,14 @@ function renderPosts(isSpecialPage = false) {
           ${post.hasImage ? '<svg class="has-image">...</svg>' : ""}
         </div>
       </td>
-      <td class="author">${post.name}</td>
-      <td class="date">${new Date(post.createdAt).toLocaleDateString()}</td>
-      <td class="views">${post.views}</td>
+      <td class="author">${post.name || "익명"}</td>
+      <td class="date">${
+        post.createdAt
+          ? new Date(post.createdAt).toLocaleDateString()
+          : "날짜 없음"
+      }</td>
+      <td class="views">${post.views || 0}</td>
     `;
-    // 클릭 이벤트 추가
     tr.addEventListener("click", () => viewPost(post.id));
 
     boardList.appendChild(tr);
@@ -51,6 +50,7 @@ function renderPosts(isSpecialPage = false) {
   renderPagination();
 }
 
+// 페이지네이션을 렌더링하는 함수
 function renderPagination() {
   const pagination = document.getElementById("pagination");
   pagination.innerHTML = "";
@@ -73,19 +73,39 @@ function renderPagination() {
   }
 }
 
-function fetchPosts() {
-  axiosInstance
-    .get("/posts/fetch/all")
+// 게시물 목록을 서버에서 가져오는 함수
+function fetchPosts(categoryId = null) {
+  console.log("가져온 categoryId:", categoryId);
+  let url;
+
+  if (categoryId) {
+    // 카테고리별 조회 시 URL에 category를 직접 포함
+    url = `http://localhost:3000/post/fetch/category/${categoryId}`;
+  } else {
+    // 전체 게시물 조회
+    url = "http://localhost:3000/posts/fetch/all";
+  }
+
+  return axios
+    .get(url)
     .then(function (response) {
-      posts = response.data;
-      renderPosts();
+      console.log("서버 응답:", response.data);
+      posts = Array.isArray(response.data) ? response.data : [];
+      posts.forEach((post) => {
+        if (post.categoryId) {
+          categories.add(post.categoryId);
+        }
+      });
+      renderPosts(categoryId !== null);
     })
     .catch(function (error) {
       console.error("게시글 목록 조회 중 오류 발생:", error);
+      console.error("에러 상세 정보:", error.response || error);
       alert("게시글 목록을 불러오는데 실패했습니다.");
     });
 }
 
+// URL 파라미터를 가져오는 함수
 function getUrlParameter(name) {
   name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
   var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
@@ -95,41 +115,45 @@ function getUrlParameter(name) {
     : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-function getBoardTypeKey(boardType) {
-  const lowerBoardType = boardType
-    .toLowerCase()
-    .replace(/\s+/g, "")
-    .replace("게시판", "");
-  for (const [key, value] of Object.entries(boardTypes)) {
-    if (
-      value.toLowerCase().replace(/\s+/g, "").replace("게시판", "") ===
-      lowerBoardType
-    ) {
-      return key;
-    }
-  }
-  return "free"; // 기본값으로 자유 게시판 반환
-}
-
-const boardTypes = {
-  free: "자유 게시판",
-  friendship: "친목 게시판",
-  dating: "연애 게시판",
-  gaming: "게임 게시판",
-  study: "스터디모집 게시판",
-  popular: "인기 게시물",
-  recent: "최근 게시물",
-};
-
+// 페이지 로드 시 실행되는 함수
 window.onload = function () {
-  const postType = getUrlParameter("type");
+  const categoryId = getUrlParameter("type");
   const pageTitle = document.querySelector(".board-header h1");
 
-  if (boardTypes.hasOwnProperty(postType)) {
-    pageTitle.textContent = boardTypes[postType];
-    fetchPosts(postType);
+  if (categoryId) {
+    // 카테고리 ID에 해당하는 이름을 찾습니다.
+    const categoryName = getCategoryName(categoryId);
+    pageTitle.textContent = categoryName || "카테고리 게시판";
+    fetchPosts(categoryId);
   } else {
     pageTitle.textContent = "최신 게시판";
     fetchPosts();
   }
 };
+
+// 카테고리 ID에 해당하는 이름을 반환하는 함수
+function getCategoryName(categoryId) {
+  const categoryMap = {
+    "a39a5e4b-847d-11ef-84d2-0242ac120007": "자유 게시판",
+    "afaf3aaf-847d-11ef-84d2-0242ac120007": "친목 게시판",
+    "0dcf3371-7996-11ef-b2ad-0242ac120004": "연애 게시판",
+    "b7b56a55-847d-11ef-84d2-0242ac120007": "게임 게시판",
+    "b2e6f193-847d-11ef-84d2-0242ac120007": "스터디모집 게시판",
+  };
+  return categoryMap[categoryId] || null;
+}
+// 게시물 보기 함수
+function viewPost(postId) {
+  axios
+    .get(`http://localhost:3000/post/fetch/${postId}`)
+    .then((response) => {
+      // 여기서 게시물 데이터를 받아 처리합니다.
+      console.log(response.data);
+      // 실제로는 이 데이터를 사용하여 게시물 상세 페이지로 이동하거나 모달을 띄우는 등의 작업을 수행합니다.
+      window.location.href = `post_view.html?id=${postId}`;
+    })
+    .catch((error) => {
+      console.error("게시물 조회 중 오류 발생:", error);
+      alert("게시물을 불러오는데 실패했습니다.");
+    });
+}
