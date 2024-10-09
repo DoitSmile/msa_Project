@@ -45,6 +45,26 @@ axios.interceptors.response.use(
 );
 
 const AuthService = {
+  decodeToken: (token) => {
+    try {
+      const base64Url = token.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      return JSON.parse(window.atob(base64));
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
+  },
+
+  getCurrentUser: () => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return null;
+    const decodedToken = AuthService.decodeToken(token);
+    return decodedToken
+      ? { id: decodedToken.id, name: decodedToken.name }
+      : null;
+  },
+
   setToken: (token) => {
     localStorage.setItem("accessToken", token);
   },
@@ -82,16 +102,6 @@ const AuthService = {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("isLoggedIn");
     delete axios.defaults.headers.common["Authorization"];
-  },
-
-  getCurrentUser: async () => {
-    try {
-      const response = await axios.get("/auth/me");
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching current user:", error);
-      return null;
-    }
   },
 
   isAuthenticated: () => {

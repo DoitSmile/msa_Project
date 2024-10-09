@@ -60,7 +60,7 @@
       <div class="list-body">
         <div class="board-header">
           <h1>자유 게시판</h1>
-          <a href="write.html" class="write-btn">글쓰기</a>
+          <a href="#" class="write-btn" id="writePostButton">글쓰기</a>
         </div>
 
         <table class="board-table">
@@ -73,18 +73,19 @@
             </tr>
           </thead>
           <tbody id="boardList">
-            <!-- 게시글 목록은 JavaScript로 동적 생성됩니다 -->
+            <!-- 게시글 목록은 JavaScript로 동적 생성 -->
           </tbody>
         </table>
         <div class="pagination" id="pagination">
-          <!-- 페이지네이션은 JavaScript로 동적 생성됩니다 -->
+          <!-- 페이지네이션은 JavaScript로 동적 생성 -->
         </div>
       </div>
     </div>
 
-    <script src="post_list.js"></script>
+    <footer>
+      <p>&copy; 2024 김가연 All rights reserved.</p>
+    </footer>
+
+    <script type="module" src="post_list.js"></script>
   </body>
-  <footer>
-    <p>&copy; 2024 김가연 All rights reserved.</p>
-  </footer>
 </html>

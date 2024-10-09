@@ -52,8 +52,8 @@
             작성일: 2024-09-25 14:30
           </div>
           <div class="edit-delete-buttons">
-            <button onclick="editPost()">수정</button>
-            <button onclick="deletePost()">삭제</button>
+            <button onclick="PostManager.editPost()">수정</button>
+            <button onclick="PostManager.deletePost()">삭제</button>
           </div>
         </div>
 
@@ -69,7 +69,7 @@
           </div>
           <div
             class="heart-icon"
-            onclick="toggleLike(this)"
+            onclick="PostManager.toggleLike(this)"
             role="button"
             aria-label="찜하기"
           ></div>
@@ -83,7 +83,7 @@
 
           <div class="comment-form">
             <h4>댓글 작성</h4>
-            <form onsubmit="return addComment()">
+            <form>
               <div class="comment-input-container">
                 <textarea
                   id="commentText"
@@ -107,5 +107,5 @@
       <p>&copy; 2024 김가연 All rights reserved.</p>
     </footer>
   </body>
-  <script src="post_view.js"></script>
+  <script type="module" src="post_view.js"></script>
 </html>

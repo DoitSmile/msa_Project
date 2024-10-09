@@ -1,4 +1,4 @@
-import { Body, Controller, Inject, Post,Get,Delete, Put,Req, UseGuards,Param } from '@nestjs/common';
+import { Body, Controller, Inject, Post,Get,Delete, Query,Put,Req, UseGuards,Param } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateCommentInput } from 'src/dto/postdto/create-comment.input-dto';
@@ -87,16 +87,18 @@ export class PostController {
   @Post('/post/comment/create')
   createComment(@Body() createCommentInput: CreateCommentInput, @Req() req) {
     const userId = req.user.id;
+    const username = req.user.name;
+    console.log("댓글의 userId:",userId)
     return this.clientPostService.send(
       { cmd: 'createComment' },
-      { createCommentInput, userId },
+      { createCommentInput, username,userId },
     );
   }
 
   // 댓글 조회
-  @Get('/post/comment/fetch')
-  fetchComment(@Body() postId) {
-    console.log('postId:', postId);
+  @Get('/post/comment/fetch/:postId')
+  fetchComment(@Param() postId) {
+    console.log('댓글postId:', postId);
     return this.clientPostService.send({ cmd: 'fetchComment' }, { postId });
   }
 

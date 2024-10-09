@@ -66,6 +66,7 @@ export class PostController {
         console.log('data:', data);
         return await this.postService.createComment(
             data.createCommentInput,
+            data.username,
             data.userId,
         );
     }

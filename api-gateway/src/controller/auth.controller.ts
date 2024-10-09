@@ -3,6 +3,7 @@ import {
   Controller,
   Inject,
   Post,
+  Get,
   Req,
   Res,
   UseGuards,
@@ -100,4 +101,7 @@ export class AuthController {
       { authPhoneInput },
     );
   }
+
+
+  
 }

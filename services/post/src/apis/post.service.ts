@@ -26,6 +26,7 @@ export class PostService {
             name,
             title,
             content,
+            relations: ['category'],
         });
     }
 
@@ -51,6 +52,7 @@ export class PostService {
                 createdAt: 'DESC', // 생성일 기준 내림차순 정렬 (최신순)
             },
             take: 100, // 최대 100개의 게시글만 가져옴
+            relations: ['category'],
         });
     }
 
@@ -59,6 +61,11 @@ export class PostService {
         console.log('최종:', categoryId);
         return await this.postRepository.find({
             where: { category: categoryId },
+            order: {
+                createdAt: 'DESC', // 생성일 기준 내림차순 정렬 (최신순)
+            },
+            take: 100, // 최대 100개의 게시글만 가져옴
+            relations: ['category'],
         });
     }
 
@@ -75,12 +82,13 @@ export class PostService {
         console.log('postId:', postId);
         return await this.postRepository.find({
             where: { id: postId },
+            relations: ['category'],
         });
     }
     // ---------------------------- comment  ----------------------------
 
     // 댓글 생성
-    async createComment(createCommentInput, userId) {
+    async createComment(createCommentInput, username, userId) {
         const { postId, parentId, content } = createCommentInput;
 
         const post = await this.postRepository.findOne({
@@ -106,6 +114,7 @@ export class PostService {
 
         const comment = this.commentRepository.create({
             content,
+            username,
             userId,
             post,
             parent,

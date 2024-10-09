@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!AuthService.isAuthenticated()) {
         alert("로그인이 필요합니다.");
-        window.location.href = "/login";
+        window.location.href = "/msa_Project/front/index.html";
         return;
       }
 
@@ -51,9 +51,9 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("서버 응답:", response.data);
         alert("글이 성공적으로 등록되었습니다.");
         // 서버 응답에서 categoryId 추출
-        const { categoryId } = response.data;
+        const { category } = response.data;
         // 카테고리별 게시물 목록 페이지로 이동
-        window.location.href = `post_list.html?type=${categoryId}`;
+        window.location.href = `post_list.html?type=${category}`;
       } catch (error) {
         console.error("에러 발생:", error);
         if (error.response) {
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", function () {
             case 401:
               alert("인증이 만료되었습니다. 다시 로그인해주세요.");
               AuthService.logout();
-              window.location.href = "/login";
+              window.location.href = "/msa_Project/front/index.html";
               break;
             case 403:
               alert("글 작성 권한이 없습니다.");

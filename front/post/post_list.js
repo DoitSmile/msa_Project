@@ -1,3 +1,5 @@
+import { AuthService } from "/msa_Project/front/auth.js";
+
 // 전역 변수 선언
 let posts = []; // 게시물 목록을 저장할 배열
 let categories = new Set(); // 카테고리 정보를 저장할 Set
@@ -14,15 +16,16 @@ function renderPosts(isSpecialPage = false) {
   const paginatedPosts = posts.slice(start, end);
 
   paginatedPosts.forEach((post) => {
+    console.log("post:", post);
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td class="title">
         <div class="title-wrapper">
         ${
-          isSpecialPage
+          !isSpecialPage && post.category && post.category.name
             ? `<a href="post_list.html?type=${encodeURIComponent(
-                post.categoryId
-              )}" class="board-type">${post.categoryId}</a>`
+                post.category.categoryId
+              )}" class="board-type">${post.category.name}</a>`
             : ""
         }
         <a href="post_view.html?id=${post.id}">${post.title || "제목 없음"}</a>
@@ -74,7 +77,7 @@ function renderPagination() {
 }
 
 // 게시물 목록을 서버에서 가져오는 함수
-function fetchPosts(categoryId = null) {
+function fetchPosts(categoryId = null, isSpecialPage = false) {
   console.log("가져온 categoryId:", categoryId);
   let url;
 
@@ -92,11 +95,11 @@ function fetchPosts(categoryId = null) {
       console.log("서버 응답:", response.data);
       posts = Array.isArray(response.data) ? response.data : [];
       posts.forEach((post) => {
-        if (post.categoryId) {
-          categories.add(post.categoryId);
+        if (post.category && post.category.id) {
+          categories.add(post.category.id);
         }
       });
-      renderPosts(categoryId !== null);
+      renderPosts(isSpecialPage);
     })
     .catch(function (error) {
       console.error("게시글 목록 조회 중 오류 발생:", error);
@@ -115,6 +118,19 @@ function getUrlParameter(name) {
     : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
+// 글쓰기 버튼 클릭 처리 함수
+function handleWriteButtonClick(event) {
+  event.preventDefault(); // 기본 동작 방지
+  if (AuthService.isAuthenticated()) {
+    // 로그인 상태일 때 글쓰기 페이지로 이동
+    window.location.href = "write.html";
+  } else {
+    // 비로그인 상태일 때 경고 메시지 표시
+    alert("로그인이 필요한 서비스입니다.");
+    window.location.href = "/msa_Project/front/index.html";
+  }
+}
+
 // 페이지 로드 시 실행되는 함수
 window.onload = function () {
   const categoryId = getUrlParameter("type");
@@ -124,10 +140,16 @@ window.onload = function () {
     // 카테고리 ID에 해당하는 이름을 찾습니다.
     const categoryName = getCategoryName(categoryId);
     pageTitle.textContent = categoryName || "카테고리 게시판";
-    fetchPosts(categoryId);
+    fetchPosts(categoryId, true); // 특정 카테고리 페이지임을 나타냄
   } else {
-    pageTitle.textContent = "최신 게시판";
-    fetchPosts();
+    pageTitle.textContent = "최근 게시물";
+    fetchPosts(null, false); // 전체 게시판 나타냄
+  }
+
+  // 글쓰기 버튼에 이벤트 리스너 추가
+  const writeButton = document.getElementById("writePostButton");
+  if (writeButton) {
+    writeButton.addEventListener("click", handleWriteButtonClick);
   }
 };
 
@@ -142,6 +164,7 @@ function getCategoryName(categoryId) {
   };
   return categoryMap[categoryId] || null;
 }
+
 // 게시물 보기 함수
 function viewPost(postId) {
   axios
