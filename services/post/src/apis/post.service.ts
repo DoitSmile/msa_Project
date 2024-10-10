@@ -76,10 +76,12 @@ export class PostService {
     }
 
     // 내 게시글 보기
-    async fetchMyPost(userId) {
-        console.log('userId:', userId);
+    async fetchMyPost(userId: string) {
+        console.log('service 게시물 userId:', userId);
         return await this.postRepository.find({
-            where: { id: userId },
+            where: { userId: userId }, // userId로 변경
+            order: { createdAt: 'DESC' },
+            relations: ['category'],
         });
     }
 
@@ -140,6 +142,15 @@ export class PostService {
             // parent: null 이 조건은 최상위 댓글만을 선택하기 위한 것
             relations: ['replies', 'replies.replies'],
             order: { createdAt: 'DESC' }, //최신 댓글순으로 정렬
+        });
+    }
+
+    // 댓글 조회 (유저별)
+    async fetchUserComments(userId: string): Promise<Comment[]> {
+        return this.commentRepository.find({
+            where: { userId: userId },
+            order: { createdAt: 'DESC' },
+            relations: ['post'],
         });
     }
 

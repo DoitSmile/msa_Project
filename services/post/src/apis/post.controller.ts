@@ -77,6 +77,14 @@ export class PostController {
         console.log('data:', data);
         return await this.postService.fetchComment(data.postId);
     }
+
+    // 유저 댓글  조회
+    @MessagePattern({ cmd: 'fetchUserComments' })
+    async fetchUserComments(data) {
+        console.log('data:', data);
+        return await this.postService.fetchUserComments(data.userId);
+    }
+
     // 댓글 수정
     @MessagePattern({ cmd: 'updateComment' })
     async updateComment(data) {

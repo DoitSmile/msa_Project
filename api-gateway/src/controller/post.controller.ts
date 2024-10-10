@@ -52,12 +52,10 @@ export class PostController {
 
   // 내 게시물 조회
   @Get('/post/user_fetch/:id')
-  fetchMyPost(@Param('id') userId) {
-
-    console.log('userId:', userId);
-   
-    return this.clientPostService.send({ cmd: 'fetchMyPost' }, { userId });
-  }
+    async fetchMyPost(@Param('id') userId: string) {
+        console.log('게시물 userId:', userId);
+        return this.clientPostService.send({ cmd: 'fetchMyPost' }, { userId });
+    }
 
     // 특정 게시물 조회
     @Get('/post/fetch/:id')
@@ -81,6 +79,7 @@ export class PostController {
     return this.clientPostService.send({ cmd: 'fetchPosts' }, {});
   }
 
+  
 
   // ---------------------------- comment  ----------------------------
   // 댓글 생성
@@ -98,11 +97,20 @@ export class PostController {
 
   // 댓글 조회
   @Get('/post/comment/fetch/:postId')
-  fetchComment(@Param() postId) {
+  async fetchComment(@Param('postId') postId) {
     console.log('댓글postId:', postId);
-    return this.clientPostService.send({ cmd: 'fetchComment' }, { postId });
+    const result = await this.clientPostService.send({ cmd: 'fetchComment' }, { postId }).toPromise();
+    return Array.isArray(result) ? result : [];
   }
 
+ // 유저 댓글 조회
+  @Get('/post/comment/user/:userId')
+  async fetchUserComments(@Param('userId') userId: string) {
+      console.log('댓글 userId:', userId);
+      return this.clientPostService.send({ cmd: 'fetchUserComments' }, { userId });
+  }
+
+  
   // 댓글 수정
   @Put('/post/comment/update')
   updateComment(

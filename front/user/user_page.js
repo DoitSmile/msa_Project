@@ -36,17 +36,22 @@ const UserProfileManager = (function () {
     }
   }
 
-  // 게시글 데이터 로드
   async function loadPostData(userId) {
     try {
       const response = await axios.get(`/post/user_fetch/${userId}`);
-      const post = response.data;
-      console.log("가져온 게시글 데이터:", post);
-      setElementHTML(
-        "postCount",
-        `작성글: <span class="stat-highlight">${post.length}</span>`
-      );
-      renderItems(post, "posts-container");
+      const posts = response.data;
+      console.log("가져온 게시글 데이터:", posts);
+
+      if (Array.isArray(posts) && posts.length > 0) {
+        setElementHTML(
+          "postCount",
+          `작성글: <span class="stat-highlight">${posts.length}</span>`
+        );
+        renderItems(posts, "posts-container");
+      } else {
+        console.warn("게시글 데이터가 비어있거나 배열이 아닙니다.");
+        setElementHTML("posts-container", "<p>작성한 게시글이 없습니다.</p>");
+      }
     } catch (error) {
       console.error("게시글 로드 중 오류 발생:", error);
       setElementHTML(
@@ -56,17 +61,22 @@ const UserProfileManager = (function () {
     }
   }
 
-  // 댓글 데이터 로드
   async function loadCommentData(userId) {
     try {
-      const response = await axios.get(`/post/comment/fetch/${userId}`);
+      const response = await axios.get(`/post/comment/user/${userId}`);
       const comments = response.data;
       console.log("가져온 댓글 데이터:", comments);
-      setElementHTML(
-        "commentCount",
-        `작성댓글: <span class="stat-highlight">${comments.length}</span>`
-      );
-      renderItems(comments, "comments-container");
+
+      if (Array.isArray(comments) && comments.length > 0) {
+        setElementHTML(
+          "commentCount",
+          `작성댓글: <span class="stat-highlight">${comments.length}</span>`
+        );
+        renderItems(comments, "comments-container");
+      } else {
+        console.warn("댓글 데이터가 비어있거나 배열이 아닙니다.");
+        setElementHTML("comments-container", "<p>작성한 댓글이 없습니다.</p>");
+      }
     } catch (error) {
       console.error("댓글 로드 중 오류 발생:", error);
       setElementHTML(
@@ -107,9 +117,9 @@ const UserProfileManager = (function () {
       } else {
         itemElement.innerHTML = `
           <p class="comment-content">${item.content}</p>
-          <p class="post-title">댓글 단 글: <a href="post_detail.html?id=${
-            item.postId
-          }">${item.postTitle || "Unknown"}</a></p>
+          <p class="post-title">댓글 단 글: <a href="/msa_Project/front/post/post_view.html?id=${
+            item.post.id
+          }">${item.post.title || "Unknown"}</a></p>
           <p>${new Date(item.createdAt).toLocaleString()}</p>
         `;
       }
