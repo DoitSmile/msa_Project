@@ -1,7 +1,9 @@
-import { Body, Controller, Inject, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Inject, Post, Req,Param, UseGuards } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreateUserInput } from '../dto/userdto/create-user.input.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { UpdateUserInput } from 'src/dto/userdto/update-user.input.dto';
+import { UpdatePasswordInput } from 'src/dto/userdto/update-userpassword.input.dto';
 
 @Controller()
 export class UserController {
@@ -28,18 +30,57 @@ export class UserController {
   
   // 회원조회
   @UseGuards(AuthGuard('access')) // UseGuards- > 로그인을 한 유저면 api 실행
-  @Post('/user/fetch')
-  async fetchUser(@Req() req) {
-    const id = req.user.id;
-    console.log(' app / id:', id);
+  @Post('/user/fetch/:id')
+  async fetchUser(@Param("id") userId) {
+
     // user-service로 트래픽(데이터) 넘겨줌
     return await this.clientUserService.send(
       { cmd: 'fetchUser' },
-      { id: req.user.id },
+      { userId },
     );
   }
 
+    // 회원수정
+    @UseGuards(AuthGuard('access')) // UseGuards- > 로그인을 한 유저면 api 실행
+    @Post('/user/update/:id')
+    async updateUser(@Body() updateUserInput:UpdateUserInput, @Param("id") userId) {
 
+      console.log(' update app / id:', userId);
+      console.log("updateUserInput:",updateUserInput)
+      // user-service로 트래픽(데이터) 넘겨줌
+      return await this.clientUserService.send(
+        { cmd: 'updateUser' },
+        { userId ,updateUserInput },
+      );
+    }
+    
+    // 비밀번호 수정
+    @UseGuards(AuthGuard('access')) // UseGuards- > 로그인을 한 유저면 api 실행
+    @Post('/user/update/password/:id')
+    async updateUserPassword(@Body() updatePasswordInput:UpdatePasswordInput, @Param("id") userId) {
+
+      console.log(' updateUserPassword id:', userId);
+      console.log(" updatePasswordInput:",updatePasswordInput)
+      // user-service로 트래픽(데이터) 넘겨줌
+      return await this.clientUserService.send(
+        { cmd: 'updateUserPassword' },
+        { userId ,updatePasswordInput },
+      );
+    }
+
+  // 회원 탈퇴
+    @UseGuards(AuthGuard('access')) // UseGuards- > 로그인을 한 유저면 api 실행
+    @Post('/user/delete/:id')
+    async deleteUser(@Body() password, @Param("id") userId) {
+
+      console.log(' delete id:', userId);
+      console.log(" password:",password)
+      // user-service로 트래픽(데이터) 넘겨줌
+      return await this.clientUserService.send(
+        { cmd: 'deleteUser' },
+        { userId ,password },
+      );
+    }
   // // 핸드폰 인증번호 발송 api
   // @Post('/user/sendPhone')
   // async sendPhone(@Body('qqq') qqq: string, @Res() res): Promise<void> {

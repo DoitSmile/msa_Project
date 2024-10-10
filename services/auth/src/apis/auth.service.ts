@@ -56,7 +56,7 @@ export class AuthService {
     console.log('user.name', user.name);
     const test = this.jwtService.sign(
       { id: user.id, name: user.name }, //payload엔 보여줘도 되는 값만 입력
-      { secret: '나의비밀번호', expiresIn: '10m' },
+      { secret: '나의비밀번호', expiresIn: '50m' },
     ); // return 타입: 발급받은 토큰
 
     return test;

@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // DOM 요소들을 가져옵니다.
   const title = document.getElementById("title");
   const categoryId = document.getElementById("categoryId");
+  const categoryWrapper = document.querySelector(".select-wrapper");
   const editor = document.getElementById("content");
   const boldBtn = document.getElementById("boldBtn");
   const italicBtn = document.getElementById("italicBtn");
@@ -12,21 +13,72 @@ document.addEventListener("DOMContentLoaded", function () {
   const imageUpload = document.getElementById("imageUpload");
   const fontSizeSelect = document.getElementById("fontSizeSelect");
   const form = document.getElementById("postWriteForm");
-  // axios 인스턴스 생성 및 인터셉터 설정
-  // const axiosInstance = axios.create();
-  axios.interceptors.request.use(
-    (config) => {
-      const token = AuthService.getToken();
-      if (token) {
-        config.headers["Authorization"] = `Bearer ${token}`;
-      }
-      return config;
-    },
-    (error) => {
-      return Promise.reject(error);
-    }
-  );
+  const submitBtn = document.getElementById("submitBtn");
+  const pageTitle = document.getElementById("pageTitle");
 
+  let isEditMode = false;
+  let originalPostId = null;
+
+  // URL에서 postId 파라미터 확인
+  const urlParams = new URLSearchParams(window.location.search);
+  const postIdFromUrl = urlParams.get("postId");
+
+  if (postIdFromUrl) {
+    isEditMode = true;
+    originalPostId = postIdFromUrl;
+    if (pageTitle) pageTitle.textContent = "진대 - 게시글 수정";
+    if (submitBtn) submitBtn.textContent = "수정";
+    loadPostData(postIdFromUrl);
+
+    // 카테고리 선택란 제거 및 hidden input 추가
+    if (categoryWrapper && categoryId) {
+      const hiddenCategoryInput = document.createElement("input");
+      hiddenCategoryInput.type = "hidden";
+      hiddenCategoryInput.id = "hiddenCategoryId";
+      hiddenCategoryInput.name = "categoryId";
+      categoryWrapper.replaceChild(hiddenCategoryInput, categoryId);
+    }
+  }
+
+  // 기존 게시글 데이터 로드
+  async function loadPostData(postId) {
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/post/fetch/${postId}`
+      );
+      console.log("서버 응답:", response.data);
+
+      const post = response.data[0];
+      if (!post) {
+        throw new Error("게시글 데이터가 없습니다.");
+      }
+
+      if (title) title.value = post.title;
+      if (editor) editor.innerHTML = post.content;
+
+      // 카테고리 정보를 hidden input에 설정
+      const hiddenCategoryInput = document.getElementById("hiddenCategoryId");
+      if (hiddenCategoryInput && post.category) {
+        hiddenCategoryInput.value = post.category.categoryId;
+      }
+
+      // hidden input으로 postId 추가
+      let postIdInput = document.getElementById("postIdInput");
+      if (!postIdInput) {
+        postIdInput = document.createElement("input");
+        postIdInput.type = "hidden";
+        postIdInput.id = "postIdInput";
+        postIdInput.name = "postId";
+        form.appendChild(postIdInput);
+      }
+      postIdInput.value = postId;
+    } catch (error) {
+      console.error("게시글 로드 중 오류 발생:", error);
+      alert("게시글을 불러오는데 실패했습니다. 오류: " + error.message);
+    }
+  }
+
+  // 폼 제출 이벤트 리스너
   if (form) {
     form.addEventListener("submit", async function (event) {
       event.preventDefault();
@@ -39,47 +91,65 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const formData = new FormData(this);
       formData.append("content", editor.innerHTML);
-      const createPostInput = Object.fromEntries(formData.entries());
-
-      console.log("전송할 데이터:", createPostInput);
+      const postData = Object.fromEntries(formData.entries());
 
       try {
-        const response = await axios.post(
-          "http://localhost:3000/post/create",
-          createPostInput
-        );
+        let response;
+        if (isEditMode) {
+          response = await axios.put("http://localhost:3000/post/update", {
+            postId: originalPostId,
+            updatePostInput: postData,
+          });
+        } else {
+          response = await axios.post(
+            "http://localhost:3000/post/create",
+            postData
+          );
+        }
+
         console.log("서버 응답:", response.data);
-        alert("글이 성공적으로 등록되었습니다.");
-        // 서버 응답에서 categoryId 추출
-        const { category } = response.data;
-        // 카테고리별 게시물 목록 페이지로 이동
+        alert(
+          isEditMode
+            ? "글이 성공적으로 수정되었습니다."
+            : "글이 성공적으로 등록되었습니다."
+        );
+
+        const category =
+          response.data.category ||
+          response.data.categoryId ||
+          postData.categoryId;
         window.location.href = `post_list.html?type=${category}`;
       } catch (error) {
         console.error("에러 발생:", error);
-        if (error.response) {
-          switch (error.response.status) {
-            case 401:
-              alert("인증이 만료되었습니다. 다시 로그인해주세요.");
-              AuthService.logout();
-              window.location.href = "/msa_Project/front/index.html";
-              break;
-            case 403:
-              alert("글 작성 권한이 없습니다.");
-              break;
-            default:
-              alert("글 작성 중 오류가 발생했습니다. 다시 시도해 주세요.");
-          }
-        } else {
-          alert(
-            "서버와의 통신 중 오류가 발생했습니다. 네트워크 연결을 확인해주세요."
-          );
-        }
+        handleError(error);
       }
     });
   } else {
     console.error("Form not found");
   }
-  // editor가 존재하는지 확인합니다.
+
+  function handleError(error) {
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+          AuthService.logout();
+          window.location.href = "/msa_Project/front/index.html";
+          break;
+        case 403:
+          alert("글 작성/수정 권한이 없습니다.");
+          break;
+        default:
+          alert("글 작성/수정 중 오류가 발생했습니다. 다시 시도해 주세요.");
+      }
+    } else {
+      alert(
+        "서버와의 통신 중 오류가 발생했습니다. 네트워크 연결을 확인해주세요."
+      );
+    }
+  }
+
+  // 에디터 관련 기능
   if (editor) {
     function managePlaceholder() {
       if (editor.textContent.trim() === "") {
@@ -94,17 +164,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     editor.addEventListener("keyup", updateFontSizeSelect);
     editor.addEventListener("mouseup", updateFontSizeSelect);
-  } else {
-    console.error("Editor not found");
   }
 
-  // fontSizeSelect가 존재하는지 확인합니다.
   if (fontSizeSelect) {
     fontSizeSelect.addEventListener("change", function () {
       document.execCommand("fontSize", false, this.value);
     });
-  } else {
-    console.error("Font size select not found");
   }
 
   function updateFontSizeSelect() {
@@ -116,16 +181,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   document.execCommand("fontSize", false, "4");
 
-  // category가 존재하는지 확인합니다.
   if (categoryId) {
     categoryId.addEventListener("change", function () {
       this.style.color = this.value ? "#333" : "#999";
     });
-  } else {
-    console.error("Category select not found");
   }
 
-  // 버튼들이 존재하는지 확인합니다.
+  // 버튼 이벤트 리스너
   if (boldBtn)
     boldBtn.addEventListener("click", () =>
       document.execCommand("bold", false, null)
@@ -141,7 +203,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (imageBtn && imageUpload)
     imageBtn.addEventListener("click", () => imageUpload.click());
 
-  // imageUpload가 존재하는지 확인합니다.
+  // 이미지 업로드 처리
   if (imageUpload) {
     imageUpload.addEventListener("change", function (e) {
       const file = e.target.files[0];
@@ -170,8 +232,6 @@ document.addEventListener("DOMContentLoaded", function () {
         reader.readAsDataURL(file);
       }
     });
-  } else {
-    console.error("Image upload input not found");
   }
 
   function selectImage(e) {
@@ -197,6 +257,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // 이미지 리사이즈 기능
   let isResizing = false;
   let currentImage = null;
   let startX, startY, startWidth, startHeight;

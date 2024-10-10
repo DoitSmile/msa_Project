@@ -49,7 +49,13 @@ const AuthService = {
     try {
       const base64Url = token.split(".")[1];
       const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      return JSON.parse(window.atob(base64));
+      const jsonPayload = decodeURIComponent(
+        atob(base64)
+          .split("")
+          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+          .join("")
+      );
+      return JSON.parse(jsonPayload);
     } catch (error) {
       console.error("Error decoding token:", error);
       return null;
@@ -60,6 +66,7 @@ const AuthService = {
     const token = localStorage.getItem("accessToken");
     if (!token) return null;
     const decodedToken = AuthService.decodeToken(token);
+    console.log("Decoded token:", decodedToken); // 디버깅용
     return decodedToken
       ? { id: decodedToken.id, name: decodedToken.name }
       : null;

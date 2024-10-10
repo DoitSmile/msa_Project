@@ -1,12 +1,12 @@
-import { Column } from 'typeorm';
+import {  IsString } from 'class-validator';
 
 export class UpdatePasswordInput {
-  @Column()
+  @IsString()
   password: string;
 
-  @Column()
+  @IsString()
   new_password: string;
 
-  @Column()
-  new_password_check: string;
+  @IsString()
+  confirmNewPassword: string;
 }

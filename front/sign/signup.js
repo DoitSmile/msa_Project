@@ -114,7 +114,8 @@ document.addEventListener("DOMContentLoaded", function () {
         );
 
         console.log("서버 응답:", response.data);
-        alert("사용자 정보가 성공적으로 등록되었습니다.");
+        alert("회원가입되었습니다.");
+        window.location.href = "/msa_Project/front/index.html";
       } catch (error) {
         console.error("에러 발생:", error);
         alert("등록 중 오류가 발생했습니다. 다시 시도해 주세요.");

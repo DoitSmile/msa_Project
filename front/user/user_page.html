@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>진대 - 유저페이지</title>
     <link rel="stylesheet" href="user_page.css" />
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   </head>
   <body>
     <header>
@@ -58,13 +59,13 @@
       <div class="container">
         <div class="profile-header">
           <img
-            src="/api/placeholder/120/120"
+            src="https://via.placeholder.com/120"
             alt="프로필 이미지"
             class="profile-image"
           />
           <div class="profile-info">
             <div class="profile-info-header">
-              <h1>김가연</h1>
+              <h1 id="userName">사용자 이름</h1>
               <a href="/account-management" class="account-link">
                 <svg
                   class="account-icon"
@@ -85,15 +86,15 @@
               </a>
             </div>
             <div class="profile-stats">
-              <div class="stat">가입일: 2023.09.15</div>
-              <div class="stat">
-                작성글: <span class="stat-highlight">42</span>
+              <div id="joinDate" class="stat">가입일:</div>
+              <div id="postCount" class="stat">
+                작성글: <span class="stat-highlight">0</span>
               </div>
-              <div class="stat">
-                작성댓글: <span class="stat-highlight">128</span>
+              <div id="commentCount" class="stat">
+                작성댓글: <span class="stat-highlight">0</span>
               </div>
             </div>
-            <!-- <div class="bio">안녕하세요. 조깅 좋아해요 :> 같이 뛰실 분 !</div> -->
+            <div id="userBio" class="bio"></div>
           </div>
         </div>
 
@@ -105,11 +106,15 @@
         </nav>
 
         <div class="content-area">
-          <div id="posts" class="content-tab">
+          <div id="posts-container" class="content-tab">
             <!-- 게시글 목록은 JavaScript로 동적 생성됩니다 -->
           </div>
 
-          <div id="comments" class="content-tab" style="display: none">
+          <div
+            id="comments-container"
+            class="content-tab"
+            style="display: none"
+          >
             <!-- 댓글 목록은 JavaScript로 동적 생성됩니다 -->
           </div>
         </div>
@@ -124,5 +129,5 @@
       <p>&copy; 2024 김가연 All rights reserved.</p>
     </footer>
   </body>
-  <script src="user_page.js"></script>
+  <script type="module" src="user_page.js"></script>
 </html>

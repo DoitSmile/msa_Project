@@ -52,8 +52,8 @@
             작성일: 2024-09-25 14:30
           </div>
           <div class="edit-delete-buttons">
-            <button onclick="PostManager.editPost()">수정</button>
-            <button onclick="PostManager.deletePost()">삭제</button>
+            <button id="editPostBtn">수정</button>
+            <button id="deletePostBtn">삭제</button>
           </div>
         </div>
 
@@ -69,7 +69,7 @@
           </div>
           <div
             class="heart-icon"
-            onclick="PostManager.toggleLike(this)"
+            id="likeButton"
             role="button"
             aria-label="찜하기"
           ></div>

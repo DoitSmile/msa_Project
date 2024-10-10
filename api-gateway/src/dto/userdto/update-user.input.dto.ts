@@ -1,18 +1,15 @@
-import { Column } from 'typeorm';
+import { IsEmail, IsString } from 'class-validator';
 
 export class UpdateUserInput {
-  @Column()
+  @IsString()
   name?: number;
 
-  @Column()
-  age?: number;
+  @IsEmail()
+  email?: string;
 
-  @Column()
+  @IsString()
   phone?: string;
 
-  @Column()
-  address?: string;
-
-  @Column()
+  @IsString()
   password?: string;
 }

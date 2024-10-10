@@ -334,7 +334,7 @@ const PostManager = (function () {
 
     if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
       axiosInstance
-        .delete("/post/comment/delete", {
+        .delete(`/post/comment/delete/${commentId}`, {
           data: { commentId: commentId },
         })
         .then(() => {
@@ -397,7 +397,7 @@ const PostManager = (function () {
       window.location.href = "/msa_Project/front/index.html";
       return;
     }
-    window.location.href = `edit_post.html?id=${currentPostId}`;
+    window.location.href = `write.html?postId=${currentPostId}`;
   }
 
   // 게시글 삭제
@@ -467,6 +467,15 @@ const PostManager = (function () {
 
   // 초기화 함수
   function init() {
+    const editPostBtn = document.getElementById("editPostBtn");
+    const deletePostBtn = document.getElementById("deletePostBtn");
+    const likeButton = document.getElementById("likeButton");
+
+    if (editPostBtn) editPostBtn.addEventListener("click", editPost);
+    if (deletePostBtn) deletePostBtn.addEventListener("click", deletePost);
+    if (likeButton)
+      likeButton.addEventListener("click", () => toggleLike(likeButton));
+
     currentPostId = getUrlParameter("id");
     console.log("Initialized. currentPostId:", currentPostId);
 

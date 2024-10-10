@@ -1,111 +1,174 @@
-// 더미 데이터 (실제 구현 시 서버에서 가져와야 합니다)
-const posts = [
-  {
-    id: 1,
-    title: "첫 번째 글",
-    board: "자유게시판",
-    date: "2024.09.20",
-    commentCount: 5,
-  },
-  {
-    id: 2,
-    title: "두 번째 글",
-    board: "질문게시판",
-    date: "2024.09.22",
-    commentCount: 3,
-  },
-  // ... 더 많은 게시글
-];
+import { AuthService } from "/msa_Project/front/auth.js";
 
-const comments = [
-  {
-    id: 1,
-    content: "좋은 글이에요! 많은 도움이 되었습니다.",
-    postId: 101,
-    postTitle: "흥미로운 주제",
-    board: "자유게시판",
-    date: "2024.09.21",
-  },
-  {
-    id: 2,
-    content: "동의합니다. 이 기술의 발전이 기대됩니다.",
-    postId: 102,
-    postTitle: "새로운 기술 소개",
-    board: "기술게시판",
-    date: "2024.09.23",
-  },
-  // ... 더 많은 댓글
-];
+// axios 기본 URL 설정
+axios.defaults.baseURL = "http://localhost:3000"; // API 서버 주소로 변경하세요
 
-const itemsPerPage = 5;
-let currentPage = 1;
-let currentTab = "posts";
-
-function renderItems(items, tabId) {
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const paginatedItems = items.slice(startIndex, endIndex);
-
-  const container = document.getElementById(tabId);
-  container.innerHTML = "";
-
-  paginatedItems.forEach((item) => {
-    if (tabId === "posts") {
-      container.innerHTML += `
-                <div class="post-item">
-                    <h3><a href="/board/${item.board}/post/${item.id}">${item.title}</a> <span class="comment-count">댓글 ${item.commentCount}</span></h3>
-                    <p>${item.board} | ${item.date}</p>
-                </div>
-            `;
+const UserProfileManager = (function () {
+  // 요소의 텍스트 설정
+  function setElementText(id, text) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = text;
     } else {
-      container.innerHTML += `
-                <div class="comment-item">
-                    <p class="comment-content" onclick="window.location.href='/board/${item.board}/post/${item.postId}'">${item.content}</p>
-                    <p class="post-title">댓글 단 글: <a href="/board/${item.board}/post/${item.postId}">${item.postTitle}</a></p>
-                    <p>${item.board} | ${item.date}</p>
-                </div>
-            `;
+      console.warn(`Element with id '${id}' not found`);
     }
-  });
-
-  renderPagination(items.length);
-}
-
-function renderPagination(totalItems) {
-  const pageCount = Math.ceil(totalItems / itemsPerPage);
-  const paginationContainer = document.querySelector(".pagination");
-  paginationContainer.innerHTML = "";
-
-  for (let i = 1; i <= pageCount; i++) {
-    const button = document.createElement("button");
-    button.textContent = i;
-    button.classList.toggle("active", i === currentPage);
-    button.addEventListener("click", () => {
-      currentPage = i;
-      renderItems(currentTab === "posts" ? posts : comments, currentTab);
-    });
-    paginationContainer.appendChild(button);
   }
-}
 
-document.querySelectorAll(".content-nav li").forEach((tab) => {
-  tab.addEventListener("click", () => {
-    currentTab = tab.getAttribute("data-tab");
-    currentPage = 1;
+  // 요소의 HTML 설정
+  function setElementHTML(id, html) {
+    const element = document.getElementById(id);
+    if (element) {
+      element.innerHTML = html;
+    } else {
+      console.warn(`Element with id '${id}' not found`);
+    }
+  }
 
-    document
-      .querySelectorAll(".content-nav li")
-      .forEach((t) => t.classList.remove("active"));
-    document
-      .querySelectorAll(".content-tab")
-      .forEach((content) => (content.style.display = "none"));
+  // 사용자 프로필 정보 업데이트
+  function updateUserProfile(currentUser) {
+    console.log("현재 사용자 정보:", currentUser);
+    setElementText("userName", currentUser.name || "이름 없음");
+    // 프로필 이미지 업데이트
+    const profileImage = document.querySelector(".profile-image");
+    if (profileImage) {
+      profileImage.src =
+        currentUser.profileImage || "https://via.placeholder.com/120";
+    }
+  }
 
-    tab.classList.add("active");
-    document.getElementById(currentTab).style.display = "block";
+  // 게시글 데이터 로드
+  async function loadPostData(userId) {
+    try {
+      const response = await axios.get(`/post/user_fetch/${userId}`);
+      const post = response.data;
+      console.log("가져온 게시글 데이터:", post);
+      setElementHTML(
+        "postCount",
+        `작성글: <span class="stat-highlight">${post.length}</span>`
+      );
+      renderItems(post, "posts-container");
+    } catch (error) {
+      console.error("게시글 로드 중 오류 발생:", error);
+      setElementHTML(
+        "posts-container",
+        "<p>게시글을 불러오는 데 실패했습니다.</p>"
+      );
+    }
+  }
 
-    renderItems(currentTab === "posts" ? posts : comments, currentTab);
-  });
-});
+  // 댓글 데이터 로드
+  async function loadCommentData(userId) {
+    try {
+      const response = await axios.get(`/post/comment/fetch/${userId}`);
+      const comments = response.data;
+      console.log("가져온 댓글 데이터:", comments);
+      setElementHTML(
+        "commentCount",
+        `작성댓글: <span class="stat-highlight">${comments.length}</span>`
+      );
+      renderItems(comments, "comments-container");
+    } catch (error) {
+      console.error("댓글 로드 중 오류 발생:", error);
+      setElementHTML(
+        "comments-container",
+        "<p>댓글을 불러오는 데 실패했습니다.</p>"
+      );
+    }
+  }
 
-// 초기 렌더링
-renderItems(posts, "posts");
+  // 아이템 렌더링 (게시글 또는 댓글)
+  function renderItems(items, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+      console.warn(`Container with id '${containerId}' not found`);
+      return;
+    }
+
+    container.innerHTML = "";
+
+    if (!Array.isArray(items) || items.length === 0) {
+      container.innerHTML = "<p>아직 작성한 내용이 없습니다.</p>";
+      return;
+    }
+
+    items.forEach((item) => {
+      const itemElement = document.createElement("div");
+      itemElement.className = `${
+        containerId === "posts-container" ? "post" : "comment"
+      }-item`;
+
+      if (containerId === "posts-container") {
+        itemElement.innerHTML = `
+          <h3><a href="post_detail.html?id=${item.id}">${item.title}</a></h3>
+          <p>${item.category?.name || "Unknown"} | ${new Date(
+          item.createdAt
+        ).toLocaleString()}</p>
+        `;
+      } else {
+        itemElement.innerHTML = `
+          <p class="comment-content">${item.content}</p>
+          <p class="post-title">댓글 단 글: <a href="post_detail.html?id=${
+            item.postId
+          }">${item.postTitle || "Unknown"}</a></p>
+          <p>${new Date(item.createdAt).toLocaleString()}</p>
+        `;
+      }
+
+      container.appendChild(itemElement);
+    });
+  }
+
+  // 탭 전환
+  function switchTab(tabName) {
+    const tabs = document.querySelectorAll(".content-nav li");
+    const contentTabs = document.querySelectorAll(".content-tab");
+
+    tabs.forEach((tab) => tab.classList.remove("active"));
+    contentTabs.forEach((content) => (content.style.display = "none"));
+
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add("active");
+    document.getElementById(`${tabName}-container`).style.display = "block";
+  }
+
+  // 초기화 함수
+  function init() {
+    const currentUser = AuthService.getCurrentUser();
+    console.log("현재 사용자:", currentUser);
+    if (currentUser && currentUser.id) {
+      updateUserProfile(currentUser);
+      loadPostData(currentUser.id);
+      loadCommentData(currentUser.id);
+    } else {
+      console.error("로그인된 사용자 정보가 없습니다.");
+      alert("로그인이 필요합니다.");
+      window.location.href = "/msa_Project/front/index.html";
+    }
+
+    // 탭 전환 이벤트 리스너 추가
+    document.querySelectorAll(".content-nav li").forEach((tab) => {
+      tab.addEventListener("click", () =>
+        switchTab(tab.getAttribute("data-tab"))
+      );
+    });
+
+    // 카테고리 드롭다운 동작 추가
+    const categoryBtn = document.querySelector(".category-btn");
+    const categoryContent = document.querySelector(".category-content");
+    if (categoryBtn && categoryContent) {
+      categoryBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        categoryContent.style.display =
+          categoryContent.style.display === "block" ? "none" : "block";
+      });
+    }
+  }
+
+  // Public 인터페이스
+  return {
+    init: init,
+    switchTab: switchTab,
+  };
+})();
+
+// DOMContentLoaded 이벤트 리스너
+document.addEventListener("DOMContentLoaded", UserProfileManager.init);

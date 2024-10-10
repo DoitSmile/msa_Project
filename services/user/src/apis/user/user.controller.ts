@@ -19,6 +19,28 @@ export class UserController {
   // 회원조회
   @MessagePattern({ cmd: 'fetchUser' })
   async fetchUser(data) {
-    return await this.userService.fetchUser(data.id);
+    return await this.userService.fetchUser(data.userId);
   }
+
+  // 회원수정
+  @MessagePattern({ cmd: 'updateUser' })
+  async updateUser(data) {
+    console.log("data:",data)
+    return await this.userService.updateUser(data.userId,data.updateUserInput);
+  }
+
+  // 회원비밀번호수정
+  @MessagePattern({ cmd: 'updateUserPassword' })
+  async updateUserPassword(data) {
+    console.log("updateUserPassword data:",data)
+    return await this.userService.updateUserPassword(data.userId,data.updatePasswordInput);
+  }
+
+  // 회원 탈퇴
+  @MessagePattern({ cmd: 'deleteUser' })
+  async deleteUser(data) {
+    console.log("data:",data)
+    return await this.userService.updateUser(data.userId,data.password);
+  }
+
 }

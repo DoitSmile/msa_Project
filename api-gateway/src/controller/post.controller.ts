@@ -43,16 +43,17 @@ export class PostController {
 
   // 게시글 삭제
   @UseGuards(AuthGuard('access'))
-  @Delete('/post/delete')
-  deletePosts(@Body('postId') postId: string) {
+  @Delete('/post/delete/:id')
+  deletePosts(@Param('id') postId: string) {
+    console.log("postId 삭제쪽",postId)
     return this.clientPostService.send({ cmd: 'deletePost' }, { postId });
   }
 
+
   // 내 게시물 조회
-  @UseGuards(AuthGuard('access'))
   @Get('/post/user_fetch/:id')
-  fetchMyPost(@Req() req) {
-    const userId = req.user.id;
+  fetchMyPost(@Param('id') userId) {
+
     console.log('userId:', userId);
    
     return this.clientPostService.send({ cmd: 'fetchMyPost' }, { userId });
@@ -115,7 +116,7 @@ export class PostController {
   }
 
   // 댓글 삭제
-  @Delete('/post/comment/delete')
+  @Delete('/post/comment/delete/:id')
   deleteComment(@Body('commentId') commentId: string) {
     return this.clientPostService.send({ cmd: 'deleteComment' }, { commentId });
   }

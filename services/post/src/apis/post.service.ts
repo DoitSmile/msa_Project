@@ -2,7 +2,6 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from '@shared/entites/post/post.entity';
 import { Comment } from '@shared/entites/post/post-comment.entity';
-import { Category } from '@shared/entites/post/post-category.entity';
 import { IsNull, Repository } from 'typeorm';
 
 @Injectable()
@@ -42,6 +41,13 @@ export class PostService {
 
     // 게시글 삭제
     async deletePosts(postId) {
+        // console.log('service쪽:', postId);
+        // const post = await this.postRepository.findOne({
+        //     where: { id: postId },
+        // });
+        // if (!post) {
+        //     throw new NotFoundException(`Post with ID "${postId}" not found`);
+        // }
         return await this.postRepository.softRemove({ id: postId });
     }
 
@@ -148,6 +154,7 @@ export class PostService {
             where: { id: commentId },
             relations: ['replies'],
         });
+
         if (!comment) {
             throw new NotFoundException('Comment not found');
         }
