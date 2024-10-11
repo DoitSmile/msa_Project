@@ -99,8 +99,8 @@ export class PostController {
   @Get('/post/comment/fetch/:postId')
   async fetchComment(@Param('postId') postId) {
     console.log('댓글postId:', postId);
-    const result = await this.clientPostService.send({ cmd: 'fetchComment' }, { postId }).toPromise();
-    return Array.isArray(result) ? result : [];
+    return await this.clientPostService.send({ cmd: 'fetchComment' }, { postId })
+
   }
 
  // 유저 댓글 조회

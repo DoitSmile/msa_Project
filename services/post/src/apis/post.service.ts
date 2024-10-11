@@ -41,13 +41,6 @@ export class PostService {
 
     // 게시글 삭제
     async deletePosts(postId) {
-        // console.log('service쪽:', postId);
-        // const post = await this.postRepository.findOne({
-        //     where: { id: postId },
-        // });
-        // if (!post) {
-        //     throw new NotFoundException(`Post with ID "${postId}" not found`);
-        // }
         return await this.postRepository.softRemove({ id: postId });
     }
 
@@ -135,10 +128,10 @@ export class PostService {
     async fetchComment(postId): Promise<Comment[]> {
         console.log('postId:', postId);
         return this.commentRepository.find({
-            where: { post: { id: postId.postId }, parentId: IsNull() },
+            where: { post: { id: postId }, parentId: IsNull() },
             // IsNull()은 항상 'IS NULL' SQL 조건으로 변환되어, 데이터베이스에서 NULL 값을 정확히 찾음
             // post는 Comment 엔티티에서 Post 엔티티로의 관계를 나타냄
-            // { id: postId }는 해당 Post 엔티티의 id가 주어진 postId와 일치해야 함을 의미
+            // { id: postId }는 해당 Post 엔티티의 id가 주어진 postId와 일치해야 함을 의미, 외래키에 접근
             // parent: null 이 조건은 최상위 댓글만을 선택하기 위한 것
             relations: ['replies', 'replies.replies'],
             order: { createdAt: 'DESC' }, //최신 댓글순으로 정렬
