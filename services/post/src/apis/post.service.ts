@@ -69,14 +69,24 @@ export class PostService {
     }
 
     // 내 게시글 보기
-    async fetchMyPost(userId: string) {
-        console.log('service 게시물 userId:', userId);
-        return await this.postRepository.find({
-            where: { userId: userId }, // userId로 변경
+    async fetchMyPost(userId: string, page: number = 1, pageSize: number = 10) {
+        const [posts, total] = await this.postRepository.findAndCount({
+            where: { userId: userId },
             order: { createdAt: 'DESC' },
             relations: ['category'],
+            skip: (page - 1) * pageSize,
+            take: pageSize,
         });
+
+        return {
+            posts,
+            total,
+            page,
+            pageSize,
+            totalPages: Math.ceil(total / pageSize),
+        };
     }
+
 
     // 특정 게시글 보기
     async fetchPost(postId) {
@@ -139,12 +149,22 @@ export class PostService {
     }
 
     // 댓글 조회 (유저별)
-    async fetchUserComments(userId: string): Promise<Comment[]> {
-        return this.commentRepository.find({
+    async fetchUserComments(userId: string, page: number = 1, pageSize: number = 10) {
+        const [comments, total] = await this.commentRepository.findAndCount({
             where: { userId: userId },
             order: { createdAt: 'DESC' },
             relations: ['post'],
+            skip: (page - 1) * pageSize,
+            take: pageSize,
         });
+
+        return {
+            comments,
+            total,
+            page,
+            pageSize,
+            totalPages: Math.ceil(total / pageSize),
+        };
     }
 
     // 댓글 수정

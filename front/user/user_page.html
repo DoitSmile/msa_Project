@@ -65,7 +65,7 @@
           />
           <div class="profile-info">
             <div class="profile-info-header">
-              <h1 id="userName">사용자 이름</h1>
+              <h1 id="userName"></h1>
               <a href="/account-management" class="account-link">
                 <svg
                   class="account-icon"
@@ -87,10 +87,10 @@
             </div>
             <div class="profile-stats">
               <div id="postCount" class="stat">
-                작성글: <span class="stat-highlight">0</span>
+                작성글: <span class="stat-highlight"></span>
               </div>
               <div id="commentCount" class="stat">
-                작성댓글: <span class="stat-highlight">0</span>
+                작성댓글: <span class="stat-highlight"></span>
               </div>
             </div>
             <div id="userBio" class="bio"></div>
@@ -105,19 +105,24 @@
         </nav>
 
         <div class="content-area">
-          <div id="posts-container" class="content-tab">
-            <!-- 게시글 목록은 JavaScript로 동적 생성됩니다 -->
+          <div class="content-wrapper">
+            <div id="posts-container" class="content-tab">
+              <!-- 게시글 목록은 JavaScript로 동적 생성됩니다 -->
+            </div>
+            <div
+              id="comments-container"
+              class="content-tab"
+              style="display: none"
+            >
+              <!-- 댓글 목록은 JavaScript로 동적 생성됩니다 -->
+            </div>
           </div>
           <div id="posts-pagination" class="pagination"></div>
-
           <div
-            id="comments-container"
-            class="content-tab"
+            id="comments-pagination"
+            class="pagination"
             style="display: none"
-          >
-            <!-- 댓글 목록은 JavaScript로 동적 생성됩니다 -->
-          </div>
-          <div id="comments-pagination" class="pagination"></div>
+          ></div>
         </div>
       </div>
     </div>

@@ -36,8 +36,9 @@ export class PostController {
     @MessagePattern({ cmd: 'fetchMyPost' })
     async fetchMyPost(data) {
         console.log('data:', data);
-        return await this.postService.fetchMyPost(data.userId);
+        return await this.postService.fetchMyPost(data.userId, data.page, data.pageSize);
     }
+
 
     // 특정 게시물 조회
     @MessagePattern({ cmd: 'fetchPost' })
@@ -82,7 +83,7 @@ export class PostController {
     @MessagePattern({ cmd: 'fetchUserComments' })
     async fetchUserComments(data) {
         console.log('data:', data);
-        return await this.postService.fetchUserComments(data.userId);
+        return await this.postService.fetchUserComments(data.userId, data.page, data.pageSize);
     }
 
     // 댓글 수정

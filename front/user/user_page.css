@@ -176,11 +176,6 @@ nav ul li a,
   font-weight: bold;
   font-size: 16px;
 }
-/* .bio {
-  font-size: 14px;
-  line-height: 1.6;
-  color: rgba(255, 255, 255, 0.9);
-} */
 .content-nav {
   background-color: #f8f8f8;
   border-bottom: 1px solid #e5e5e5;
@@ -205,16 +200,29 @@ nav ul li a,
   border-bottom: 2px solid #000000;
 }
 .content-area {
+  display: flex;
+  flex-direction: column;
+  height: 400px; /* 고정 높이 설정 */
   padding: 20px;
+}
+
+.content-wrapper {
+  flex-grow: 1;
+  overflow-y: auto; /* 내용이 많을 경우 스크롤 추가 */
+  margin-bottom: 20px; /* 페이지네이션과의 간격 */
+}
+#posts-container,
+#comments-container {
+  min-height: 100%; /* 컨테이너가 항상 content-wrapper의 전체 높이를 차지하도록 함 */
 }
 .post-item,
 .comment-item {
   border-bottom: 1px solid #e5e5e5;
   padding: 15px 0;
 }
-.post-item:last-child,
-.comment-item:last-child {
-  border-bottom: none;
+.post-item:first-child,
+.comment-item:first-child {
+  padding-top: 5px; /* 첫 번째 항목의 상단 패딩을 줄임 */
 }
 .post-item h3,
 .comment-item h3 {
@@ -258,7 +266,8 @@ a:hover {
 .pagination {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: auto;
+  padding-top: 20px;
 }
 .pagination button {
   margin: 0 5px;
@@ -277,7 +286,6 @@ a:hover {
   color: white;
 }
 
-/* 푸터 스타일 */
 footer {
   background-color: #ffffff;
   text-align: center;
