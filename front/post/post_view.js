@@ -2,16 +2,13 @@
 import { AuthService } from "/msa_Project/front/auth.js";
 
 const PostManager = (function () {
-  // 현재 게시글의 ID를 저장하는 변수
   let currentPostId;
 
-  // Axios 인스턴스 생성
   const axiosInstance = axios.create({
     baseURL: "http://localhost:3000",
     timeout: 5000,
   });
 
-  // Axios 인터셉터 설정
   axiosInstance.interceptors.request.use(
     (config) => {
       const token = AuthService.getToken();
@@ -25,7 +22,6 @@ const PostManager = (function () {
     }
   );
 
-  // URL 파라미터 가져오기
   function getUrlParameter(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
@@ -35,7 +31,6 @@ const PostManager = (function () {
       : decodeURIComponent(results[1].replace(/\+/g, " "));
   }
 
-  // 요소의 텍스트 설정
   function setElementText(id, text) {
     const element = document.getElementById(id);
     if (element) {
@@ -45,7 +40,6 @@ const PostManager = (function () {
     }
   }
 
-  // 요소의 HTML 설정
   function setElementHTML(selector, html) {
     const element = document.querySelector(selector);
     if (element) {
@@ -55,24 +49,24 @@ const PostManager = (function () {
     }
   }
 
-  // 카테고리 링크 생성
   function createCategoryLink(category) {
     return `<a href="post_list.html?type=${category.categoryId}" class="category-link">${category.name}</a>`;
   }
 
-  // 게시글 상세 정보 가져오기
   function fetchPostDetails() {
     console.log(`Fetching post details for ID: ${currentPostId}`);
     axiosInstance
       .get(`/post/fetch/${currentPostId}`)
       .then(function (response) {
-        console.log(`Received post details for ID: ${currentPostId}`);
-        const post = response.data[0];
+        console.log(
+          `Received post details for ID: ${currentPostId}`,
+          response.data
+        );
+        const post = response.data;
         if (!post) {
           throw new Error("게시글 데이터가 없습니다.");
         }
 
-        // 게시글 정보를 화면에 표시
         setElementHTML("#category-link", createCategoryLink(post.category));
         setElementText("post-title", post.title);
         setElementText("post-content", post.content);
@@ -86,10 +80,9 @@ const PostManager = (function () {
           `
         );
         setElementText("post-views", post.views || "정보 없음");
-        setElementText("likeCount", post.likes || "정보 없음");
-        setElementText("comment-count", post.commentCount || "정보 없음");
+        setElementText("likeCount", post.likes || "0");
+        setElementText("comment-count", post.commentCount || "0");
 
-        // 수정/삭제 버튼 표시 여부 결정
         const currentUser = AuthService.getCurrentUser();
         const postActions = document.querySelector(".edit-delete-buttons");
         if (postActions) {
@@ -111,7 +104,6 @@ const PostManager = (function () {
       });
   }
 
-  // 댓글 렌더링
   function renderComments(comments) {
     const commentsContainer = document.getElementById("comments-container");
     if (!commentsContainer) return;
@@ -184,13 +176,148 @@ const PostManager = (function () {
       }
     });
   }
-  // 댓글 조회
+  function editComment(commentId) {
+    if (!AuthService.isAuthenticated()) {
+      alert("로그인이 필요합니다.");
+      window.location.href = "/msa_Project/front/index.html";
+      return;
+    }
+
+    const newContent = prompt("수정할 내용을 입력하세요:");
+    if (newContent !== null) {
+      axiosInstance
+        .put("/post/comment/update", {
+          commentId: commentId,
+          content: newContent,
+        })
+        .then(() => {
+          fetchComments();
+        })
+        .catch((error) => {
+          console.error("댓글 수정 중 오류 발생:", error);
+          if (error.response && error.response.status === 401) {
+            alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+            AuthService.logout();
+            window.location.href = "/msa_Project/front/index.html";
+          } else if (error.response && error.response.status === 403) {
+            alert("댓글을 수정할 권한이 없습니다.");
+          } else {
+            alert("댓글 수정에 실패했습니다.");
+          }
+        });
+    }
+  }
+
+  function deleteComment(commentId) {
+    if (!AuthService.isAuthenticated()) {
+      alert("로그인이 필요합니다.");
+      window.location.href = "/msa_Project/front/index.html";
+      return;
+    }
+
+    if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
+      axiosInstance
+        .delete(`/post/comment/delete/${commentId}`, {
+          data: { commentId: commentId },
+        })
+        .then(() => {
+          fetchComments();
+        })
+        .catch((error) => {
+          console.error("댓글 삭제 중 오류 발생:", error);
+          if (error.response && error.response.status === 401) {
+            alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+            AuthService.logout();
+            window.location.href = "/msa_Project/front/index.html";
+          } else if (error.response && error.response.status === 403) {
+            alert("댓글을 삭제할 권한이 없습니다.");
+          } else {
+            alert("댓글 삭제에 실패했습니다.");
+          }
+        });
+    }
+  }
+
+  function toggleLike(element) {
+    if (!AuthService.isAuthenticated()) {
+      alert("로그인이 필요합니다.");
+      window.location.href = "/msa_Project/front/index.html";
+      return;
+    }
+
+    element.classList.toggle("liked");
+    const isLiked = element.classList.contains("liked");
+
+    axiosInstance
+      .post("/post/like", {
+        postId: currentPostId,
+        isLiked: isLiked,
+      })
+      .then((response) => {
+        const likeCountElement = document.getElementById("likeCount");
+        if (likeCountElement) {
+          likeCountElement.textContent = response.data.likeCount;
+        }
+      })
+      .catch((error) => {
+        console.error("좋아요 토글 중 오류 발생:", error);
+        if (error.response && error.response.status === 401) {
+          alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+          AuthService.logout();
+          window.location.href = "/msa_Project/front/index.html";
+        } else {
+          alert("좋아요 업데이트에 실패했습니다.");
+        }
+        element.classList.toggle("liked"); // 실패 시 UI 상태 되돌리기
+      });
+  }
+
+  function editPost() {
+    if (!AuthService.isAuthenticated()) {
+      alert("로그인이 필요합니다.");
+      window.location.href = "/msa_Project/front/index.html";
+      return;
+    }
+    window.location.href = `write.html?postId=${currentPostId}`;
+  }
+
+  function deletePost() {
+    if (!AuthService.isAuthenticated()) {
+      alert("로그인이 필요합니다.");
+      window.location.href = "/msa_Project/front/index.html";
+      return;
+    }
+
+    if (confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+      axiosInstance
+        .delete(`/post/delete/${currentPostId}`)
+        .then(() => {
+          alert("게시글이 삭제되었습니다.");
+          window.location.href = "post_list.html";
+        })
+        .catch((error) => {
+          console.error("게시글 삭제 중 오류 발생:", error);
+          if (error.response && error.response.status === 401) {
+            alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+            AuthService.logout();
+            window.location.href = "/msa_Project/front/index.html";
+          } else if (error.response && error.response.status === 403) {
+            alert("게시글을 삭제할 권한이 없습니다.");
+          } else {
+            alert("게시글 삭제에 실패했습니다.");
+          }
+        });
+    }
+  }
   function fetchComments() {
     console.log(`Fetching comments for post ID: ${currentPostId}`);
     axiosInstance
       .get(`/post/comment/fetch/${currentPostId}`)
       .then((response) => {
-        console.log(`Received comments for post ID: ${currentPostId}`);
+        console.log(
+          `Received comments for post ID: ${currentPostId}`,
+          response.data
+        );
         renderComments(response.data);
       })
       .catch((error) => {
@@ -201,7 +328,6 @@ const PostManager = (function () {
       });
   }
 
-  // 새 댓글 추가
   function addComment() {
     console.log(`Adding comment for post ID: ${currentPostId}`);
     const commentText = document.getElementById("commentText");
@@ -248,200 +374,17 @@ const PostManager = (function () {
     return false;
   }
 
-  // 대댓글 폼 토글
-  function toggleReplyForm(commentElement) {
-    const replyForm = commentElement.querySelector(".reply-form");
-    if (replyForm) {
-      replyForm.style.display =
-        replyForm.style.display === "none" ? "block" : "none";
-    }
-  }
+  // ... (나머지 함수들: toggleReplyForm, addReply, editComment, deleteComment, toggleLike, editPost, deletePost)
 
-  // 대댓글 추가
-  function addReply(parentId, content) {
-    if (!content.trim()) {
-      alert("답글 내용을 입력해주세요.");
-      return;
-    }
-
-    if (!AuthService.isAuthenticated()) {
-      alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
-      return;
-    }
-
-    axiosInstance
-      .post("/post/comment/create", {
-        postId: currentPostId,
-        parentId: parentId,
-        content: content.trim(),
-      })
-      .then(() => {
-        fetchComments();
-      })
-      .catch((error) => {
-        console.error("대댓글 추가 중 오류 발생:", error);
-        if (error.response && error.response.status === 401) {
-          alert("인증이 만료되었습니다. 다시 로그인해주세요.");
-          AuthService.logout();
-          window.location.href = "/msa_Project/front/index.html";
-        } else {
-          alert("대댓글 추가에 실패했습니다.");
-        }
-      });
-  }
-
-  // 댓글 수정
-  function editComment(commentId) {
-    if (!AuthService.isAuthenticated()) {
-      alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
-      return;
-    }
-
-    const newContent = prompt("수정할 내용을 입력하세요:");
-    if (newContent !== null) {
-      axiosInstance
-        .put("/post/comment/update", {
-          commentId: commentId,
-          content: newContent,
-        })
-        .then(() => {
-          fetchComments();
-        })
-        .catch((error) => {
-          console.error("댓글 수정 중 오류 발생:", error);
-          if (error.response && error.response.status === 401) {
-            alert("인증이 만료되었습니다. 다시 로그인해주세요.");
-            AuthService.logout();
-            window.location.href = "/msa_Project/front/index.html";
-          } else if (error.response && error.response.status === 403) {
-            alert("댓글을 수정할 권한이 없습니다.");
-          } else {
-            alert("댓글 수정에 실패했습니다.");
-          }
-        });
-    }
-  }
-
-  // 댓글 삭제
-  function deleteComment(commentId) {
-    if (!AuthService.isAuthenticated()) {
-      alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
-      return;
-    }
-
-    if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
-      axiosInstance
-        .delete(`/post/comment/delete/${commentId}`, {
-          data: { commentId: commentId },
-        })
-        .then(() => {
-          fetchComments();
-        })
-        .catch((error) => {
-          console.error("댓글 삭제 중 오류 발생:", error);
-          if (error.response && error.response.status === 401) {
-            alert("인증이 만료되었습니다. 다시 로그인해주세요.");
-            AuthService.logout();
-            window.location.href = "/msa_Project/front/index.html";
-          } else if (error.response && error.response.status === 403) {
-            alert("댓글을 삭제할 권한이 없습니다.");
-          } else {
-            alert("댓글 삭제에 실패했습니다.");
-          }
-        });
-    }
-  }
-
-  // 좋아요 토글
-  function toggleLike(element) {
-    if (!AuthService.isAuthenticated()) {
-      alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
-      return;
-    }
-
-    element.classList.toggle("liked");
-    const isLiked = element.classList.contains("liked");
-
-    axiosInstance
-      .post("/post/like", {
-        postId: currentPostId,
-        isLiked: isLiked,
-      })
-      .then((response) => {
-        const likeCountElement = document.getElementById("likeCount");
-        if (likeCountElement) {
-          likeCountElement.textContent = response.data.likeCount;
-        }
-      })
-      .catch((error) => {
-        console.error("좋아요 토글 중 오류 발생:", error);
-        if (error.response && error.response.status === 401) {
-          alert("인증이 만료되었습니다. 다시 로그인해주세요.");
-          AuthService.logout();
-          window.location.href = "/msa_Project/front/index.html";
-        } else {
-          alert("좋아요 업데이트에 실패했습니다.");
-        }
-        element.classList.toggle("liked"); // 실패 시 UI 상태 되돌리기
-      });
-  }
-
-  // 게시글 수정
-  function editPost() {
-    if (!AuthService.isAuthenticated()) {
-      alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
-      return;
-    }
-    window.location.href = `write.html?postId=${currentPostId}`;
-  }
-
-  // 게시글 삭제
-  function deletePost() {
-    if (!AuthService.isAuthenticated()) {
-      alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
-      return;
-    }
-
-    if (confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
-      axiosInstance
-        .delete(`/post/delete/${currentPostId}`)
-        .then(() => {
-          alert("게시글이 삭제되었습니다.");
-          window.location.href = "post_list.html";
-        })
-        .catch((error) => {
-          console.error("게시글 삭제 중 오류 발생:", error);
-          if (error.response && error.response.status === 401) {
-            alert("인증이 만료되었습니다. 다시 로그인해주세요.");
-            AuthService.logout();
-            window.location.href = "/msa_Project/front/index.html";
-          } else if (error.response && error.response.status === 403) {
-            alert("게시글을 삭제할 권한이 없습니다.");
-          } else {
-            alert("게시글 삭제에 실패했습니다.");
-          }
-        });
-    }
-  }
-
-  // 로그인 상태에 따라 UI 업데이트
   function updateUIBasedOnAuth() {
     const isAuthenticated = AuthService.isAuthenticated();
     const currentUser = AuthService.getCurrentUser();
 
-    // 댓글 입력 폼 표시/숨김
     const commentForm = document.querySelector(".comment-form");
     if (commentForm) {
       commentForm.style.display = isAuthenticated ? "block" : "none";
     }
 
-    // 로그인/로그아웃 버튼 업데이트
     const authButton = document.getElementById("authButton");
     if (authButton) {
       if (isAuthenticated) {
@@ -458,14 +401,12 @@ const PostManager = (function () {
       }
     }
 
-    // 사용자 이름 표시
     const userNameElement = document.getElementById("userName");
     if (userNameElement && currentUser) {
       userNameElement.textContent = currentUser.name;
     }
   }
 
-  // 초기화 함수
   function init() {
     const editPostBtn = document.getElementById("editPostBtn");
     const deletePostBtn = document.getElementById("deletePostBtn");
@@ -487,7 +428,6 @@ const PostManager = (function () {
       window.location.href = "post_list.html";
     }
 
-    // 카테고리 드롭다운 동작 추가
     const categoryBtn = document.querySelector(".category-btn");
     const categoryContent = document.querySelector(".category-content");
     if (categoryBtn && categoryContent) {
@@ -498,10 +438,8 @@ const PostManager = (function () {
       });
     }
 
-    // 로그인 상태에 따라 UI 업데이트
     updateUIBasedOnAuth();
 
-    // 댓글 폼 제출 이벤트 리스너 추가
     const commentForm = document.querySelector(".comment-form form");
     if (commentForm) {
       commentForm.addEventListener("submit", function (e) {
@@ -510,7 +448,6 @@ const PostManager = (function () {
       });
     }
 
-    // 댓글 컨테이너에 이벤트 리스너 추가 (이벤트 위임)
     const commentsContainer = document.getElementById("comments-container");
     if (commentsContainer) {
       commentsContainer.addEventListener("click", function (e) {

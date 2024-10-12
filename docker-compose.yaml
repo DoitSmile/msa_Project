@@ -21,6 +21,12 @@ services:
     env_file:
       - ./services/post/.env.docker
 
+  # redis
+  my-redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+
   api-gateway:
     build:
       context: ./api-gateway

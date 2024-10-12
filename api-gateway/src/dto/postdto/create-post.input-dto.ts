@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Length } from 'class-validator';
 
 export class CreatPostInput {
   @IsString()
@@ -13,5 +13,4 @@ export class CreatPostInput {
   @IsString()
   @IsNotEmpty({ message: '제목을 입력해주세요' })
   category: string;
-
 }

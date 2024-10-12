@@ -25,6 +25,9 @@ export class Post {
   @Column()
   title: string;
 
+  @Column({ default: 0 })
+  views: number;
+
   @Column()
   content: string;
 

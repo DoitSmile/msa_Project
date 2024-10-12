@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import * as cookieParser from 'cookie-parser';
+// import * as cookieParser from 'cookie-parser';
 
 // api-gateway
 
@@ -14,7 +14,6 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
-  app.use(cookieParser());
   await app.listen(3000);
 }
 bootstrap();

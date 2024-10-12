@@ -35,11 +35,11 @@ const UserProfileManager = (function () {
     setElementText("userName", currentUser.name || "이름 없음");
     setElementHTML(
       "postCount",
-      `작성글: <span class="stat-highlight">${postCount}</span>`
+      `총 작성글 : <span class="stat-highlight">${postCount}</span>`
     );
     setElementHTML(
       "commentCount",
-      `작성댓글: <span class="stat-highlight">${commentCount}</span>`
+      `총 작성댓글 수 : <span class="stat-highlight">${commentCount}</span>`
     );
 
     // 프로필 이미지 업데이트

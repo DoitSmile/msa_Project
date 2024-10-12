@@ -1,8 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from '@shared/entites/post/post.entity';
 import { Comment } from '@shared/entites/post/post-comment.entity';
 import { IsNull, Repository } from 'typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class PostService {
@@ -11,9 +14,10 @@ export class PostService {
         private readonly postRepository: Repository<Post>,
         @InjectRepository(Comment)
         private readonly commentRepository: Repository<Comment>,
+        @Inject(CACHE_MANAGER)
+        private readonly cacheManager: Cache,
     ) {}
 
-    // ---------------------------- post  ----------------------------
     // 게시물 생성
     async createPost(createPostInput, name, userId) {
         console.log('createPostInput:', createPostInput);
@@ -34,8 +38,8 @@ export class PostService {
         console.log('updatePostInput:', updatePostInput);
         const { title, content } = updatePostInput;
         return await this.postRepository.update(
-            { id: postId }, // 무엇에 대하여
-            { title, content }, // 무엇을 수정할 것인지
+            { id: postId },
+            { title, content },
         );
     }
 
@@ -46,26 +50,40 @@ export class PostService {
 
     // 전체 게시글 보기 (최신순)
     async fetchPosts() {
-        return await this.postRepository.find({
-            order: {
-                createdAt: 'DESC', // 생성일 기준 내림차순 정렬 (최신순)
-            },
-            take: 100, // 최대 100개의 게시글만 가져옴
+        const posts = await this.postRepository.find({
+            order: { createdAt: 'DESC' },
+            take: 100,
             relations: ['category'],
         });
+
+        // Redis에서 각 게시물의 조회수를 가져와 업데이트
+        for (const post of posts) {
+            const cacheKey = `post:${post.id}:views`;
+            const cachedViews = await this.cacheManager.get<number>(cacheKey);
+            post.views = cachedViews || post.views;
+        }
+
+        return posts;
     }
 
     // 카테고리별 게시글 보기
     async fetchCategoryPosts(categoryId) {
         console.log('최종:', categoryId);
-        return await this.postRepository.find({
-            where: { category: categoryId },
-            order: {
-                createdAt: 'DESC', // 생성일 기준 내림차순 정렬 (최신순)
-            },
-            take: 100, // 최대 100개의 게시글만 가져옴
+        const posts = await this.postRepository.find({
+            where: { category: { id: categoryId } },
+            order: { createdAt: 'DESC' },
+            take: 100,
             relations: ['category'],
         });
+
+        // Redis에서 각 게시물의 조회수를 가져와 업데이트
+        for (const post of posts) {
+            const cacheKey = `post:${post.id}:views`;
+            const cachedViews = await this.cacheManager.get<number>(cacheKey);
+            post.views = cachedViews || post.views;
+        }
+
+        return posts;
     }
 
     // 내 게시글 보기
@@ -78,6 +96,13 @@ export class PostService {
             take: pageSize,
         });
 
+        // Redis에서 각 게시물의 조회수를 가져와 업데이트
+        for (const post of posts) {
+            const cacheKey = `post:${post.id}:views`;
+            const cachedViews = await this.cacheManager.get<number>(cacheKey);
+            post.views = cachedViews || post.views;
+        }
+
         return {
             posts,
             total,
@@ -87,16 +112,57 @@ export class PostService {
         };
     }
 
-
-    // 특정 게시글 보기
-    async fetchPost(postId) {
+    // 특정 게시글 보기 (조회수 증가 포함)
+    async fetchPost(postId: string) {
         console.log('postId:', postId);
-        return await this.postRepository.find({
+
+        const cacheKey = `post:${postId}:views`;
+        let views = (await this.cacheManager.get<number>(cacheKey)) || 0;
+        views++;
+        await this.cacheManager.set(cacheKey, views, 3600000); // 1시간 캐시
+
+        const post = await this.postRepository.findOne({
             where: { id: postId },
             relations: ['category'],
         });
+
+        if (!post) {
+            throw new NotFoundException('Post not found');
+        }
+
+        // 일정 주기로 데이터베이스에 조회수 동기화 (예: 10회 조회마다)
+        if (views % 10 === 0) {
+            await this.postRepository.update(postId, { views });
+        }
+
+        return { ...post, views };
     }
-    // ---------------------------- comment  ----------------------------
+
+    // 조회수 조회
+    async getPostViews(postId: string) {
+        const cacheKey = `post:${postId}:views`;
+        let views = await this.cacheManager.get<number>(cacheKey);
+
+        if (views === undefined) {
+            const post = await this.postRepository.findOne({
+                where: { id: postId },
+                select: ['views'],
+            });
+            views = post?.views || 0;
+            await this.cacheManager.set(cacheKey, views, 3600000); // 1시간 캐시
+        }
+
+        return { postId, views };
+    }
+
+    // 인기 게시물 조회
+    async getPopularPosts(limit: number = 10) {
+        return this.postRepository.find({
+            order: { views: 'DESC' },
+            take: limit,
+            relations: ['category'],
+        });
+    }
 
     // 댓글 생성
     async createComment(createCommentInput, username, userId) {
@@ -110,8 +176,6 @@ export class PostService {
             throw new NotFoundException('글이 없습니다.');
         }
 
-        // parent 변수가 Comment 타입의 객체이거나 null일 수 있음을 나타냄, 변수를 null로 초기화합니다.
-        // parentId가 존재할 경우 , 실제 부모 댓글이 있는지 확인
         let parent: Comment | null = null;
         if (parentId) {
             parent = await this.commentRepository.findOne({
@@ -139,17 +203,17 @@ export class PostService {
         console.log('postId:', postId);
         return this.commentRepository.find({
             where: { post: { id: postId }, parentId: IsNull() },
-            // IsNull()은 항상 'IS NULL' SQL 조건으로 변환되어, 데이터베이스에서 NULL 값을 정확히 찾음
-            // post는 Comment 엔티티에서 Post 엔티티로의 관계를 나타냄
-            // { id: postId }는 해당 Post 엔티티의 id가 주어진 postId와 일치해야 함을 의미, 외래키에 접근
-            // parent: null 이 조건은 최상위 댓글만을 선택하기 위한 것
             relations: ['replies', 'replies.replies'],
-            order: { createdAt: 'DESC' }, //최신 댓글순으로 정렬
+            order: { createdAt: 'DESC' },
         });
     }
 
     // 댓글 조회 (유저별)
-    async fetchUserComments(userId: string, page: number = 1, pageSize: number = 10) {
+    async fetchUserComments(
+        userId: string,
+        page: number = 1,
+        pageSize: number = 10,
+    ) {
         const [comments, total] = await this.commentRepository.findAndCount({
             where: { userId: userId },
             order: { createdAt: 'DESC' },
@@ -172,6 +236,7 @@ export class PostService {
         console.log('content:', content);
         return this.commentRepository.update({ id: commentId }, { content });
     }
+
     // 댓글 삭제
     async deleteComment(commentId) {
         const comment = await this.commentRepository.findOne({
@@ -192,4 +257,51 @@ export class PostService {
 
         return { deletedComment, deletedReplies };
     }
+
+    // Redis의 조회수를 데이터베이스에 동기화
+    async syncViewsToDatabase() {
+        const posts = await this.postRepository.find();
+        for (const post of posts) {
+            const cacheKey = `post:${post.id}:views`;
+            const cachedViews = await this.cacheManager.get<number>(cacheKey);
+            if (cachedViews !== undefined && cachedViews !== post.views) {
+                await this.postRepository.update(post.id, {
+                    views: cachedViews,
+                });
+            }
+        }
+    }
+
+    // 매 시간마다 조회수 동기화
+    @Cron(CronExpression.EVERY_HOUR)
+    async handleViewsSynchronization() {
+        console.log('Synchronizing views to database...');
+        await this.syncViewsToDatabase();
+    }
+
+    // // 매일 자정에 인기 게시물 집계
+    // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+    // async aggregatePopularPosts() {
+    //     console.log('Aggregating popular posts...');
+    //     const popularPosts = await this.getPopularPosts(10);
+    //     // 여기서 집계된 인기 게시물을 처리할 수 있습니다.
+    //     // 예: 데이터베이스에 저장, 캐시에 저장, 알림 발송 등
+    // }
+
+    // // 매주 일요일 새벽 3시에 오래된 게시물 아카이브
+    // @Cron('0 3 * * 0')
+    // async archiveOldPosts() {
+    //     console.log('Archiving old posts...');
+    //     const oneMonthAgo = new Date();
+    //     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+    //     const oldPosts = await this.postRepository.find({
+    //         where: {
+    //             createdAt: IsNull(oneMonthAgo),
+    //         },
+    //     });
+
+    //     // 여기서 오래된 게시물을 아카이브하거나 처리할 수 있습니다.
+    //     // 예: 별도의 테이블로 이동, 상태 변경 등
+    // }
 }
