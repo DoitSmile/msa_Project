@@ -45,6 +45,17 @@ axios.interceptors.response.use(
 );
 
 const AuthService = {
+  getCurrentUserAsync: async function () {
+    // 여기에 사용자 정보를 비동기적으로 가져오는 로직을 구현합니다.
+    // 예: 로컬 스토리지에서 가져오거나, 필요하다면 서버에 요청을 보내 가져옵니다.
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const user = this.getCurrentUser();
+        resolve(user);
+      }, 100); // 실제 구현에서는 이 지연을 제거하거나 적절히 조정하세요.
+    });
+  },
+
   decodeToken: (token) => {
     try {
       const base64Url = token.split(".")[1];

@@ -11,9 +11,13 @@ import {
   Req,
   UseGuards,
   Param,
+  UseInterceptors,
+  UploadedFile,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateCommentInput } from 'src/dto/postdto/create-comment.input-dto';
 import { CreatPostInput } from 'src/dto/postdto/create-post.input-dto';
 import { UpdatePostInput } from 'src/dto/postdto/update-post.input-dto';
@@ -25,34 +29,90 @@ export class PostController {
     private readonly clientPostService: ClientProxy,
   ) {}
 
-  // 게시물 생성
   @UseGuards(AuthGuard('access'))
   @Post('/post/create')
-  createPost(@Body() createPostInput: CreatPostInput, @Req() req) {
+  @UseInterceptors(FileInterceptor('image'))
+  async createPost(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() createPostInput: CreatPostInput,
+    @Req() req,
+  ) {
     const name = req.user.name;
     const userId = req.user.id;
-    console.log('createPostInput:', createPostInput);
+
+    let imageUrl = null;
+    if (file) {
+      const fileData = {
+        filename: file.originalname,
+        mimetype: file.mimetype,
+        buffer: file.buffer.toString('base64'),
+      };
+
+      try {
+        const uploadResult = await this.clientPostService
+          .send({ cmd: 'uploadImage' }, fileData)
+          .toPromise();
+        imageUrl = uploadResult.url;
+      } catch (error) {
+        console.error('Image upload error:', error);
+        throw new InternalServerErrorException('Image upload failed');
+      }
+    }
+
+    // content에서 base64 이미지 URL을 실제 이미지 URL로 교체
+    if (imageUrl) {
+      createPostInput.content = createPostInput.content.replace(
+        /<img[^>]*src="data:image\/[^;]+;base64,[^"]*"[^>]*>/g,
+        `<img src="${imageUrl}" />`,
+      );
+    }
+
     return this.clientPostService.send(
       { cmd: 'createPost' },
-      { createPostInput, name, userId },
+      { createPostInput, name, userId, imageUrl },
     );
   }
 
-  // 게시글 수정
   @UseGuards(AuthGuard('access'))
-  @Put('/post/update')
-  updatePost(
-    @Body('postId') postId: string,
-    @Body('updatePostInput') updatePostInput: UpdatePostInput,
+  @Put('/post/update/:postId')
+  @UseInterceptors(FileInterceptor('image'))
+  async updatePost(
+    @UploadedFile() file: Express.Multer.File,
+    @Param('postId') postId: string,
+    @Body() updatePostInput: UpdatePostInput,
   ) {
-    console.log('postId:', postId);
-    console.log('updatePostInput:', updatePostInput);
+    let imageUrl = null;
+    if (file) {
+      const fileData = {
+        filename: file.originalname,
+        mimetype: file.mimetype,
+        buffer: file.buffer.toString('base64'),
+      };
+
+      try {
+        const uploadResult = await this.clientPostService
+          .send({ cmd: 'uploadImage' }, fileData)
+          .toPromise();
+        imageUrl = uploadResult.url;
+      } catch (error) {
+        console.error('Image upload error:', error);
+        throw new InternalServerErrorException('Image upload failed');
+      }
+    }
+
+    // content에서 base64 이미지 URL을 실제 이미지 URL로 교체
+    if (imageUrl && updatePostInput.content) {
+      updatePostInput.content = updatePostInput.content.replace(
+        /<img[^>]*src="data:image\/[^;]+;base64,[^"]*"[^>]*>/g,
+        `<img src="${imageUrl}" />`,
+      );
+    }
+
     return this.clientPostService.send(
       { cmd: 'updatePost' },
-      { postId, updatePostInput },
+      { postId, updatePostInput, imageUrl },
     );
   }
-
   // 게시글 삭제
   @UseGuards(AuthGuard('access'))
   @Delete('/post/delete/:id')
@@ -77,9 +137,15 @@ export class PostController {
 
   // 특정 게시물 조회
   @Get('/post/fetch/:id')
-  async fetchPost(@Param('id') postId: string) {
+  async fetchPost(
+    @Param('id') postId: string,
+    @Query('userId') userId: string,
+  ) {
     console.log('postId:', postId);
-    return this.clientPostService.send({ cmd: 'fetchPost' }, { postId });
+    return this.clientPostService.send(
+      { cmd: 'fetchPost' },
+      { postId, userId },
+    );
   }
 
   // 카테고리별 게시물 조회

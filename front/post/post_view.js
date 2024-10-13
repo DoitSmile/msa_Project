@@ -43,7 +43,12 @@ const PostManager = (function () {
   function setElementHTML(selector, html) {
     const element = document.querySelector(selector);
     if (element) {
-      element.innerHTML = html;
+      // 기존 내용을 비우고
+      element.textContent = "";
+      // 새로운 내용을 파싱하여 삽입
+      const template = document.createElement("template");
+      template.innerHTML = html.trim();
+      element.appendChild(template.content);
     } else {
       console.warn(`Element with selector '${selector}' not found`);
     }
@@ -52,58 +57,71 @@ const PostManager = (function () {
   function createCategoryLink(category) {
     return `<a href="post_list.html?type=${category.categoryId}" class="category-link">${category.name}</a>`;
   }
-
-  function fetchPostDetails() {
+  async function fetchPostDetails() {
     console.log(`Fetching post details for ID: ${currentPostId}`);
-    axiosInstance
-      .get(`/post/fetch/${currentPostId}`)
-      .then(function (response) {
-        console.log(
-          `Received post details for ID: ${currentPostId}`,
-          response.data
-        );
-        const post = response.data;
-        if (!post) {
-          throw new Error("게시글 데이터가 없습니다.");
-        }
 
-        setElementHTML("#category-link", createCategoryLink(post.category));
-        setElementText("post-title", post.title);
-        setElementText("post-content", post.content);
-        setElementHTML(
-          ".post-info",
-          `
-          작성자: <a href="/profile/${post.name}" class="user-link">${
-            post.name
-          }</a> |
-          작성일: ${new Date(post.createdAt).toLocaleString()}
-          `
-        );
-        setElementText("post-views", post.views || "정보 없음");
-        setElementText("likeCount", post.likes || "0");
-        setElementText("comment-count", post.commentCount || "0");
+    // 사용자 정보를 비동기적으로 가져옵니다.
+    const currentUser = await AuthService.getCurrentUserAsync();
+    const currentUserId = currentUser ? currentUser.id : null;
 
-        const currentUser = AuthService.getCurrentUser();
-        const postActions = document.querySelector(".edit-delete-buttons");
-        if (postActions) {
-          if (currentUser && currentUser.id === post.userId) {
-            postActions.style.display = "block";
-          } else {
-            postActions.style.display = "none";
-          }
-        }
-
-        fetchComments();
-      })
-      .catch(function (error) {
-        console.error(
-          `Error fetching post details for ID: ${currentPostId}`,
-          error
-        );
-        alert("게시글을 불러오는데 실패했습니다.");
+    console.log("currentUserId:", currentUserId);
+    try {
+      const response = await axiosInstance.get(`/post/fetch/${currentPostId}`, {
+        params: { userId: currentUserId },
       });
-  }
 
+      console.log(
+        `Received post details for ID: ${currentPostId}`,
+        response.data
+      );
+      const post = response.data;
+      if (!post) {
+        throw new Error("게시글 데이터가 없습니다.");
+      }
+
+      console.log("post.content:", post.content);
+      // 게시글 정보를 화면에 표시하는 로직...
+      setElementHTML("#category-link", createCategoryLink(post.category));
+      setElementText("post-title", post.title);
+      setElementHTML("post-content", post.content); // 여기를 수정했습니다
+      // content를 직접 설정
+      const postContentElement = document.getElementById("post-content");
+      if (postContentElement) {
+        postContentElement.innerHTML = post.content;
+      } else {
+        console.error("post-content element not found");
+      }
+
+      setElementHTML(
+        ".post-info",
+        `
+    작성자: <a href="/profile/${post.name}" class="user-link">${post.name}</a> |
+    작성일: ${new Date(post.createdAt).toLocaleString()}
+    `
+      );
+      setElementText("post-views", post.views || "정보 없음");
+      setElementText("likeCount", post.likes || "0");
+      setElementText("comment-count", post.commentCount || "0");
+
+      // 수정/삭제 버튼 표시 여부 결정
+      const postActions = document.querySelector(".edit-delete-buttons");
+      if (postActions) {
+        if (currentUser && currentUser.id === post.userId) {
+          postActions.style.display = "block";
+        } else {
+          postActions.style.display = "none";
+        }
+      }
+
+      fetchComments();
+    } catch (error) {
+      console.error(
+        `Error fetching post details for ID: ${currentPostId}`,
+        error
+      );
+      alert("게시글을 불러오는데 실패했습니다.");
+    }
+  }
   function renderComments(comments) {
     const commentsContainer = document.getElementById("comments-container");
     if (!commentsContainer) return;
@@ -407,7 +425,7 @@ const PostManager = (function () {
     }
   }
 
-  function init() {
+  async function init() {
     const editPostBtn = document.getElementById("editPostBtn");
     const deletePostBtn = document.getElementById("deletePostBtn");
     const likeButton = document.getElementById("likeButton");
@@ -421,7 +439,7 @@ const PostManager = (function () {
     console.log("Initialized. currentPostId:", currentPostId);
 
     if (currentPostId) {
-      fetchPostDetails();
+      await fetchPostDetails(); // await를 사용하여 비동기 처리
     } else {
       console.error("게시글 ID가 제공되지 않았습니다.");
       alert("게시글 ID가 제공되지 않았습니다.");

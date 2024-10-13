@@ -28,11 +28,14 @@ export class Post {
   @Column({ default: 0 })
   views: number;
 
-  @Column()
+  @Column("text")
   content: string;
 
   @Column()
   name: string;
+
+  @Column({ nullable: true })
+  imageUrl: string;
 
   @Column()
   userId: string;

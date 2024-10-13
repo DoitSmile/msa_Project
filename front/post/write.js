@@ -46,9 +46,8 @@ document.addEventListener("DOMContentLoaded", function () {
       const response = await axios.get(
         `http://localhost:3000/post/fetch/${postId}`
       );
-      console.log("서버 응답:", response.data);
 
-      const post = response.data[0];
+      const post = response.data;
       if (!post) {
         throw new Error("게시글 데이터가 없습니다.");
       }
@@ -91,19 +90,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const formData = new FormData(this);
       formData.append("content", editor.innerHTML);
-      const postData = Object.fromEntries(formData.entries());
 
+      // 이미지 파일 추가
+      const imageFile = imageUpload.files[0];
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
+      // postId를 FormData에 추가 (수정 모드일 때만)
+      if (isEditMode && originalPostId) {
+        formData.append("postId", originalPostId);
+      }
+
+      console.log("formData:", formData);
       try {
         let response;
         if (isEditMode) {
-          response = await axios.put("http://localhost:3000/post/update", {
-            postId: originalPostId,
-            updatePostInput: postData,
-          });
+          response = await axios.put(
+            `http://localhost:3000/post/update/${originalPostId}`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
         } else {
           response = await axios.post(
             "http://localhost:3000/post/create",
-            postData
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
           );
         }
 
@@ -114,18 +134,12 @@ document.addEventListener("DOMContentLoaded", function () {
             : "글이 성공적으로 등록되었습니다."
         );
 
-        const category =
-          response.data.category ||
-          response.data.categoryId ||
-          postData.categoryId;
-        window.location.href = `post_list.html?type=${category}`;
+        window.location.href = `post_view.html?id=${originalPostId}`;
       } catch (error) {
         console.error("에러 발생:", error);
         handleError(error);
       }
     });
-  } else {
-    console.error("Form not found");
   }
 
   function handleError(error) {
@@ -204,6 +218,7 @@ document.addEventListener("DOMContentLoaded", function () {
     imageBtn.addEventListener("click", () => imageUpload.click());
 
   // 이미지 업로드 처리
+  // 이미지 미리보기 기능
   if (imageUpload) {
     imageUpload.addEventListener("change", function (e) {
       const file = e.target.files[0];
@@ -233,7 +248,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
-
   function selectImage(e) {
     e.stopPropagation();
     const images = editor.querySelectorAll("img");

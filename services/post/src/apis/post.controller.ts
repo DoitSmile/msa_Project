@@ -2,10 +2,31 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { PostService } from './post.service';
+import { ImageFile } from 'src/interfaces/post-service.interface';
 
 @Controller()
 export class PostController {
     constructor(private readonly postService: PostService) {}
+
+    // 이미지 업로드 처리
+    @MessagePattern({ cmd: 'uploadImage' })
+    async uploadImage(data: {
+        filename: string;
+        mimetype: string;
+        buffer: string;
+    }) {
+        if (!data || !data.buffer) {
+            throw new Error('Invalid file data received');
+        }
+
+        const file: ImageFile = {
+            originalname: data.filename,
+            mimetype: data.mimetype,
+            buffer: Buffer.from(data.buffer, 'base64'),
+        };
+
+        return await this.postService.uploadImage(file);
+    }
 
     // 게시물 생성
     @MessagePattern({ cmd: 'createPost' })
@@ -15,6 +36,7 @@ export class PostController {
             data.createPostInput,
             data.name,
             data.userId,
+            data.imageUrl,
         );
     }
 
@@ -25,9 +47,9 @@ export class PostController {
         return await this.postService.updatePost(
             data.postId,
             data.updatePostInput,
+            data.imageUrl,
         );
     }
-
     // 게시글 삭제
     @MessagePattern({ cmd: 'deletePost' })
     async deletePosts(data) {
@@ -50,7 +72,7 @@ export class PostController {
     @MessagePattern({ cmd: 'fetchPost' })
     async fetchPost(data) {
         console.log('data:', data);
-        return await this.postService.fetchPost(data.postId);
+        return await this.postService.fetchPost(data.postId, data.userId);
     }
 
     // 전체 게시글 조회
