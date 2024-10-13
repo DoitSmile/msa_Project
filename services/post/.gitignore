@@ -2,7 +2,7 @@
 /dist
 /node_modules
 /build
-gcp-file-storage.json
+services/post/gcp-file-storage.json
 
 # Logs
 logs
