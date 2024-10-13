@@ -9,7 +9,51 @@
   </head>
   <body>
     <header>
-      <!-- 헤더 내용 (변경 없음) -->
+      <div class="header-content">
+        <div class="logo-category">
+          <h1><a href="/msa_Project/front/index.html">TalkTime</a></h1>
+          <nav>
+            <ul>
+              <li><a href="/msa_Project/front/index.html">홈</a></li>
+              <li><a href="#">보관함</a></li>
+              <li class="category">
+                <button class="category-btn">카테고리</button>
+                <div class="category-content">
+                  <a
+                    href="post_list.html?type=a39a5e4b-847d-11ef-84d2-0242ac120007"
+                    >자유</a
+                  >
+                  <a
+                    href="post_list.html?type=afaf3aaf-847d-11ef-84d2-0242ac120007"
+                    >친목</a
+                  >
+                  <a
+                    href="post_list.html?type=0dcf3371-7996-11ef-b2ad-0242ac120004"
+                    >연애</a
+                  >
+                  <a
+                    href="post_list.html?type=b7b56a55-847d-11ef-84d2-0242ac120007"
+                    >게임</a
+                  >
+                  <a
+                    href="post_list.html?type=b2e6f193-847d-11ef-84d2-0242ac120007"
+                    >스터디모집</a
+                  >
+                </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <form action="#" method="get" class="search-form">
+          <input
+            type="search"
+            name="q"
+            placeholder="검색어를 입력하세요"
+            required
+          />
+          <button type="submit">검색</button>
+        </form>
+      </div>
     </header>
     <div class="detail-body">
       <div class="container">
@@ -19,8 +63,11 @@
           >
           <h1 id="post-title" class="post-title">오늘 낮잠을 너무 잤네요</h1>
           <div class="post-info">
-            작성자: <a href="/profile/김가연" class="user-link">김가연</a> |
-            작성일: 2024-09-25 14:30
+            작성자:
+            <a href="/profile/김가연" id="user-link" class="user-link"
+              >김가연</a
+            >
+            | 작성일: 2024-09-25 14:30
           </div>
           <div class="edit-delete-buttons">
             <button id="editPostBtn">수정</button>

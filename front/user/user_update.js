@@ -12,9 +12,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const deleteAccountModal = document.getElementById("deleteAccountModal");
   const cropModal = document.getElementById("cropModal");
 
-  // 현재 로그인한 사용자의 ID를 저장할 변수
-  let currentUserId;
-
   // 이벤트 리스너
   saveChangesBtn.onclick = saveChanges;
   changePasswordBtn.onclick = () =>
@@ -53,35 +50,32 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 현재 사용자 ID 가져오기
   async function getCurrentUserId() {
-    const token = AuthService.getToken();
-    if (!token) {
-      throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
-    }
-
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      currentUserId = payload.id;
-      console.log("currentUserId:", currentUserId);
-
-      if (!currentUserId) {
-        throw new Error("사용자 ID를 찾을 수 없습니다.");
+      const currentUser = await AuthService.getCurrentUserAsync();
+      if (!currentUser || !currentUser.id) {
+        throw new Error("사용자 정보를 찾을 수 없습니다.");
       }
+      return currentUser.id;
     } catch (error) {
-      console.error("토큰 디코딩 중 오류 발생:", error);
-      throw new Error("사용자 인증에 실패했습니다. 다시 로그인해주세요.");
+      console.error("사용자 ID 가져오기 오류:", error);
+      throw new Error("인증에 실패했습니다. 다시 로그인해주세요.");
     }
   }
 
   // 현재 사용자 데이터 가져오기
   async function fetchUserData() {
     try {
-      await getCurrentUserId();
-      const response = await axios.post(
+      const currentUserId = await getCurrentUserId();
+      const token = AuthService.getToken();
+      if (!token) {
+        throw new Error("인증 토큰이 없습니다. 다시 로그인해주세요.");
+      }
+
+      const response = await axios.get(
         `http://localhost:3000/user/fetch/${currentUserId}`,
-        {},
         {
           headers: {
-            Authorization: `Bearer ${AuthService.getToken()}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -90,9 +84,16 @@ document.addEventListener("DOMContentLoaded", function () {
       populateUserData(response.data);
     } catch (error) {
       console.error("사용자 데이터 가져오기 오류:", error);
-      showNotification(
-        "사용자 데이터를 불러오는데 실패했습니다. 오류: " + error.message
-      );
+      if (error.response && error.response.status === 401) {
+        // 인증 오류 처리
+        AuthService.logout();
+        showNotification("인증이 만료되었습니다. 다시 로그인해주세요.");
+        window.location.href = "/msa_Project/front/index.html";
+      } else {
+        showNotification(
+          "사용자 데이터를 불러오는데 실패했습니다. 오류: " + error.message
+        );
+      }
     }
   }
 
@@ -123,6 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     try {
+      const currentUserId = await getCurrentUserId();
       const response = await axios.post(
         `http://localhost:3000/user/update/${currentUserId}`,
         updateUserInput,
@@ -145,7 +147,13 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     } catch (error) {
       console.error("사용자 데이터 업데이트 오류:", error);
-      showNotification("업데이트 중 오류가 발생했습니다. 다시 시도해주세요.");
+      if (error.response && error.response.status === 401) {
+        AuthService.logout();
+        showNotification("인증이 만료되었습니다. 다시 로그인해주세요.");
+        window.location.href = "/msa_Project/front/index.html";
+      } else {
+        showNotification("업데이트 중 오류가 발생했습니다. 다시 시도해주세요.");
+      }
     }
   }
 
@@ -175,6 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     try {
+      const currentUserId = await getCurrentUserId();
       const response = await axios.post(
         `http://localhost:3000/user/update/password/${currentUserId}`,
         updatePasswordInput,
@@ -205,23 +214,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // 이벤트 리스너 설정
-  document.addEventListener("DOMContentLoaded", () => {
-    const confirmPasswordChangeBtn = document.getElementById(
-      "confirm-password-change"
-    );
-    if (confirmPasswordChangeBtn) {
-      confirmPasswordChangeBtn.addEventListener("click", changePassword);
-    } else {
-      console.error("비밀번호 변경 확인 버튼을 찾을 수 없습니다.");
-    }
-  });
-
   // 계정 탈퇴
   async function deleteAccount() {
     const deletePassword = document.getElementById("delete-password").value;
 
     try {
+      const currentUserId = await getCurrentUserId();
       const response = await axios.post(
         `http://localhost:3000/user/delete/${currentUserId}`,
         {

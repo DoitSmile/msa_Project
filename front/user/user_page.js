@@ -8,6 +8,13 @@ const UserProfileManager = (function () {
   let currentPostPage = 1;
   let currentCommentPage = 1;
   const pageSize = 10;
+  let viewedUserId = null;
+
+  // URL에서 사용자 ID 파라미터 가져오기
+  function getUserIdFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("id");
+  }
 
   // 요소의 텍스트 설정
   function setElementText(id, text) {
@@ -30,23 +37,23 @@ const UserProfileManager = (function () {
   }
 
   // 사용자 프로필 정보 업데이트
-  function updateUserProfile(currentUser, postCount, commentCount) {
-    console.log("현재 사용자 정보:", currentUser);
-    setElementText("userName", currentUser.name || "이름 없음");
-    setElementHTML(
-      "postCount",
-      `총 작성글 : <span class="stat-highlight">${postCount}</span>`
-    );
-    setElementHTML(
-      "commentCount",
-      `총 작성댓글 수 : <span class="stat-highlight">${commentCount}</span>`
-    );
+  async function updateUserProfile(userId) {
+    try {
+      const response = await axios.get(`/user/fetch/${userId}`);
+      const userData = response.data;
+      console.log("사용자 정보:", userData);
 
-    // 프로필 이미지 업데이트
-    const profileImage = document.querySelector(".profile-image");
-    if (profileImage) {
-      profileImage.src =
-        currentUser.profileImage || "https://via.placeholder.com/120";
+      setElementText("userName", userData.name || "이름 없음");
+
+      // 프로필 이미지 업데이트
+      const profileImage = document.querySelector(".profile-image");
+      if (profileImage) {
+        profileImage.src =
+          userData.profileImage || "https://via.placeholder.com/120";
+      }
+    } catch (error) {
+      console.error("사용자 정보 로드 중 오류 발생:", error);
+      alert("사용자 정보를 불러오는 데 실패했습니다.");
     }
   }
 
@@ -74,7 +81,14 @@ const UserProfileManager = (function () {
         setElementHTML("posts-container", "<p>작성한 게시글이 없습니다.</p>");
         document.getElementById("posts-pagination").style.display = "none";
       }
-      return total; // 총 게시글 수 반환
+
+      // 총 게시글 수 업데이트
+      setElementHTML(
+        "postCount",
+        `총 작성글 : <span class="stat-highlight">${total}</span>`
+      );
+
+      return total;
     } catch (error) {
       console.error("게시글 로드 중 오류 발생:", error);
       setElementHTML(
@@ -85,6 +99,7 @@ const UserProfileManager = (function () {
       return 0;
     }
   }
+
   // 댓글 데이터 로드
   async function loadCommentData(userId, page = 1) {
     try {
@@ -109,7 +124,14 @@ const UserProfileManager = (function () {
         setElementHTML("comments-container", "<p>작성한 댓글이 없습니다.</p>");
         document.getElementById("comments-pagination").style.display = "none";
       }
-      return total; // 총 댓글 수 반환
+
+      // 총 댓글 수 업데이트
+      setElementHTML(
+        "commentCount",
+        `총 작성댓글 수 : <span class="stat-highlight">${total}</span>`
+      );
+
+      return total;
     } catch (error) {
       console.error("댓글 로드 중 오류 발생:", error);
       setElementHTML(
@@ -120,6 +142,7 @@ const UserProfileManager = (function () {
       return 0;
     }
   }
+
   // 아이템 렌더링 (게시글 또는 댓글)
   function renderItems(items, containerId) {
     const container = document.getElementById(containerId);
@@ -143,7 +166,9 @@ const UserProfileManager = (function () {
 
       if (containerId === "posts-container") {
         itemElement.innerHTML = `
-          <h3><a href="post_detail.html?id=${item.id}">${item.title}</a></h3>
+          <h3><a href="/msa_Project/front/post/post_view.html?id=${item.id}">${
+          item.title
+        }</a></h3>
           <p>${item.category?.name || "Unknown"} | ${new Date(
           item.createdAt
         ).toLocaleString()}</p>
@@ -209,29 +234,29 @@ const UserProfileManager = (function () {
     document.querySelector(".content-wrapper").scrollTop = 0;
 
     // 탭 전환 시 해당 탭의 데이터 로드
-    const currentUser = AuthService.getCurrentUser();
-    if (currentUser && currentUser.id) {
+    if (viewedUserId) {
       if (tabName === "posts") {
-        loadPostData(currentUser.id, 1);
+        loadPostData(viewedUserId, 1);
       } else if (tabName === "comments") {
-        loadCommentData(currentUser.id, 1);
+        loadCommentData(viewedUserId, 1);
       }
     }
   }
+
   // 초기화 함수
   async function init() {
-    const currentUser = AuthService.getCurrentUser();
-    console.log("현재 사용자:", currentUser);
-    if (currentUser && currentUser.id) {
-      const postCount = await loadPostData(currentUser.id, 1);
-      const commentCount = await loadCommentData(currentUser.id, 1);
-      updateUserProfile(currentUser, postCount, commentCount);
-      switchTab("posts"); // 초기 탭을 게시글로 설정
-    } else {
-      console.error("로그인된 사용자 정보가 없습니다.");
-      alert("로그인이 필요합니다.");
+    viewedUserId = getUserIdFromUrl();
+    if (!viewedUserId) {
+      console.error("유효한 사용자 ID가 URL에 없습니다.");
+      alert("유효한 사용자 정보가 없습니다.");
       window.location.href = "/msa_Project/front/index.html";
+      return;
     }
+
+    await updateUserProfile(viewedUserId);
+    await loadPostData(viewedUserId, 1);
+    await loadCommentData(viewedUserId, 1);
+    switchTab("posts"); // 초기 탭을 게시글로 설정
 
     // 탭 전환 이벤트 리스너 추가
     document.querySelectorAll(".content-nav li").forEach((tab) => {

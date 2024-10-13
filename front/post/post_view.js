@@ -55,7 +55,7 @@ const PostManager = (function () {
   }
 
   function createCategoryLink(category) {
-    return `<a href="post_list.html?type=${category.categoryId}" class="category-link">${category.name}</a>`;
+    return `<a href="post_list.html?type=${category.id}" class="category-link">${category.name}</a>`;
   }
   async function fetchPostDetails() {
     console.log(`Fetching post details for ID: ${currentPostId}`);
@@ -80,10 +80,10 @@ const PostManager = (function () {
       }
 
       console.log("post.content:", post.content);
-      // 게시글 정보를 화면에 표시하는 로직...
+      // 게시글 정보를 화면에 표시하는 로직
       setElementHTML("#category-link", createCategoryLink(post.category));
       setElementText("post-title", post.title);
-      setElementHTML("post-content", post.content); // 여기를 수정했습니다
+      setElementHTML("post-content", post.content);
       // content를 직접 설정
       const postContentElement = document.getElementById("post-content");
       if (postContentElement) {
@@ -95,7 +95,9 @@ const PostManager = (function () {
       setElementHTML(
         ".post-info",
         `
-    작성자: <a href="/profile/${post.name}" class="user-link">${post.name}</a> |
+    작성자: <a href="/msa_Project/front/user/user_page.html?id=${
+      post.userId
+    }" class="user-link">${post.name}</a> |
     작성일: ${new Date(post.createdAt).toLocaleString()}
     `
       );
@@ -103,6 +105,7 @@ const PostManager = (function () {
       setElementText("likeCount", post.likes || "0");
       setElementText("comment-count", post.commentCount || "0");
 
+      console.log("글작성자:", post.userId);
       // 수정/삭제 버튼 표시 여부 결정
       const postActions = document.querySelector(".edit-delete-buttons");
       if (postActions) {

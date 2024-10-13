@@ -56,24 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function fetchPosts() {
-    // // 인기 게시물 가져오기
-    // axios
-    //   .get("/posts/fetch/popular")
-    //   .then(function (response) {
-    //     console.log("인기 게시물 응답:", response.data);
-    //     const popularPosts = Array.isArray(response.data) ? response.data : [];
-    //     renderPosts(popularPosts, popularPostList);
-    //   })
-    //   .catch(function (error) {
-    //     console.error("인기 게시글 목록 조회 중 오류 발생:", error);
-    //     console.error(
-    //       "오류 상세:",
-    //       error.response ? error.response.data : error.message
-    //     );
-    //     popularPostList.innerHTML =
-    //       "<li>인기 게시글을 불러오는데 실패했습니다.</li>";
-    //   });
-
     // 최근 게시물 가져오기
     axios
       .get("/posts/fetch/all")
@@ -94,18 +76,33 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function viewPost(postId) {
-    window.location.href = `post_view.html?id=${postId}`;
+    window.location.href = `/msa_Project/front/post/post_view.html?id=${postId}`;
   }
 
   function toggleLoginMypage() {
     const loginContent = document.getElementById("loginContent");
     const profileContent = document.getElementById("profileContent");
     const sectionTitle = document.getElementById("sectionTitle");
+    const myPostsLink = document.getElementById("myPostsLink");
+    const accountManagementLink = document.getElementById(
+      "accountManagementLink"
+    );
+    const userNameSpan = document.getElementById("userNameSpan");
 
     if (AuthService.isAuthenticated()) {
+      const currentUser = AuthService.getCurrentUser();
       loginContent.style.display = "none";
       profileContent.style.display = "block";
       sectionTitle.textContent = "마이페이지";
+
+      // 사용자 이름 표시
+      userNameSpan.textContent = currentUser.name || "사용자";
+
+      // 내가 쓴 글 링크 설정
+      myPostsLink.href = `/msa_Project/front/user/user_page.html?id=${currentUser.id}`;
+
+      // 계정 관리 링크 설정
+      accountManagementLink.href = `/msa_Project/front/user/user_update.html?id=${currentUser.id}`;
 
       // 글쓰기 버튼 추가
       const writeButton = document.createElement("button");

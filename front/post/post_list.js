@@ -24,7 +24,7 @@ function renderPosts(isSpecialPage = false) {
         ${
           !isSpecialPage && post.category && post.category.name
             ? `<a href="post_list.html?type=${encodeURIComponent(
-                post.category.categoryId
+                post.category.id
               )}" class="board-type">${post.category.name}</a>`
             : ""
         }
@@ -34,6 +34,7 @@ function renderPosts(isSpecialPage = false) {
               ? `<span class="comments">${post.comments}</span>`
               : ""
           }
+          
           ${post.hasImage ? '<svg class="has-image">...</svg>' : ""}
         </div>
       </td>
@@ -134,6 +135,7 @@ function handleWriteButtonClick(event) {
 // 페이지 로드 시 실행되는 함수
 window.onload = function () {
   const categoryId = getUrlParameter("type");
+  console.log("categoryId-type:", categoryId);
   const pageTitle = document.querySelector(".board-header h1");
 
   if (categoryId) {
