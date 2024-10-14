@@ -26,26 +26,47 @@ export class PostService {
         private readonly cacheManager: Cache,
         private configService: ConfigService,
     ) {
-        // 환경 변수에서 GCP 프로젝트 ID와 키 파일 경로를 가져옵니다.
         const projectId = this.configService.get<string>('GCP_PROJECT_ID');
         const keyFilename = this.configService.get<string>('GCP_KEY_FILENAME');
 
-        // Storage 인스턴스를 생성합니다.
         this.storage = new Storage({
             projectId,
             keyFilename,
         });
 
-        // 버킷 이름을 환경 변수에서 가져옵니다.
         this.bucket = this.configService.get<string>('GCP_STORAGE_BUCKET');
     }
 
-    // 이미지 업로드 처리
-    async uploadImage(file: ImageFile): Promise<{ url: string }> {
-        this.logger.log(`Uploading file: ${file.originalname}`);
+    private removeBase64Images(content: string): string {
+        return content.replace(
+            /<img[^>]*src="data:image\/[^;]+;base64,[^"]*"[^>]*>/g,
+            '',
+        );
+    }
+    async uploadImages(files: ImageFile[]): Promise<string[]> {
+        this.logger.debug(`Starting upload of ${files.length} images`);
+        if (!files || files.length === 0) {
+            this.logger.debug('No files to upload');
+            return [];
+        }
+
+        const uploadPromises = files.map((file) => this.uploadImage(file));
+        const results = await Promise.all(uploadPromises);
+        const uploadedUrls = results.filter((url) => url !== null);
+        this.logger.debug(
+            `Successfully uploaded ${uploadedUrls.length} images`,
+        );
+        return uploadedUrls;
+    }
+
+    private async uploadImage(file: ImageFile): Promise<string | null> {
+        this.logger.debug(`Uploading file: ${file.originalname}`);
         const bucket = this.storage.bucket(this.bucket);
-        const fileName = `${Date.now()}-${file.originalname}`;
-        const fileUpload = bucket.file(fileName);
+
+        const fileExtension = file.originalname.split('.').pop();
+        const safeFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExtension}`;
+
+        const fileUpload = bucket.file(safeFileName);
 
         try {
             await fileUpload.save(file.buffer, {
@@ -54,23 +75,23 @@ export class PostService {
                 },
             });
 
-            const publicUrl = `https://storage.googleapis.com/${this.bucket}/${fileName}`;
-            this.logger.log(`File uploaded successfully: ${publicUrl}`);
-            return { url: publicUrl };
+            const publicUrl = `https://storage.googleapis.com/${this.bucket}/${safeFileName}`;
+            this.logger.debug(`File uploaded successfully: ${publicUrl}`);
+            return publicUrl;
         } catch (error) {
             this.logger.error(
                 `File upload failed: ${error.message}`,
                 error.stack,
             );
-            throw new Error('파일 업로드에 실패했습니다.');
+            return null;
         }
     }
 
-    // 게시물 생성
-    async createPost(createPostInput, name, userId, imageUrl?: string) {
+    async createPost(createPostInput, name, userId, files: ImageFile[]) {
+        this.logger.debug(`Creating post with ${files.length} images`);
         const { title, content, categoryId } = createPostInput;
 
-        // content에서 base64 이미지 데이터 제거
+        const imageUrls = await this.uploadImages(files);
         const cleanedContent = this.removeBase64Images(content);
 
         const newPost = this.postRepository.create({
@@ -79,14 +100,20 @@ export class PostService {
             name,
             title,
             content: cleanedContent,
-            imageUrl,
+            imageUrls,
         });
 
-        return await this.postRepository.save(newPost);
+        const savedPost = await this.postRepository.save(newPost);
+        this.logger.debug(
+            `Post created with ID: ${savedPost.id}, Image URLs: ${savedPost.imageUrls}`,
+        );
+        return savedPost;
     }
 
-    // 게시글 수정
-    async updatePost(postId, updatePostInput, imageUrl?: string) {
+    async updatePost(postId, updatePostInput, files: ImageFile[]) {
+        this.logger.debug(
+            `Updating post ${postId} with ${files.length} images`,
+        );
         const { title, content } = updatePostInput;
         const post = await this.postRepository.findOne({
             where: { id: postId },
@@ -96,32 +123,23 @@ export class PostService {
             throw new NotFoundException('Post not found');
         }
 
-        // content에서 base64 이미지 데이터 제거
+        const imageUrls = await this.uploadImages(files);
         const cleanedContent = this.removeBase64Images(content);
 
         post.title = title;
         post.content = cleanedContent;
-        if (imageUrl) {
-            post.imageUrl = imageUrl;
-        }
+        post.imageUrls = imageUrls;
 
-        return await this.postRepository.save(post);
-    }
-
-    // base64 이미지 데이터 제거 함수
-    private removeBase64Images(content: string): string {
-        return content.replace(
-            /<img[^>]*src="data:image\/[^;]+;base64,[^"]*"[^>]*>/g,
-            '',
+        const updatedPost = await this.postRepository.save(post);
+        this.logger.debug(
+            `Post updated with ID: ${updatedPost.id}, Image URLs: ${updatedPost.imageUrls}`,
         );
+        return updatedPost;
     }
-
-    // 게시글 삭제
     async deletePosts(postId) {
         return await this.postRepository.softRemove({ id: postId });
     }
 
-    // 전체 게시글 보기 (최신순)
     async fetchPosts() {
         const posts = await this.postRepository.find({
             order: { createdAt: 'DESC' },
@@ -129,7 +147,6 @@ export class PostService {
             relations: ['category'],
         });
 
-        // Redis에서 각 게시물의 조회수를 가져와 업데이트
         for (const post of posts) {
             const cacheKey = `post:${post.id}:views`;
             const cachedViews = await this.cacheManager.get<number>(cacheKey);
@@ -139,9 +156,7 @@ export class PostService {
         return posts;
     }
 
-    // 카테고리별 게시글 보기
     async fetchCategoryPosts(categoryId) {
-        console.log('최종:', categoryId);
         const posts = await this.postRepository.find({
             where: { category: { id: categoryId } },
             order: { createdAt: 'DESC' },
@@ -149,7 +164,6 @@ export class PostService {
             relations: ['category'],
         });
 
-        // Redis에서 각 게시물의 조회수를 가져와 업데이트
         for (const post of posts) {
             const cacheKey = `post:${post.id}:views`;
             const cachedViews = await this.cacheManager.get<number>(cacheKey);
@@ -159,7 +173,6 @@ export class PostService {
         return posts;
     }
 
-    // 내 게시글 보기
     async fetchMyPost(userId: string, page: number = 1, pageSize: number = 10) {
         const [posts, total] = await this.postRepository.findAndCount({
             where: { userId: userId },
@@ -169,7 +182,6 @@ export class PostService {
             take: pageSize,
         });
 
-        // Redis에서 각 게시물의 조회수를 가져와 업데이트
         for (const post of posts) {
             const cacheKey = `post:${post.id}:views`;
             const cachedViews = await this.cacheManager.get<number>(cacheKey);
@@ -185,49 +197,34 @@ export class PostService {
         };
     }
 
-    // 특정 게시글 보기 (조회수 증가 포함)
     async fetchPost(postId: string, currentUserId: string) {
         const post = await this.postRepository.findOne({
             where: { id: postId },
             relations: ['category'],
         });
-        console.log('post.userId:', post.userId);
-        console.log('currentUserId:', currentUserId);
+
         if (!post) {
             throw new NotFoundException('Post not found');
         }
 
-        console.log('post.views:', post.views);
         const cacheKey = `post:${postId}:views`;
         let views = post.views;
 
-        // 현재 사용자가 게시글 작성자가 아니고, 최근에 조회하지 않았을 경우에만 조회수 증가
         if (post.userId !== currentUserId) {
             const userViewCacheKey = `post:${postId}:user:${currentUserId}:view`;
             const userViewed = await this.cacheManager.get(userViewCacheKey);
 
             if (!userViewed) {
-                console.log('조회수증가');
                 views++;
-                await this.cacheManager.set(cacheKey, views, 3600000); // 1시간 캐시
-                await this.cacheManager.set(userViewCacheKey, true, 300000); // 5분 동안 중복 조회 방지
-
-                // 데이터베이스 업데이트
+                await this.cacheManager.set(cacheKey, views, 3600000);
+                await this.cacheManager.set(userViewCacheKey, true, 300000);
                 await this.postRepository.update(postId, { views });
             }
         }
 
-        // 이미지 URL 처리
-        if (post.imageUrl) {
-            post.content = post.content.replace(
-                /<img[^>]*src="[^"]*"[^>]*>/g,
-                `<img src="${post.imageUrl}" alt="Post Image" />`,
-            );
-        }
-
         return { ...post, views };
     }
-    // 조회수 조회
+
     async getPostViews(postId: string) {
         const cacheKey = `post:${postId}:views`;
         let views = await this.cacheManager.get<number>(cacheKey);
@@ -238,13 +235,12 @@ export class PostService {
                 select: ['views'],
             });
             views = post?.views || 0;
-            await this.cacheManager.set(cacheKey, views, 3600000); // 1시간 캐시
+            await this.cacheManager.set(cacheKey, views, 3600000);
         }
 
         return { postId, views };
     }
 
-    // 인기 게시물 조회
     async getPopularPosts(limit: number = 10) {
         return this.postRepository.find({
             order: { views: 'DESC' },
@@ -253,7 +249,6 @@ export class PostService {
         });
     }
 
-    // 댓글 생성
     async createComment(createCommentInput, username, userId) {
         const { postId, parentId, content } = createCommentInput;
 
@@ -270,7 +265,6 @@ export class PostService {
             parent = await this.commentRepository.findOne({
                 where: { id: parentId },
             });
-            console.log('parent:', parent);
             if (!parent) {
                 throw new NotFoundException('Parent comment not found');
             }
@@ -287,9 +281,7 @@ export class PostService {
         return this.commentRepository.save(comment);
     }
 
-    // 댓글 조회
     async fetchComment(postId): Promise<Comment[]> {
-        console.log('postId:', postId);
         return this.commentRepository.find({
             where: { post: { id: postId }, parentId: IsNull() },
             relations: ['replies', 'replies.replies'],
@@ -297,7 +289,6 @@ export class PostService {
         });
     }
 
-    // 댓글 조회 (유저별)
     async fetchUserComments(
         userId: string,
         page: number = 1,
@@ -320,13 +311,10 @@ export class PostService {
         };
     }
 
-    // 댓글 수정
     async updateComment(commentId, content) {
-        console.log('content:', content);
         return this.commentRepository.update({ id: commentId }, { content });
     }
 
-    // 댓글 삭제
     async deleteComment(commentId) {
         const comment = await this.commentRepository.findOne({
             where: { id: commentId },
@@ -347,13 +335,11 @@ export class PostService {
         return { deletedComment, deletedReplies };
     }
 
-    // Redis의 조회수를 데이터베이스에 동기화
     async syncViewsToDatabase() {
         const posts = await this.postRepository.find();
         for (const post of posts) {
             const cacheKey = `post:${post.id}:views`;
             const cachedViews = await this.cacheManager.get<number>(cacheKey);
-            console.log('Cached views:', cachedViews);
             if (cachedViews !== undefined && cachedViews !== post.views) {
                 await this.postRepository.update(post.id, {
                     views: cachedViews,
@@ -362,36 +348,9 @@ export class PostService {
         }
     }
 
-    // 매 시간마다 조회수 동기화
     @Cron(CronExpression.EVERY_HOUR)
     async handleViewsSynchronization() {
         console.log('Synchronizing views to database...');
         await this.syncViewsToDatabase();
     }
-
-    // // 매일 자정에 인기 게시물 집계
-    // @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-    // async aggregatePopularPosts() {
-    //     console.log('Aggregating popular posts...');
-    //     const popularPosts = await this.getPopularPosts(10);
-    //     // 여기서 집계된 인기 게시물을 처리할 수 있습니다.
-    //     // 예: 데이터베이스에 저장, 캐시에 저장, 알림 발송 등
-    // }
-
-    // // 매주 일요일 새벽 3시에 오래된 게시물 아카이브
-    // @Cron('0 3 * * 0')
-    // async archiveOldPosts() {
-    //     console.log('Archiving old posts...');
-    //     const oneMonthAgo = new Date();
-    //     oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
-    //     const oldPosts = await this.postRepository.find({
-    //         where: {
-    //             createdAt: IsNull(oneMonthAgo),
-    //         },
-    //     });
-
-    //     // 여기서 오래된 게시물을 아카이브하거나 처리할 수 있습니다.
-    //     // 예: 별도의 테이블로 이동, 상태 변경 등
-    // }
 }

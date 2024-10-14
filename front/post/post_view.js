@@ -1,4 +1,3 @@
-// AuthService import 추가
 import { AuthService } from "/msa_Project/front/auth.js";
 
 const PostManager = (function () {
@@ -43,12 +42,7 @@ const PostManager = (function () {
   function setElementHTML(selector, html) {
     const element = document.querySelector(selector);
     if (element) {
-      // 기존 내용을 비우고
-      element.textContent = "";
-      // 새로운 내용을 파싱하여 삽입
-      const template = document.createElement("template");
-      template.innerHTML = html.trim();
-      element.appendChild(template.content);
+      element.innerHTML = html;
     } else {
       console.warn(`Element with selector '${selector}' not found`);
     }
@@ -57,10 +51,97 @@ const PostManager = (function () {
   function createCategoryLink(category) {
     return `<a href="post_list.html?type=${category.id}" class="category-link">${category.name}</a>`;
   }
+
+  function displayPostContent(post) {
+    console.log("Displaying post content:", post);
+    setElementText("post-title", post.title);
+    setElementText("post-date", new Date(post.createdAt).toLocaleString());
+    setElementHTML("#post-content", post.content);
+    setElementText("post-views", post.views || "0");
+    setElementText("likeCount", post.likes || "0");
+    setElementText("comment-count", post.commentCount || "0");
+
+    const imageGallery = document.getElementById("image-gallery");
+    if (!imageGallery) {
+      console.error("Image gallery element not found");
+      return;
+    }
+    imageGallery.innerHTML = ""; // 기존 이미지 제거
+
+    console.log("Image URLs:", post.imageUrls);
+
+    if (post.imageUrls && post.imageUrls.length > 0) {
+      post.imageUrls.forEach((url, index) => {
+        console.log(`Processing image URL ${index}:`, url);
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = `Post image ${index + 1}`;
+        img.className = "gallery-image";
+        img.onerror = (e) => {
+          console.error(`Failed to load image ${index}:`, url);
+          console.error("Error details:", e);
+          // 오류 발생 시 이미지 대신 오류 메시지를 표시
+          const errorDiv = document.createElement("div");
+          errorDiv.textContent = `Image ${index + 1} failed to load`;
+          errorDiv.className = "image-error";
+          imageGallery.appendChild(errorDiv);
+        };
+        img.onload = () => console.log(`Image ${index} loaded successfully`);
+        img.onclick = () => openImageModal(url);
+        imageGallery.appendChild(img);
+
+        // 이미지 URL을 직접 확인할 수 있는 링크 추가
+        const linkDiv = document.createElement("div");
+        const link = document.createElement("a");
+        link.href = url;
+        link.textContent = `Check Image ${index + 1}`;
+        link.target = "_blank";
+        linkDiv.appendChild(link);
+        imageGallery.appendChild(linkDiv);
+      });
+      imageGallery.style.display = "block";
+    } else {
+      console.log("No images to display");
+      imageGallery.style.display = "none";
+    }
+
+    // 수정/삭제 버튼 표시 여부 결정
+    const currentUser = AuthService.getCurrentUser();
+    const postActions = document.querySelector(".edit-delete-buttons");
+    if (postActions) {
+      if (currentUser && currentUser.id === post.userId) {
+        postActions.style.display = "block";
+      } else {
+        postActions.style.display = "none";
+      }
+    }
+  }
+
+  function openImageModal(url) {
+    const modal = document.createElement("div");
+    modal.className = "image-modal";
+    modal.innerHTML = `
+      <span class="close">&times;</span>
+      <img class="modal-content" src="${url}">
+    `;
+    document.body.appendChild(modal);
+
+    modal.style.display = "block";
+
+    modal.querySelector(".close").onclick = function () {
+      document.body.removeChild(modal);
+    };
+
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        document.body.removeChild(modal);
+      }
+    };
+  }
+
   async function fetchPostDetails() {
     console.log(`Fetching post details for ID: ${currentPostId}`);
 
-    // 사용자 정보를 비동기적으로 가져옵니다.
     const currentUser = await AuthService.getCurrentUserAsync();
     const currentUserId = currentUser ? currentUser.id : null;
 
@@ -79,19 +160,8 @@ const PostManager = (function () {
         throw new Error("게시글 데이터가 없습니다.");
       }
 
-      console.log("post.content:", post.content);
-      // 게시글 정보를 화면에 표시하는 로직
+      displayPostContent(post);
       setElementHTML("#category-link", createCategoryLink(post.category));
-      setElementText("post-title", post.title);
-      setElementHTML("post-content", post.content);
-      // content를 직접 설정
-      const postContentElement = document.getElementById("post-content");
-      if (postContentElement) {
-        postContentElement.innerHTML = post.content;
-      } else {
-        console.error("post-content element not found");
-      }
-
       setElementHTML(
         ".post-info",
         `
@@ -101,20 +171,6 @@ const PostManager = (function () {
     작성일: ${new Date(post.createdAt).toLocaleString()}
     `
       );
-      setElementText("post-views", post.views || "정보 없음");
-      setElementText("likeCount", post.likes || "0");
-      setElementText("comment-count", post.commentCount || "0");
-
-      console.log("글작성자:", post.userId);
-      // 수정/삭제 버튼 표시 여부 결정
-      const postActions = document.querySelector(".edit-delete-buttons");
-      if (postActions) {
-        if (currentUser && currentUser.id === post.userId) {
-          postActions.style.display = "block";
-        } else {
-          postActions.style.display = "none";
-        }
-      }
 
       fetchComments();
     } catch (error) {
@@ -125,6 +181,7 @@ const PostManager = (function () {
       alert("게시글을 불러오는데 실패했습니다.");
     }
   }
+
   function renderComments(comments) {
     const commentsContainer = document.getElementById("comments-container");
     if (!commentsContainer) return;
@@ -197,6 +254,7 @@ const PostManager = (function () {
       }
     });
   }
+
   function editComment(commentId) {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
@@ -330,6 +388,7 @@ const PostManager = (function () {
         });
     }
   }
+
   function fetchComments() {
     console.log(`Fetching comments for post ID: ${currentPostId}`);
     axiosInstance
@@ -395,8 +454,6 @@ const PostManager = (function () {
     return false;
   }
 
-  // ... (나머지 함수들: toggleReplyForm, addReply, editComment, deleteComment, toggleLike, editPost, deletePost)
-
   function updateUIBasedOnAuth() {
     const isAuthenticated = AuthService.isAuthenticated();
     const currentUser = AuthService.getCurrentUser();
@@ -442,7 +499,7 @@ const PostManager = (function () {
     console.log("Initialized. currentPostId:", currentPostId);
 
     if (currentPostId) {
-      await fetchPostDetails(); // await를 사용하여 비동기 처리
+      await fetchPostDetails();
     } else {
       console.error("게시글 ID가 제공되지 않았습니다.");
       alert("게시글 ID가 제공되지 않았습니다.");

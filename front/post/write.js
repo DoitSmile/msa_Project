@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   let isEditMode = false;
   let originalPostId = null;
+  let uploadedImages = []; // 업로드된 이미지를 추적하기 위한 배열
 
   // URL에서 postId 파라미터 확인
   const urlParams = new URLSearchParams(window.location.search);
@@ -88,21 +89,37 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
-      const formData = new FormData(this);
+      const formData = new FormData();
+
+      // 제목 추가
+      formData.append("title", document.getElementById("title").value);
+
+      // 카테고리 ID 추가
+      const categoryId =
+        document.getElementById("categoryId") ||
+        document.getElementById("hiddenCategoryId");
+      if (categoryId) {
+        formData.append("categoryId", categoryId.value);
+      }
+
+      // 에디터 내용 추가
       formData.append("content", editor.innerHTML);
 
       // 이미지 파일 추가
-      const imageFile = imageUpload.files[0];
-      if (imageFile) {
-        formData.append("image", imageFile);
-      }
+      uploadedImages.forEach((file, index) => {
+        formData.append(`images`, file, `image${index}`);
+      });
 
       // postId를 FormData에 추가 (수정 모드일 때만)
       if (isEditMode && originalPostId) {
         formData.append("postId", originalPostId);
       }
 
-      console.log("formData:", formData);
+      // FormData 내용 로깅
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value instanceof File ? `File: ${value.name}` : value);
+      }
+
       try {
         let response;
         if (isEditMode) {
@@ -117,7 +134,7 @@ document.addEventListener("DOMContentLoaded", function () {
           );
         } else {
           response = await axios.post(
-            "http://localhost:3000/post/create",
+            "http://localhost:3000/post/create/",
             formData,
             {
               headers: {
@@ -134,10 +151,36 @@ document.addEventListener("DOMContentLoaded", function () {
             : "글이 성공적으로 등록되었습니다."
         );
 
-        window.location.href = `post_view.html?id=${originalPostId}`;
+        window.location.href = `post_view.html?id=${
+          response.data.id || originalPostId
+        }`;
       } catch (error) {
         console.error("에러 발생:", error);
         handleError(error);
+      }
+    });
+  }
+
+  // 이미지 업로드 처리
+  if (imageUpload) {
+    imageUpload.addEventListener("change", function (e) {
+      const files = e.target.files;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file) {
+          uploadedImages.push(file); // 업로드된 이미지 추적
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.style.maxWidth = "80%";
+            img.style.height = "auto";
+            img.setAttribute("contenteditable", "false");
+            img.setAttribute("data-filename", file.name);
+            editor.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        }
       }
     });
   }
@@ -217,60 +260,6 @@ document.addEventListener("DOMContentLoaded", function () {
   if (imageBtn && imageUpload)
     imageBtn.addEventListener("click", () => imageUpload.click());
 
-  // 이미지 업로드 처리
-  // 이미지 미리보기 기능
-  if (imageUpload) {
-    imageUpload.addEventListener("change", function (e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const img = document.createElement("img");
-          img.src = e.target.result;
-          img.style.maxWidth = "100%";
-          img.style.height = "auto";
-          img.style.cursor = "nwse-resize";
-          img.setAttribute("contenteditable", "false");
-
-          const selection = window.getSelection();
-          if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            range.insertNode(img);
-            range.collapse(false);
-          } else if (editor) {
-            editor.appendChild(img);
-          }
-
-          img.addEventListener("mousedown", initResize, false);
-          img.addEventListener("click", selectImage);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-  function selectImage(e) {
-    e.stopPropagation();
-    const images = editor.querySelectorAll("img");
-    images.forEach((img) => img.classList.add("not-selected"));
-    e.target.classList.remove("not-selected");
-  }
-
-  if (editor) {
-    editor.addEventListener("click", function (e) {
-      if (e.target.tagName !== "IMG") {
-        const images = editor.querySelectorAll("img");
-        images.forEach((img) => img.classList.add("not-selected"));
-      }
-    });
-  }
-
-  document.addEventListener("click", function (e) {
-    if (editor && !editor.contains(e.target)) {
-      const images = editor.querySelectorAll("img");
-      images.forEach((img) => img.classList.add("not-selected"));
-    }
-  });
-
   // 이미지 리사이즈 기능
   let isResizing = false;
   let currentImage = null;
@@ -304,4 +293,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.removeEventListener("mousemove", resize, false);
     document.removeEventListener("mouseup", stopResize, false);
   }
+
+  editor.addEventListener("mousedown", initResize, false);
 });

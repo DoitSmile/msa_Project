@@ -34,8 +34,8 @@ export class Post {
   @Column()
   name: string;
 
-  @Column({ nullable: true })
-  imageUrl: string;
+  @Column("simple-array", { nullable: true })
+  imageUrls: string[];
 
   @Column()
   userId: string;
