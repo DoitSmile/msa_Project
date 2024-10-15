@@ -152,7 +152,7 @@ export class PostService {
         const posts = await this.postRepository.find({
             order: { createdAt: 'DESC' },
             take: 100,
-            relations: ['category'],
+            relations: ['category', 'comment'],
         });
 
         for (const post of posts) {
@@ -169,7 +169,7 @@ export class PostService {
             where: { category: { id: categoryId } },
             order: { createdAt: 'DESC' },
             take: 100,
-            relations: ['category'],
+            relations: ['category', 'comment'],
         });
 
         for (const post of posts) {
@@ -185,7 +185,7 @@ export class PostService {
         const [posts, total] = await this.postRepository.findAndCount({
             where: { userId: userId },
             order: { createdAt: 'DESC' },
-            relations: ['category'],
+            relations: ['category', 'comment'],
             skip: (page - 1) * pageSize,
             take: pageSize,
         });
@@ -208,7 +208,7 @@ export class PostService {
     async fetchPost(postId: string, currentUserId: string) {
         const post = await this.postRepository.findOne({
             where: { id: postId },
-            relations: ['category'],
+            relations: ['category', 'comment'],
         });
 
         if (!post) {

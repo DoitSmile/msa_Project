@@ -245,16 +245,21 @@ nav ul li a,
   text-decoration: underline;
 }
 .post-title {
-  font-size: 14px;
-  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
+
 .comment-count {
-  background-color: #f0f0f0;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  color: #666;
-  margin-left: 10px;
+  color: #d83030;
+  font-size: 0.9em;
+}
+
+.has-image {
+  fill: #888;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 a {
   color: #333;

@@ -18,24 +18,32 @@ function renderPosts(isSpecialPage = false) {
   paginatedPosts.forEach((post) => {
     console.log("post:", post);
     const tr = document.createElement("tr");
+    const commentCount = post.comment ? post.comment.length : 0;
+    const hasImage = post.imageUrls && post.imageUrls.length > 0;
+
     tr.innerHTML = `
       <td class="title">
         <div class="title-wrapper">
-        ${
-          !isSpecialPage && post.category && post.category.name
-            ? `<a href="post_list.html?type=${encodeURIComponent(
-                post.category.id
-              )}" class="board-type">${post.category.name}</a>`
-            : ""
-        }
-        <a href="post_view.html?id=${post.id}">${post.title || "제목 없음"}</a>
           ${
-            post.comments > 0
-              ? `<span class="comments">${post.comments}</span>`
+            !isSpecialPage && post.category && post.category.name
+              ? `<a href="post_list.html?type=${encodeURIComponent(
+                  post.category.id
+                )}" class="board-type">${post.category.name}</a>`
               : ""
           }
-          
-          ${post.hasImage ? '<svg class="has-image">...</svg>' : ""}
+          <a href="post_view.html?id=${post.id}">${
+      post.title || "제목 없음"
+    }</a>
+           ${
+             commentCount > 0
+               ? `<span class="comments">[ ${commentCount} ]</span>`
+               : ""
+           }
+          ${
+            hasImage
+              ? '<svg class="has-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="none" d="M0 0h24v24H0z"/><path d="M4.828 21l-.02.02-.021-.02H2.992A.993.993 0 0 1 2 20.007V3.993A1 1 0 0 1 2.992 3h18.016c.548 0 .992.445.992.993v16.014a1 1 0 0 1-.992.993H4.828zM20 15V5H4v14L14 9l6 6zm0 2.828l-6-6L6.828 19H20v-1.172zM8 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>'
+              : ""
+          }
         </div>
       </td>
       <td class="author">${post.name || "익명"}</td>
@@ -53,7 +61,6 @@ function renderPosts(isSpecialPage = false) {
 
   renderPagination();
 }
-
 // 페이지네이션을 렌더링하는 함수
 function renderPagination() {
   const pagination = document.getElementById("pagination");

@@ -223,6 +223,30 @@ a:hover {
   background-color: #333;
 }
 
+.title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.has-image {
+  fill: #888;
+}
+
+.board-type {
+  font-size: 0.8em;
+  color: #666;
+  background-color: #f0f0f0;
+  padding: 2px 5px;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
+.comments {
+  color: #d83030;
+  font-size: 0.9em;
+}
+
 /* 푸터 스타일 */
 footer {
   background-color: #ffffff;
@@ -250,18 +274,6 @@ footer {
 
 .board-type:hover {
   text-decoration: underline;
-}
-
-.comments {
-  background-color: white;
-  color: #ff4e59;
-  font-size: 0.8em;
-  padding: 1px 5px;
-  border: 1px solid #ff4e59;
-  border-radius: 10px;
-  margin-left: 10px;
-  display: inline-block;
-  order: 2; /* 댓글 수를 두 번째로 */
 }
 
 .has-image {

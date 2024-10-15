@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function fetchSearchResults(query) {
     try {
+      console.log("Sending search request for query:", query);
       const response = await axios.get(`/posts/search`, {
         params: {
           q: query,
@@ -12,23 +13,31 @@ document.addEventListener("DOMContentLoaded", function () {
           pageSize: 10,
         },
       });
+      console.log("Search response:", response.data);
       return response.data;
     } catch (error) {
-      console.error("검색 결과를 가져오는 중 오류 발생:", error);
+      console.error("Error fetching search results:", error);
+      if (error.response) {
+        console.error("Error response:", error.response.data);
+      }
       throw error;
     }
   }
 
-  function renderSearchResults(posts) {
-    searchResults.innerHTML = ""; // 이 줄도 변경
-    if (!Array.isArray(posts) || posts.length === 0) {
+  function renderSearchResults(data) {
+    const searchResults = document.getElementById("searchResults");
+    searchResults.innerHTML = "";
+
+    console.log("Rendering search results:", data);
+
+    if (!data || !data.posts || data.posts.length === 0) {
       searchResults.innerHTML =
-        "<tr><td colspan='4'>검색 결과가 없습니다.</td></tr>"; // 이 줄도 변경
+        "<tr><td colspan='4'>검색 결과가 없습니다.</td></tr>";
       return;
     }
 
-    posts.forEach((post) => {
-      const tr = document.createElement("tr"); // li 대신 tr 사용
+    data.posts.forEach((post) => {
+      const tr = document.createElement("tr");
       tr.innerHTML = `
         <td class="title">
           <div class="title-wrapper">
@@ -42,10 +51,11 @@ document.addEventListener("DOMContentLoaded", function () {
         <td class="views">${post.views || 0}</td>
       `;
       tr.addEventListener("click", () => viewPost(post.id));
-      searchResults.appendChild(tr); // 이 줄도 변경
+      searchResults.appendChild(tr);
     });
-  }
 
+    console.log("Rendered search results");
+  }
   function formatDate(dateString) {
     if (!dateString) return "날짜 없음";
     const date = new Date(dateString);
@@ -56,27 +66,32 @@ document.addEventListener("DOMContentLoaded", function () {
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);
 
-    if (days > 0) {
-      return `${days}일 전`;
-    } else if (hours > 0) {
-      return `${hours}시간 전`;
-    } else if (minutes > 0) {
-      return `${minutes}분 전`;
-    } else {
-      return "방금 전";
-    }
+    if (days > 0) return `${days}일 전`;
+    if (hours > 0) return `${hours}시간 전`;
+    if (minutes > 0) return `${minutes}분 전`;
+    return "방금 전";
   }
 
   function viewPost(postId) {
     window.location.href = `/msa_Project/front/post/post_view.html?id=${postId}`;
   }
 
+  function displayError(message) {
+    searchResults.innerHTML = `<tr><td colspan='4'>${message}</td></tr>`;
+  }
+
   if (searchQuery) {
+    console.log("Initiating search for query:", searchQuery);
     fetchSearchResults(searchQuery)
       .then(renderSearchResults)
       .catch((error) => {
-        searchResultsList.innerHTML =
-          "<li>검색 결과를 불러오는데 실패했습니다.</li>";
+        console.error("Failed to fetch search results:", error);
+        displayError(
+          "검색 결과를 불러오는데 실패했습니다. 잠시 후 다시 시도해주세요."
+        );
       });
+  } else {
+    console.log("No search query provided");
+    displayError("검색어를 입력해주세요.");
   }
 });

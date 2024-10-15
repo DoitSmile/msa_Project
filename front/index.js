@@ -19,9 +19,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     posts.slice(0, itemsPerPage).forEach((post) => {
       const li = document.createElement("li");
+      const commentCount = post.comment ? post.comment.length : 0;
+      const hasImage = post.imageUrls && post.imageUrls.length > 0;
+
       li.innerHTML = `
         <div class="post-info">
-          <div class="post-title">${post.title || "제목 없음"}</div>
+          <div class="post-title">
+            <a href="/msa_Project/front/post/post_view.html?id=${post.id}">
+              ${post.title || "제목 없음"}
+              ${
+                commentCount > 0
+                  ? `<span class="comment-count">[ ${commentCount} ]</span>`
+                  : ""
+              }
+            </a>
+            ${
+              hasImage
+                ? '<svg class="has-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="none" d="M0 0h24v24H0z"/><path d="M4.828 21l-.02.02-.021-.02H2.992A.993.993 0 0 1 2 20.007V3.993A1 1 0 0 1 2.992 3h18.016c.548 0 .992.445.992.993v16.014a1 1 0 0 1-.992.993H4.828zM20 15V5H4v14L14 9l6 6zm0 2.828l-6-6L6.828 19H20v-1.172zM8 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>'
+                : ""
+            }
+          </div>
           <div class="post-meta">
             <span class="post-author">${post.name || "익명"}</span>
             <span class="post-date">${formatDate(post.createdAt)}</span>
@@ -29,14 +46,13 @@ document.addEventListener("DOMContentLoaded", function () {
         </div>
         <div class="post-stats">
           <span class="post-views">조회 ${post.views || 0}</span>
-          <span class="post-comments">댓글 ${post.commentCount || 0}</span>
+          <span class="post-comments">댓글 ${commentCount}</span>
         </div>
       `;
       li.addEventListener("click", () => viewPost(post.id));
       listElement.appendChild(li);
     });
   }
-
   searchForm.addEventListener("submit", function (event) {
     event.preventDefault();
     const query = searchInput.value.trim();

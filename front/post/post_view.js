@@ -454,9 +454,17 @@ const PostManager = (function () {
     const isAuthenticated = AuthService.isAuthenticated();
     const currentUser = AuthService.getCurrentUser();
 
-    const commentForm = document.querySelector(".comment-form");
-    if (commentForm) {
-      commentForm.style.display = isAuthenticated ? "block" : "none";
+    const commentTextarea = document.getElementById("commentText");
+    const commentSubmitButton = document.querySelector(".comment-form button");
+
+    if (isAuthenticated) {
+      commentTextarea.placeholder = "댓글을 입력하세요...";
+      commentTextarea.disabled = false;
+      commentSubmitButton.disabled = false;
+    } else {
+      commentTextarea.placeholder = "댓글과 글은 로그인 후 작성할 수 있습니다.";
+      commentTextarea.disabled = true;
+      commentSubmitButton.style.display = "none"; // 버튼 숨김
     }
 
     const authButton = document.getElementById("authButton");
@@ -480,7 +488,6 @@ const PostManager = (function () {
       userNameElement.textContent = currentUser.name;
     }
   }
-
   async function init() {
     const editPostBtn = document.getElementById("editPostBtn");
     const deletePostBtn = document.getElementById("deletePostBtn");

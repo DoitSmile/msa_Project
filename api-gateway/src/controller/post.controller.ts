@@ -197,6 +197,7 @@ export class PostController {
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
   ) {
+    console.log('실행');
     return this.clientPostService.send(
       { cmd: 'searchPosts' },
       { query, page, pageSize },
