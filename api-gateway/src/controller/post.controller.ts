@@ -203,4 +203,53 @@ export class PostController {
       { query, page, pageSize },
     );
   }
+
+  @UseGuards(AuthGuard('access'))
+  @Post('post/bookmark/:postId')
+  async toggleBookmark(@Param('postId') postId: string, @Req() req) {
+    const userId = req.user.id;
+    try {
+      const result = await this.clientPostService
+        .send({ cmd: 'createBookmark' }, { userId, postId })
+        .toPromise();
+      return result;
+    } catch (error) {
+      console.error('Error in toggleBookmark:', error);
+      throw new InternalServerErrorException('북마크 토글에 실패했습니다.');
+    }
+  }
+
+  @UseGuards(AuthGuard('access'))
+  @Delete('/post/bookmark/:postId')
+  async deleteBookmark(@Param('postId') postId: string, @Req() req) {
+    const userId = req.user.id;
+    return this.clientPostService.send(
+      { cmd: 'deleteBookmark' },
+      { userId, postId },
+    );
+  }
+
+  @UseGuards(AuthGuard('access'))
+  @Get('/user/bookmarks')
+  async getUserBookmarks(
+    @Req() req,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+  ) {
+    const userId = req.user.id;
+    return this.clientPostService.send(
+      { cmd: 'getUserBookmarks' },
+      { userId, page, pageSize },
+    );
+  }
+
+  @UseGuards(AuthGuard('access'))
+  @Get('/post/isBookmarked/:postId')
+  async isPostBookmarked(@Param('postId') postId: string, @Req() req) {
+    const userId = req.user.id;
+    return this.clientPostService.send(
+      { cmd: 'isPostBookmarked' },
+      { userId, postId },
+    );
+  }
 }

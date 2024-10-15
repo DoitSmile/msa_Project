@@ -15,7 +15,7 @@ import {
 import { Comment } from "./post-comment.entity";
 import { PostTag } from "./post-tag.entity";
 import { Category } from "./post-category.entity";
-// import { Like } from "./post-like.entity";
+import { Bookmark } from "./post-bookmark.entity";
 
 @Entity()
 export class Post {
@@ -55,8 +55,8 @@ export class Post {
   // 관계의 대상 엔티티를 지정 // 엔티티 쪽에서 현재 엔티티를 참조하는 속성을 지정
   comment: Comment[];
 
-  // @OneToMany(() => Like, (like) => like.post)
-  // likes: Like[];
+  @OneToMany(() => Bookmark, (bookmark) => bookmark.post)
+  bookmarks: Bookmark[];
 
   @CreateDateColumn({ name: "create_at", comment: "생성일" })
   createdAt: Date;

@@ -8,45 +8,63 @@ const bookmarkList = document.querySelector(".bookmark-list");
 const pagination = document.querySelector(".pagination");
 const deletePopup = document.getElementById("delete-popup");
 
-// 가상의 북마크 데이터 생성 (Date 객체 사용)
-let bookmarks = Array.from({ length: 50 }, (_, i) => ({
-  id: i + 1,
-  title: `북마크 제목 ${i + 1}`,
-  author: `작성자 ${i + 1}`,
-  category: `카테고리 ${(i % 5) + 1}`,
-  date: new Date(2024, 8, (i % 30) + 1), // 9월 (0부터 시작하므로 8이 9월)
-}));
-
 // 페이지네이션 설정
 const itemsPerPage = 10;
 let currentPage = 1;
+let totalBookmarks = 0;
 
-// 북마크를 날짜 기준으로 정렬하는 함수
-function sortBookmarksByDate() {
-  bookmarks.sort((a, b) => b.date - a.date);
+// Axios 인스턴스 생성
+const axiosInstance = axios.create({
+  baseURL: "http://localhost:3000",
+  timeout: 5000,
+});
+
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 북마크 목록 가져오기
+async function fetchBookmarks(page) {
+  try {
+    const response = await axiosInstance.get("/user/bookmarks", {
+      params: { page, pageSize: itemsPerPage },
+    });
+    console.log("response:", response);
+    console.log("response.data:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("북마크 목록을 가져오는데 실패했습니다:", error);
+    return { bookmarks: [], total: 0 };
+  }
 }
 
 // 북마크 개수 업데이트 함수
-function updateBookmarkCount() {
-  bookmarkCountElement.textContent = `보관한 글 ${bookmarks.length}`;
+function updateBookmarkCount(count) {
+  bookmarkCountElement.textContent = `북마크한 글 ${count}`;
 }
 
 // 북마크 목록 렌더링 함수
-function renderBookmarks(page) {
-  const start = (page - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  const pageBookmarks = bookmarks.slice(start, end);
+function renderBookmarks(bookmarks) {
+  console.log("bookmarks:", bookmarks);
 
-  bookmarkList.innerHTML = pageBookmarks
+  bookmarkList.innerHTML = bookmarks
     .map(
-      (bookmark) => `
-        <li class="bookmark-item" data-id="${bookmark.id}">
+      (bookmarks) => `
+        <li class="bookmark-item" data-id="${bookmarks.post.id}">
             <input type="checkbox" class="checkbox">
             <div class="bookmark-content">
-                <div class="bookmark-title">${bookmark.title}</div>
-                <div class="bookmark-info">${bookmark.author} ${
-        bookmark.category
-      } ${bookmark.date.toLocaleDateString()}</div>
+                <div class="bookmark-title">${bookmarks.post.title}</div>
+                <div class="bookmark-info">${bookmarks.post.name} 
+       ${new Date(bookmarks.createdAt).toLocaleDateString()}</div>
             </div>
         </li>
     `
@@ -55,11 +73,10 @@ function renderBookmarks(page) {
 }
 
 // 페이지네이션 렌더링 함수
-function renderPagination() {
-  const pageCount = Math.ceil(bookmarks.length / itemsPerPage);
+function renderPagination(total) {
+  const pageCount = Math.ceil(total / itemsPerPage);
   let paginationHTML = "";
 
-  // 페이지 번호 버튼 생성
   for (let i = 1; i <= pageCount; i++) {
     if (
       i === 1 ||
@@ -74,7 +91,6 @@ function renderPagination() {
     }
   }
 
-  // 페이지네이션 HTML 설정
   pagination.innerHTML = `
         <button id="prev-page" ${
           currentPage === 1 ? "disabled" : ""
@@ -85,36 +101,30 @@ function renderPagination() {
         }>&gt;</button>
     `;
 
-  // 페이지 번호 버튼에 이벤트 리스너 추가
   document.querySelectorAll(".page-number").forEach((button) => {
     button.addEventListener("click", () => {
       currentPage = parseInt(button.textContent);
-      renderBookmarks(currentPage);
-      renderPagination();
+      loadBookmarks();
     });
   });
 
-  // 이전 페이지 버튼 이벤트 리스너
   document.getElementById("prev-page").addEventListener("click", () => {
     if (currentPage > 1) {
       currentPage--;
-      renderBookmarks(currentPage);
-      renderPagination();
+      loadBookmarks();
     }
   });
 
-  // 다음 페이지 버튼 이벤트 리스너
   document.getElementById("next-page").addEventListener("click", () => {
     if (currentPage < pageCount) {
       currentPage++;
-      renderBookmarks(currentPage);
-      renderPagination();
+      loadBookmarks();
     }
   });
 }
 
 // 북마크 삭제 함수
-function deleteBookmarks() {
+async function deleteBookmarks() {
   const checkedItems = document.querySelectorAll(
     ".bookmark-item .checkbox:checked"
   );
@@ -123,26 +133,30 @@ function deleteBookmarks() {
     return;
   }
 
-  // 선택된 북마크의 ID 추출
-  const deletedIds = Array.from(checkedItems).map((item) =>
-    parseInt(item.closest(".bookmark-item").dataset.id)
+  const deletedIds = Array.from(checkedItems).map(
+    (item) => item.closest(".bookmark-item").dataset.id
   );
 
-  // 선택된 북마크 삭제
-  bookmarks = bookmarks.filter((bookmark) => !deletedIds.includes(bookmark.id));
-
-  updateBookmarkCount();
-
-  // 페이지 재계산
-  const pageCount = Math.ceil(bookmarks.length / itemsPerPage);
-  if (currentPage > pageCount) {
-    currentPage = pageCount || 1;
+  try {
+    await Promise.all(
+      deletedIds.map((id) => axiosInstance.delete(`/post/bookmark/${id}`))
+    );
+    loadBookmarks();
+  } catch (error) {
+    console.error("북마크 삭제에 실패했습니다:", error);
+    alert("북마크 삭제에 실패했습니다. 다시 시도해주세요.");
   }
 
-  renderBookmarks(currentPage);
-  renderPagination();
-
   selectAllCheckbox.checked = false;
+}
+
+// 북마크 목록 로드 함수
+async function loadBookmarks() {
+  const { bookmarks, total } = await fetchBookmarks(currentPage);
+  renderBookmarks(bookmarks);
+  renderPagination(total);
+  updateBookmarkCount(total);
+  totalBookmarks = total;
 }
 
 // 팝업 표시 함수
@@ -155,11 +169,8 @@ function closePopup() {
   deletePopup.style.display = "none";
 }
 
-// 초기 렌더링
-sortBookmarksByDate();
-updateBookmarkCount();
-renderBookmarks(currentPage);
-renderPagination();
+// 초기 로드
+loadBookmarks();
 
 // 편집 버튼 이벤트 리스너
 editBtn.addEventListener("click", function () {
@@ -179,7 +190,7 @@ editBtn.addEventListener("click", function () {
 deleteBtn.addEventListener("click", deleteBookmarks);
 
 // 전체 선택 체크박스 이벤트 리스너
-selectAllCheckbox.addEventListener("change", function () {
+selectAllCheckbox.addEventListener("click", function () {
   const checkboxes = document.querySelectorAll(".bookmark-item .checkbox");
   checkboxes.forEach((cb) => (cb.checked = this.checked));
 });

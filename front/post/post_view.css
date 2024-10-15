@@ -158,36 +158,40 @@ nav ul li a,
   font-size: 14px;
   color: #666;
 }
-.heart-icon {
-  position: relative;
+.bookmark-button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px 10px;
+}
+.bookmark-icon {
+  display: inline-block;
   width: 20px;
   height: 20px;
-  cursor: pointer;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>');
+  background-repeat: no-repeat;
+  background-position: center;
+  margin-right: 5px;
 }
-.heart-icon::before,
-.heart-icon::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 10px;
-  height: 16px;
-  border-radius: 50px 50px 0 0;
-  background: #ccc;
+
+.bookmark-button.bookmarked .bookmark-icon {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>');
 }
-.heart-icon::before {
-  left: 10px;
-  transform: rotate(-45deg);
-  transform-origin: 0 100%;
+
+.bookmark-count {
+  font-size: 14px;
 }
-.heart-icon::after {
-  left: 0;
-  transform: rotate(45deg);
-  transform-origin: 100% 100%;
+
+.bookmark-icon.bookmarked {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>');
 }
-.heart-icon.liked::before,
-.heart-icon.liked::after {
-  background: #ff4136;
+
+.bookmark-icon.bookmarked::after {
+  border-bottom-color: #007bff;
 }
+
 .comments {
   padding: 30px;
 }

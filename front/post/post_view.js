@@ -2,6 +2,8 @@ import { AuthService } from "/msa_Project/front/auth.js";
 
 const PostManager = (function () {
   let currentPostId;
+  let isBookmarked = false;
+  let bookmarkCount = 0;
 
   const axiosInstance = axios.create({
     baseURL: "http://localhost:3000",
@@ -58,8 +60,12 @@ const PostManager = (function () {
     setElementText("post-date", new Date(post.createdAt).toLocaleString());
     setElementHTML("#post-content", post.content);
     setElementText("post-views", post.views || "0");
-    setElementText("likeCount", post.likes || "0");
     setElementText("comment-count", post.commentCount || "0");
+
+    // 북마크 상태 및 카운트 업데이트
+    isBookmarked = post.isBookmarked;
+    bookmarkCount = post.bookmarkCount || 0;
+    updateBookmarkUI();
 
     setElementHTML(
       ".post-info",
@@ -117,6 +123,18 @@ const PostManager = (function () {
     }
   }
 
+  function updateBookmarkUI() {
+    const bookmarkButton = document.getElementById("bookmarkButton");
+    if (bookmarkButton) {
+      bookmarkButton.classList.toggle("bookmarked", isBookmarked);
+      bookmarkButton.setAttribute(
+        "aria-label",
+        isBookmarked ? "북마크 제거" : "북마크 추가"
+      );
+      bookmarkButton.innerHTML = `<span class="bookmark-icon"></span><span class="bookmark-count">${bookmarkCount}</span>`;
+    }
+  }
+
   function openImageModal(url) {
     const modal = document.createElement("div");
     modal.className = "image-modal";
@@ -162,6 +180,11 @@ const PostManager = (function () {
 
       displayPostContent(post);
       setElementHTML("#category-link", createCategoryLink(post.category));
+
+      // 북마크 상태와 카운트 업데이트
+      isBookmarked = post.isBookmarked;
+      bookmarkCount = post.bookmarkCount;
+      updateBookmarkUI();
 
       fetchComments();
     } catch (error) {
@@ -251,6 +274,7 @@ const PostManager = (function () {
       }
     }
   }
+
   function editComment(commentId) {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
@@ -313,40 +337,31 @@ const PostManager = (function () {
     }
   }
 
-  function toggleLike(element) {
+  function toggleBookmark() {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
       window.location.href = "/msa_Project/front/index.html";
       return;
     }
 
-    element.classList.toggle("liked");
-    const isLiked = element.classList.contains("liked");
-
     axiosInstance
-      .post("/post/like", {
-        postId: currentPostId,
-        isLiked: isLiked,
-      })
+      .post(`/post/bookmark/${currentPostId}`)
       .then((response) => {
-        const likeCountElement = document.getElementById("likeCount");
-        if (likeCountElement) {
-          likeCountElement.textContent = response.data.likeCount;
-        }
+        isBookmarked = response.data.isBookmarked;
+        bookmarkCount = response.data.bookmarkCount;
+        updateBookmarkUI();
       })
       .catch((error) => {
-        console.error("좋아요 토글 중 오류 발생:", error);
+        console.error("북마크 토글 중 오류 발생:", error);
         if (error.response && error.response.status === 401) {
           alert("인증이 만료되었습니다. 다시 로그인해주세요.");
           AuthService.logout();
           window.location.href = "/msa_Project/front/index.html";
         } else {
-          alert("좋아요 업데이트에 실패했습니다.");
+          alert("북마크 업데이트에 실패했습니다.");
         }
-        element.classList.toggle("liked"); // 실패 시 UI 상태 되돌리기
       });
   }
-
   function editPost() {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
@@ -488,15 +503,16 @@ const PostManager = (function () {
       userNameElement.textContent = currentUser.name;
     }
   }
+
   async function init() {
     const editPostBtn = document.getElementById("editPostBtn");
     const deletePostBtn = document.getElementById("deletePostBtn");
-    const likeButton = document.getElementById("likeButton");
+    const bookmarkButton = document.getElementById("bookmarkButton");
 
     if (editPostBtn) editPostBtn.addEventListener("click", editPost);
     if (deletePostBtn) deletePostBtn.addEventListener("click", deletePost);
-    if (likeButton)
-      likeButton.addEventListener("click", () => toggleLike(likeButton));
+    if (bookmarkButton)
+      bookmarkButton.addEventListener("click", toggleBookmark);
 
     currentPostId = getUrlParameter("id");
     console.log("Initialized. currentPostId:", currentPostId);
@@ -558,7 +574,6 @@ const PostManager = (function () {
     addComment: addComment,
     editComment: editComment,
     deleteComment: deleteComment,
-    toggleLike: toggleLike,
     editPost: editPost,
     deletePost: deletePost,
   };

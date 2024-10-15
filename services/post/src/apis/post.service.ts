@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from '@shared/entites/post/post.entity';
 import { Comment } from '@shared/entites/post/post-comment.entity';
+import { Bookmark } from '@shared/entites/post/post-bookmark.entity';
 import { IsNull, Repository } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -21,6 +22,8 @@ export class PostService {
         private readonly postRepository: Repository<Post>,
         @InjectRepository(Comment)
         private readonly commentRepository: Repository<Comment>,
+        @InjectRepository(Bookmark)
+        private readonly bookmarkRepository: Repository<Bookmark>,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
         private configService: ConfigService,
@@ -230,7 +233,20 @@ export class PostService {
             }
         }
 
-        return { ...post, views };
+        // 북마크 정보 가져오기
+        const bookmark = await this.bookmarkRepository.findOne({
+            where: { userId: currentUserId, post: { id: postId } },
+        });
+        const bookmarkCount = await this.bookmarkRepository.count({
+            where: { post: { id: postId } },
+        });
+
+        return {
+            ...post,
+            views,
+            isBookmarked: !!bookmark,
+            bookmarkCount,
+        };
     }
 
     async getPostViews(postId: string) {
@@ -407,6 +423,81 @@ export class PostService {
             pageSize,
             totalPages,
         };
+    }
+
+    async createBookmark(
+        userId: string,
+        postId: string,
+    ): Promise<{ isBookmarked: boolean; bookmarkCount: number }> {
+        const post = await this.postRepository.findOne({
+            where: { id: postId },
+        });
+        if (!post) {
+            throw new NotFoundException('Post not found');
+        }
+
+        let bookmark = await this.bookmarkRepository.findOne({
+            where: { userId, post: { id: postId } },
+        });
+
+        if (bookmark) {
+            // 이미 북마크가 존재하면 삭제 (토글 기능)
+            await this.bookmarkRepository.remove(bookmark);
+            const bookmarkCount = await this.bookmarkRepository.count({
+                where: { post: { id: postId } },
+            });
+            return { isBookmarked: false, bookmarkCount };
+        } else {
+            // 북마크가 없으면 생성
+            bookmark = this.bookmarkRepository.create({ userId, post });
+            await this.bookmarkRepository.save(bookmark);
+            const bookmarkCount = await this.bookmarkRepository.count({
+                where: { post: { id: postId } },
+            });
+            return { isBookmarked: true, bookmarkCount };
+        }
+    }
+    async deleteBookmark(userId: string, postId: string) {
+        const bookmark = await this.bookmarkRepository.findOne({
+            where: { userId, post: { id: postId } },
+        });
+
+        if (!bookmark) {
+            throw new NotFoundException('Bookmark not found');
+        }
+
+        await this.bookmarkRepository.remove(bookmark);
+        return { success: true };
+    }
+
+    async getUserBookmarks(
+        userId: string,
+        page: number = 1,
+        pageSize: number = 10,
+    ) {
+        const [bookmarks, total] = await this.bookmarkRepository.findAndCount({
+            where: { userId },
+            relations: ['post'],
+            order: { createdAt: 'DESC' },
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+        });
+
+        return {
+            bookmarks,
+            total,
+            page,
+            pageSize,
+            totalPages: Math.ceil(total / pageSize),
+        };
+    }
+
+    async isPostBookmarked(userId: string, postId: string) {
+        const bookmark = await this.bookmarkRepository.findOne({
+            where: { userId, post: { id: postId } },
+        });
+
+        return { isBookmarked: !!bookmark };
     }
 
     /**

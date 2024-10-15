@@ -7,6 +7,7 @@ import { Post } from '@shared/entites/post/post.entity';
 import { Comment } from '@shared/entites/post/post-comment.entity';
 import { PostTag } from '@shared/entites/post/post-tag.entity';
 import { Category } from '@shared/entites/post/post-category.entity';
+import { Bookmark } from '@shared/entites/post/post-bookmark.entity';
 import { PostController } from './apis/post.controller';
 import { PostService } from './apis/post.service';
 import * as redisStore from 'cache-manager-redis-store';
@@ -23,11 +24,11 @@ import { ScheduleModule } from '@nestjs/schedule';
             username: process.env.DATABASE_USERNAME,
             password: process.env.DATABASE_PASSWORD,
             database: process.env.DATABASE_DATABASE,
-            entities: [Post, Comment, PostTag, Category],
+            entities: [Post, Comment, PostTag, Category, Bookmark],
             synchronize: true,
             logging: true,
         }),
-        TypeOrmModule.forFeature([Post, Comment, PostTag, Category]),
+        TypeOrmModule.forFeature([Post, Comment, PostTag, Category, Bookmark]),
         CacheModule.registerAsync({
             imports: [ConfigModule],
             useFactory: async (configService: ConfigService) => ({

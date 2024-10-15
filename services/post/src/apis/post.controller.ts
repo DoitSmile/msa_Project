@@ -125,4 +125,35 @@ export class PostController {
             data.pageSize,
         );
     }
+
+    @MessagePattern({ cmd: 'createBookmark' })
+    async createBookmark(data: { userId: string; postId: string }) {
+        return await this.postService.createBookmark(data.userId, data.postId);
+    }
+
+    @MessagePattern({ cmd: 'deleteBookmark' })
+    async deleteBookmark(data: { userId: string; postId: string }) {
+        return await this.postService.deleteBookmark(data.userId, data.postId);
+    }
+
+    @MessagePattern({ cmd: 'getUserBookmarks' })
+    async getUserBookmarks(data: {
+        userId: string;
+        page: number;
+        pageSize: number;
+    }) {
+        return await this.postService.getUserBookmarks(
+            data.userId,
+            data.page,
+            data.pageSize,
+        );
+    }
+
+    @MessagePattern({ cmd: 'isPostBookmarked' })
+    async isPostBookmarked(data: { userId: string; postId: string }) {
+        return await this.postService.isPostBookmarked(
+            data.userId,
+            data.postId,
+        );
+    }
 }

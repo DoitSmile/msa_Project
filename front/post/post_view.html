@@ -79,21 +79,20 @@
         <div id="image-gallery" class="image-gallery">
           <!-- 이미지들이 여기에 동적으로 추가됩니다 -->
         </div>
-
         <div class="post-actions">
           <div class="post-stats">
-            조회수: <span id="post-views"></span> | 찜수:
-            <span id="likeCount"></span> | 댓글수:
+            조회수: <span id="post-views"></span> | 댓글수:
             <span id="comment-count"></span>
           </div>
-          <div
-            class="heart-icon"
-            id="likeButton"
-            role="button"
-            aria-label="찜하기"
-          ></div>
+          <button
+            id="bookmarkButton"
+            class="bookmark-button"
+            aria-label="북마크 추가"
+          >
+            <span class="bookmark-icon"></span>
+            <span class="bookmark-count">0</span>
+          </button>
         </div>
-
         <div class="comments">
           <h3>댓글</h3>
           <div id="comments-container">
