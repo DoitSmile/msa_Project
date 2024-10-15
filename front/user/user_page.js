@@ -49,14 +49,17 @@ const UserProfileManager = (function () {
       const profileImage = document.querySelector(".profile-image");
       if (profileImage) {
         profileImage.src =
-          userData.profileImage || "https://via.placeholder.com/120";
+          userData.profilePictureUrl ||
+          "/msa_Project/front/assets/default-profile-picture.jpg";
+        profileImage.onerror = function () {
+          this.src = "/msa_Project/front/assets/default-profile-picture.jpg";
+        };
       }
     } catch (error) {
       console.error("사용자 정보 로드 중 오류 발생:", error);
       alert("사용자 정보를 불러오는 데 실패했습니다.");
     }
   }
-
   // 게시글 데이터 로드
   async function loadPostData(userId, page = 1) {
     try {

@@ -7,12 +7,15 @@ import {
   Param,
   UseGuards,
   Get,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { CreateUserInput } from '../dto/userdto/create-user.input.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateUserInput } from 'src/dto/userdto/update-user.input.dto';
 import { UpdatePasswordInput } from 'src/dto/userdto/update-userpassword.input.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller()
 export class UserController {
@@ -36,27 +39,26 @@ export class UserController {
     // API에 넘겨줄 데이터 값이 있다면, 두 번째 인자로 정할 수 있습니다. 넘겨줄 데이터 값이 없을 경우 빈 객체`{}`로 작성합니다.
   }
 
-  // 회원조회
-  @UseGuards(AuthGuard('access')) // UseGuards- > 로그인을 한 유저면 api 실행
+  @UseGuards(AuthGuard('access'))
   @Get('/user/fetch/:id')
   async fetchUser(@Param('id') userId) {
-    // user-service로 트래픽(데이터) 넘겨줌
     return await this.clientUserService.send({ cmd: 'fetchUser' }, { userId });
   }
 
-  // 회원수정
-  @UseGuards(AuthGuard('access')) // UseGuards- > 로그인을 한 유저면 api 실행
-  @Post('/user/update/:id')
+  @UseGuards(AuthGuard('access'))
+  @Post('user/update/:id')
+  @UseInterceptors(FileInterceptor('profilePicture'))
   async updateUser(
-    @Body() updateUserInput: UpdateUserInput,
-    @Param('id') userId,
+    @Param('id') userId: string,
+    @Body() updateData: any,
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    console.log(' update app / id:', userId);
-    console.log('updateUserInput:', updateUserInput);
-    // user-service로 트래픽(데이터) 넘겨줌
-    return await this.clientUserService.send(
+    if (file) {
+      updateData.profilePicture = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+    }
+    return this.clientUserService.send(
       { cmd: 'updateUser' },
-      { userId, updateUserInput },
+      { userId, updateData },
     );
   }
 
@@ -88,6 +90,7 @@ export class UserController {
       { userId, password },
     );
   }
+
   // // 핸드폰 인증번호 발송 api
   // @Post('/user/sendPhone')
   // async sendPhone(@Body('qqq') qqq: string, @Res() res): Promise<void> {

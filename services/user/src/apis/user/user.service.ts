@@ -9,16 +9,29 @@ import { Repository } from 'typeorm';
 import { User } from '@shared/entites/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import {
-  IUserEmail,
-} from '@shared/interfaces/user/user-service.interface';
+import { IUserEmail } from '@shared/interfaces/user/user-service.interface';
+import { Storage } from '@google-cloud/storage';
+import { ConfigService } from '@nestjs/config'; // 환경변수 읽을 수 있음
 
 @Injectable()
 export class UserService {
+  private storage: Storage;
+  private bucket: string;
   constructor(
     @InjectRepository(User) // 사용할 entitiy를 명시한 대상 repository로 주입 ( forFeature에 등록한 repository들이 대상)
     private readonly userRepository: Repository<User>,
-  ) {}
+    private configService: ConfigService,
+  ) {
+    const projectId = this.configService.get<string>('GCP_PROJECT_ID');
+    const keyFilename = this.configService.get<string>('GCP_KEY_FILENAME');
+
+    this.storage = new Storage({
+      projectId,
+      keyFilename,
+    });
+
+    this.bucket = this.configService.get<string>('GCP_STORAGE_BUCKET');
+  }
 
   // 이메일로 유저 찾기
   async findEmail({ email }: IUserEmail) {
@@ -54,97 +67,103 @@ export class UserService {
   }
 
   // 회원 조회
-  async fetchUser(userId) {
-    console.log("userId:",userId)
-    return await this.userRepository.findOne({
-      where: { id:userId },
-    });
-  }
-
-  // 회원 수정 
-  async updateUser(userId, updateUserInput) {
-    console.log('updateUserInput:', updateUserInput);
-    console.log('id:', userId);
-  
-    try {
-      // 사용자 찾기
-      const user = await this.userRepository.findOne({ where: { id: userId } });
-      
-      if (!user) {
-        throw new Error('사용자를 찾을 수 없습니다.');
-      }
-  
-      // 비밀번호 확인
-      const isPasswordValid = await bcrypt.compare(updateUserInput.password, user.password);
-      if (!isPasswordValid) {
-        throw new Error('비밀번호가 일치하지 않습니다.');
-      }
-  
-      // 업데이트할 데이터에서 비밀번호 제거
-      const { password, ...updateData } = updateUserInput;
-  
-      // 사용자 정보 업데이트
-      const result = await this.userRepository.update(
-        { id: userId },
-        { ...updateData }
-      );
-  
-      console.log('사용자 정보 업데이트 완료');
-      
-      if (result.affected > 0) {
-        return { success: true, message: '사용자 정보가 성공적으로 업데이트되었습니다.' };
-      } else {
-        return { success: false, message: '사용자 정보 업데이트에 실패했습니다.' };
-      }
-    } catch (error) {
-      console.error('사용자 업데이트 중 오류 발생:', error);
-      throw new Error(error.message || '사용자 정보 업데이트 중 오류가 발생했습니다.');
+  async fetchUser(userId: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
     }
+    console.log('user:', user);
+    return user;
   }
 
+  // 회원 수정
+  async updateUser(userId: string, updateData: any) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (updateData.profilePicture) {
+      const imageUrl = await this.uploadImage(updateData.profilePicture);
+      user.profilePictureUrl = imageUrl;
+    }
+
+    // 다른 필드 업데이트
+    if (updateData.name) user.name = updateData.name;
+    if (updateData.email) user.email = updateData.email;
+    if (updateData.phone) user.phone = updateData.phone;
+
+    await this.userRepository.save(user);
+    return { success: true, user };
+  }
+
+  private async uploadImage(imageData: string): Promise<string> {
+    const bucket = this.storage.bucket(this.bucket);
+    const fileName = `profile-${Date.now()}.jpg`;
+    const file = bucket.file(fileName);
+
+    const buffer = Buffer.from(imageData.split(',')[1], 'base64');
+
+    await file.save(buffer, {
+      metadata: {
+        contentType: 'image/jpeg',
+      },
+    });
+
+    const publicUrl = `https://storage.googleapis.com/${this.bucket}/${fileName}`;
+    return publicUrl;
+  }
   // 회원 탈퇴
   async delUser(userId, password) {
-    const user = await this.findId({ id:userId });
+    const user = await this.findId({ id: userId });
     const isAuth = await bcrypt.compare(password, user.password);
     if (isAuth) {
-      await this.userRepository.softRemove({ id:userId });
+      await this.userRepository.softRemove({ id: userId });
     } else {
       throw new ConflictException('일치하지 않는 비밀번호입니다.');
     }
     return console.log('탈퇴완료');
   }
 
-  // 비밀번호 변경 
+  // 비밀번호 변경
   async updateUserPassword(userId, updatePasswordInput) {
-    console.log("service:", updatePasswordInput);
-    console.log("service userId:", userId);
-    const { currentPassword, newPassword, confirmNewPassword } = updatePasswordInput;
-  
+    console.log('service:', updatePasswordInput);
+    console.log('service userId:', userId);
+    const { currentPassword, newPassword, confirmNewPassword } =
+      updatePasswordInput;
+
     // 사용자 찾기
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new NotFoundException('사용자를 찾을 수 없습니다.');
     }
-  
+
     // 현재 비밀번호 확인
-    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
     if (!isCurrentPasswordValid) {
       throw new UnauthorizedException('현재 비밀번호가 일치하지 않습니다.');
     }
-  
+
     // 새 비밀번호 확인
     if (currentPassword === newPassword) {
-      throw new BadRequestException('새 비밀번호는 현재 비밀번호와 달라야 합니다.');
+      throw new BadRequestException(
+        '새 비밀번호는 현재 비밀번호와 달라야 합니다.',
+      );
     }
-  
+
     if (newPassword !== confirmNewPassword) {
-      throw new BadRequestException('새 비밀번호와 확인 비밀번호가 일치하지 않습니다.');
+      throw new BadRequestException(
+        '새 비밀번호와 확인 비밀번호가 일치하지 않습니다.',
+      );
     }
-  
+
     // 새 비밀번호 해시화 및 저장
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
     await this.userRepository.update(userId, { password: hashedNewPassword });
-  
+
     console.log('비밀번호 변경 완료');
     return { success: true, message: '비밀번호가 성공적으로 변경되었습니다.' };
   }

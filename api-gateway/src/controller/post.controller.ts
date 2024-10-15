@@ -28,6 +28,7 @@ export class PostController {
     private readonly clientPostService: ClientProxy,
   ) {}
 
+  // 게시글 작성
   @UseGuards(AuthGuard('access'))
   @Post('/post/create')
   @UseInterceptors(FilesInterceptor('images', 10))
@@ -58,7 +59,6 @@ export class PostController {
       throw new InternalServerErrorException('Post creation failed');
     }
   }
-
   @UseGuards(AuthGuard('access'))
   @Put('/post/update/:postId')
   @UseInterceptors(FilesInterceptor('images', 10))
@@ -86,12 +86,15 @@ export class PostController {
       throw new InternalServerErrorException('Post update failed');
     }
   }
+
+  // 게시글 삭제
   @UseGuards(AuthGuard('access'))
   @Delete('/post/delete/:id')
   deletePosts(@Param('id') postId: string) {
     return this.clientPostService.send({ cmd: 'deletePost' }, { postId });
   }
 
+  // 유저 게시글 조회
   @Get('/post/user_fetch/:id')
   async fetchMyPost(
     @Param('id') userId: string,
@@ -103,7 +106,7 @@ export class PostController {
       { userId, page, pageSize },
     );
   }
-
+  // 게시글 조회
   @Get('/post/fetch/:id')
   async fetchPost(
     @Param('id') postId: string,
@@ -114,7 +117,7 @@ export class PostController {
       { postId, userId },
     );
   }
-
+  // 카테고리별 게시글 조회
   @Get('/post/fetch/category/:categoryId')
   fetchCategoryPosts(@Param('categoryId') categoryId) {
     return this.clientPostService.send(
@@ -122,12 +125,14 @@ export class PostController {
       { categoryId },
     );
   }
-
+  // 전체 게시글 조회
   @Get('/posts/fetch/all')
   fetchPosts() {
     return this.clientPostService.send({ cmd: 'fetchPosts' }, {});
   }
 
+  // ------------------------ Comment ------------------------
+  // 댓글 작성
   @UseGuards(AuthGuard('access'))
   @Post('/post/comment/create')
   createComment(@Body() createCommentInput: CreateCommentInput, @Req() req) {
@@ -139,6 +144,7 @@ export class PostController {
     );
   }
 
+  // 댓글 조회
   @Get('/post/comment/fetch/:postId')
   async fetchComment(@Param('postId') postId) {
     return this.clientPostService.send({ cmd: 'fetchComment' }, { postId });
@@ -156,6 +162,7 @@ export class PostController {
     );
   }
 
+  // 댓글 수정
   @Put('/post/comment/update')
   updateComment(
     @Body('commentId') commentId: string,
@@ -166,19 +173,33 @@ export class PostController {
       { commentId, content },
     );
   }
-
+  // 댓글 삭제
   @Delete('/post/comment/delete/:id')
   deleteComment(@Param('id') commentId: string) {
     return this.clientPostService.send({ cmd: 'deleteComment' }, { commentId });
   }
 
+  //  ------------------------ View, Popular ------------------------
+  // 조회수 조회
   @Get('/post/views/:id')
   async getPostViews(@Param('id') postId: string) {
     return this.clientPostService.send({ cmd: 'getPostViews' }, { postId });
   }
-
+  // 인기 게시글 조회
   @Get('/posts/popular')
   async getPopularPosts(@Query('limit') limit: number = 10) {
     return this.clientPostService.send({ cmd: 'getPopularPosts' }, { limit });
+  }
+
+  @Get('/posts/search')
+  async searchPosts(
+    @Query('q') query: string,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+  ) {
+    return this.clientPostService.send(
+      { cmd: 'searchPosts' },
+      { query, page, pageSize },
+    );
   }
 }

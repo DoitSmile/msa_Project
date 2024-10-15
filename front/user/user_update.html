@@ -66,7 +66,7 @@
         <h1>계정 관리</h1>
         <div class="profile-pic-container">
           <img
-            src="/api/placeholder/150/150"
+            src="/msa_Project/front/assets/default-profile-picture.jpg"
             alt="프로필 사진"
             class="profile-pic"
             id="profile-pic"
@@ -79,23 +79,18 @@
             accept="image/*"
           />
         </div>
-        <form id="account-form">
+        <form id="account-form" enctype="multipart/form-data">
           <div class="form-group">
             <label for="name">닉네임</label>
-            <input type="text" id="name" name="name" value="길동이" />
+            <input type="text" id="name" name="name" />
           </div>
           <div class="form-group">
             <label for="phone">전화번호</label>
-            <input type="tel" id="phone" name="phone" value="010-1234-5678" />
+            <input type="tel" id="phone" name="phone" />
           </div>
           <div class="form-group">
             <label for="email">이메일</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value="hong@example.com"
-            />
+            <input type="email" id="email" name="email" />
           </div>
           <div class="form-group">
             <label for="password">비밀번호 확인</label>
@@ -125,7 +120,7 @@
           </div>
         </form>
         <div class="last-modified">
-          마지막 수정일: <span id="last-modified-date">2023-05-10</span>
+          마지막 수정일: <span id="last-modified-date"></span>
         </div>
       </div>
     </div>

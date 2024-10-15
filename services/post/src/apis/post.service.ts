@@ -5,7 +5,6 @@ import { Comment } from '@shared/entites/post/post-comment.entity';
 import { IsNull, Repository } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
-import { Cron, CronExpression } from '@nestjs/schedule';
 import { Storage } from '@google-cloud/storage';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
@@ -136,10 +135,19 @@ export class PostService {
         );
         return updatedPost;
     }
-    async deletePosts(postId) {
-        return await this.postRepository.softRemove({ id: postId });
-    }
 
+    async deletePosts(postId) {
+        const post = await this.postRepository.findOne({
+            where: { id: postId },
+            relations: ['comment'],
+        });
+
+        if (!post) {
+            throw new NotFoundException(`Post with ID ${postId} not found`);
+        }
+
+        return await this.postRepository.softRemove(post);
+    }
     async fetchPosts() {
         const posts = await this.postRepository.find({
             order: { createdAt: 'DESC' },
@@ -348,9 +356,67 @@ export class PostService {
         }
     }
 
-    @Cron(CronExpression.EVERY_HOUR)
-    async handleViewsSynchronization() {
-        console.log('Synchronizing views to database...');
-        await this.syncViewsToDatabase();
+    async searchPosts(query: string, page: number = 1, pageSize: number = 10) {
+        const queryBuilder = this.postRepository
+            .createQueryBuilder('post')
+            .leftJoinAndSelect('post.category', 'category')
+            .leftJoinAndSelect('post.comment', 'comment')
+            .where('post.title LIKE :query OR post.content LIKE :query', {
+                query: `%${query}%`,
+            })
+            .select([
+                'post.id',
+                'post.title',
+                'post.content',
+                'post.name',
+                'post.createdAt',
+                'post.views',
+                'category.name',
+                'COUNT(DISTINCT comment.id) AS commentCount',
+            ])
+            .groupBy('post.id')
+            .orderBy('post.createdAt', 'DESC');
+
+        const [posts, total] = await queryBuilder
+            .skip((page - 1) * pageSize)
+            .take(pageSize)
+            .getManyAndCount();
+
+        // Redis 캐시에서 조회수 가져오기 및 검색어 하이라이트
+        const highlightedPosts = await Promise.all(
+            posts.map(async (post) => {
+                const cacheKey = `post:${post.id}:views`;
+                const cachedViews =
+                    await this.cacheManager.get<number>(cacheKey);
+                post.views = cachedViews || post.views;
+
+                // 제목과 내용에서 검색어 하이라이트
+                post.title = this.highlightText(post.title, query);
+                post.content = this.highlightText(post.content, query);
+
+                return post;
+            }),
+        );
+
+        const totalPages = Math.ceil(total / pageSize);
+
+        return {
+            posts: highlightedPosts,
+            total,
+            page,
+            pageSize,
+            totalPages,
+        };
+    }
+
+    /**
+     * 텍스트에서 검색어를 하이라이트하는 메서드
+     * @param text 원본 텍스트
+     * @param query 검색어
+     * @returns 검색어가 하이라이트된 텍스트
+     */
+    private highlightText(text: string, query: string): string {
+        const regex = new RegExp(query, 'gi');
+        return text.replace(regex, (match) => `<mark>${match}</mark>`);
     }
 }

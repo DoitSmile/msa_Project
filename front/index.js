@@ -3,6 +3,9 @@ import { AuthService } from "./auth.js";
 document.addEventListener("DOMContentLoaded", function () {
   const popularPostList = document.getElementById("popularPostList");
   const recentPostList = document.getElementById("recentPostList");
+  const searchForm = document.getElementById("searchForm");
+  const searchInput = document.getElementById("searchInput");
+
   const itemsPerPage = 5; // 한 페이지에 표시할 게시물 수
   axios.defaults.baseURL = "http://localhost:3000";
 
@@ -34,6 +37,27 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
+  searchForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    const query = searchInput.value.trim();
+    if (query) {
+      window.location.href = `/msa_Project/front/post/search_results.html?q=${encodeURIComponent(
+        query
+      )}`;
+    }
+  });
+  async function searchPosts(query) {
+    try {
+      const response = await axios.get(
+        `/posts/search?q=${encodeURIComponent(query)}`
+      );
+      const searchResults = response.data;
+      renderPosts(searchResults, recentPostList);
+    } catch (error) {
+      console.error("검색 중 오류 발생:", error);
+      alert("검색 중 오류가 발생했습니다. 다시 시도해 주세요.");
+    }
+  }
   function formatDate(dateString) {
     if (!dateString) return "날짜 없음";
     const date = new Date(dateString);
@@ -79,6 +103,32 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = `/msa_Project/front/post/post_view.html?id=${postId}`;
   }
 
+  async function updateUserProfile(userId) {
+    try {
+      const response = await axios.get(`/user/fetch/${userId}`);
+      const userData = response.data;
+      console.log("사용자 정보:", userData);
+
+      const userNameSpan = document.getElementById("userNameSpan");
+      if (userNameSpan) {
+        userNameSpan.textContent = userData.name || "이름 없음";
+      }
+
+      const profileImage = document.querySelector(".profile-image");
+      if (profileImage) {
+        profileImage.src =
+          userData.profilePictureUrl ||
+          "/msa_Project/front/assets/default-profile-picture.jpg";
+        profileImage.onerror = function () {
+          this.src = "/msa_Project/front/assets/default-profile-picture.jpg";
+        };
+      }
+    } catch (error) {
+      console.error("사용자 정보 로드 중 오류 발생:", error);
+      alert("사용자 정보를 불러오는 데 실패했습니다.");
+    }
+  }
+
   function toggleLoginMypage() {
     const loginContent = document.getElementById("loginContent");
     const profileContent = document.getElementById("profileContent");
@@ -87,7 +137,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const accountManagementLink = document.getElementById(
       "accountManagementLink"
     );
-    const userNameSpan = document.getElementById("userNameSpan");
 
     if (AuthService.isAuthenticated()) {
       const currentUser = AuthService.getCurrentUser();
@@ -95,8 +144,8 @@ document.addEventListener("DOMContentLoaded", function () {
       profileContent.style.display = "block";
       sectionTitle.textContent = "마이페이지";
 
-      // 사용자 이름 표시
-      userNameSpan.textContent = currentUser.name || "사용자";
+      // 사용자 정보 업데이트
+      updateUserProfile(currentUser.id);
 
       // 내가 쓴 글 링크 설정
       myPostsLink.href = `/msa_Project/front/user/user_page.html?id=${currentUser.id}`;
@@ -104,14 +153,8 @@ document.addEventListener("DOMContentLoaded", function () {
       // 계정 관리 링크 설정
       accountManagementLink.href = `/msa_Project/front/user/user_update.html?id=${currentUser.id}`;
 
-      // 글쓰기 버튼 추가
-      const writeButton = document.createElement("button");
-      writeButton.textContent = "글쓰기";
-      writeButton.className = "write-btn";
-      writeButton.addEventListener("click", () => {
-        window.location.href = "write.html";
-      });
-      profileContent.appendChild(writeButton);
+      // 새 글쓰기 링크 설정
+      writePost.href = `/msa_Project/front/post/write.html?id=${currentUser.id}`;
     } else {
       loginContent.style.display = "block";
       profileContent.style.display = "none";

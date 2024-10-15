@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const deleteAccountModal = document.getElementById("deleteAccountModal");
   const cropModal = document.getElementById("cropModal");
 
+  let cropper;
+  let croppedCanvas;
+
   // 이벤트 리스너
   saveChangesBtn.onclick = saveChanges;
   changePasswordBtn.onclick = () =>
@@ -85,7 +88,6 @@ document.addEventListener("DOMContentLoaded", function () {
     } catch (error) {
       console.error("사용자 데이터 가져오기 오류:", error);
       if (error.response && error.response.status === 401) {
-        // 인증 오류 처리
         AuthService.logout();
         showNotification("인증이 만료되었습니다. 다시 로그인해주세요.");
         window.location.href = "/msa_Project/front/index.html";
@@ -99,11 +101,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 사용자 데이터로 폼 채우기
   function populateUserData(userData) {
+    console.log("userData:", userData);
     document.getElementById("name").value = userData.name || "";
     document.getElementById("phone").value = userData.phone || "";
     document.getElementById("email").value = userData.email || "";
-    document.getElementById("profile-pic").src =
-      userData.profilePicUrl || "/api/placeholder/150/150";
+
+    const profilePic = document.getElementById("profile-pic");
+    profilePic.src =
+      userData.profilePictureUrl ||
+      "/msa_Project/front/assets/default-profile-picture.jpg";
+    profilePic.onerror = function () {
+      this.src = "/msa_Project/front/assets/default-profile-picture.jpg";
+    };
+
     lastModifiedDate.textContent = userData.lastModified || "해당 없음";
   }
 
@@ -116,20 +126,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const formData = new FormData(form);
-    const updateUserInput = Object.fromEntries(formData.entries());
 
-    if (!updateUserInput.password) {
+    if (!formData.get("password")) {
       showNotification("비밀번호를 입력해주세요.");
       return;
+    }
+
+    if (croppedCanvas) {
+      const blob = await new Promise((resolve) =>
+        croppedCanvas.toBlob(resolve, "image/jpeg")
+      );
+      formData.append("profilePicture", blob, "profile.jpg");
     }
 
     try {
       const currentUserId = await getCurrentUserId();
       const response = await axios.post(
         `http://localhost:3000/user/update/${currentUserId}`,
-        updateUserInput,
+        formData,
         {
           headers: {
+            "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${AuthService.getToken()}`,
           },
         }
@@ -140,6 +157,10 @@ document.addEventListener("DOMContentLoaded", function () {
         updateLastModifiedDate();
         showNotification("계정 정보가 성공적으로 업데이트되었습니다.");
         passwordInput.value = "";
+        if (response.data.profilePictureUrl) {
+          document.getElementById("profile-pic").src =
+            response.data.profilePictureUrl;
+        }
       } else {
         showNotification(
           response.data.message || "업데이트에 실패했습니다. 다시 시도해주세요."
@@ -156,6 +177,54 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   }
+
+  // 비밀번호 변경 및 계정 탈퇴 함수는 그대로 유지
+
+  // 이미지 크롭 관련 코드
+  document
+    .getElementById("profile-pic-input")
+    .addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          document.getElementById("cropImage").src = e.target.result;
+          cropModal.style.display = "block";
+
+          if (cropper) {
+            cropper.destroy();
+          }
+
+          cropper = new Cropper(document.getElementById("cropImage"), {
+            aspectRatio: 1,
+            viewMode: 1,
+            minCropBoxWidth: 150,
+            minCropBoxHeight: 150,
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+  document.getElementById("cropButton").addEventListener("click", function () {
+    croppedCanvas = cropper.getCroppedCanvas({
+      width: 150,
+      height: 150,
+    });
+
+    document.getElementById("profile-pic").src = croppedCanvas.toDataURL();
+    cropModal.style.display = "none";
+    cropper.destroy();
+    cropper = null;
+  });
+
+  document
+    .getElementById("cancelCropButton")
+    .addEventListener("click", function () {
+      cropModal.style.display = "none";
+      cropper.destroy();
+      cropper = null;
+    });
 
   // 비밀번호 변경
   async function changePassword() {
@@ -248,54 +317,6 @@ document.addEventListener("DOMContentLoaded", function () {
       showNotification("계정 삭제 중 오류가 발생했습니다. 다시 시도해주세요.");
     }
   }
-
-  // 이미지 크롭 관련 코드
-  let cropper;
-
-  document
-    .getElementById("profile-pic-input")
-    .addEventListener("change", function (e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          document.getElementById("cropImage").src = e.target.result;
-          document.getElementById("cropModal").style.display = "block";
-
-          if (cropper) {
-            cropper.destroy();
-          }
-
-          cropper = new Cropper(document.getElementById("cropImage"), {
-            aspectRatio: 1,
-            viewMode: 1,
-            minCropBoxWidth: 150,
-            minCropBoxHeight: 150,
-          });
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-
-  document.getElementById("cropButton").addEventListener("click", function () {
-    const croppedCanvas = cropper.getCroppedCanvas({
-      width: 150,
-      height: 150,
-    });
-
-    document.getElementById("profile-pic").src = croppedCanvas.toDataURL();
-    document.getElementById("cropModal").style.display = "none";
-    cropper.destroy();
-    cropper = null;
-  });
-
-  document
-    .getElementById("cancelCropButton")
-    .addEventListener("click", function () {
-      document.getElementById("cropModal").style.display = "none";
-      cropper.destroy();
-      cropper = null;
-    });
 
   // 초기화
   fetchUserData();

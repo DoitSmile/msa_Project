@@ -44,10 +44,11 @@
             </ul>
           </nav>
         </div>
-        <form action="#" method="get" class="search-form">
+        <form action="#" method="get" id="searchForm" class="search-form">
           <input
             type="search"
             name="q"
+            id="searchInput"
             placeholder="검색어를 입력하세요"
             required
           />
@@ -90,8 +91,9 @@
           <div id="profileContent">
             <div class="profile-info">
               <img
-                src="/api/placeholder/150/150"
+                src="/msa_Project/front/assets/default-profile-picture.jpg"
                 alt="프로필 사진"
+                id="profileImage"
                 class="profile-image"
               />
               <p class="profile-name">
@@ -99,8 +101,8 @@
               </p>
             </div>
             <div class="blog-stats">
+              <p><a href="#" id="writePost">새 글쓰기</a></p>
               <p><a href="#" id="myPostsLink">내가 쓴 글</a></p>
-              <p>활동알림</p>
               <p><a href="#" id="accountManagementLink">계정 관리</a></p>
               <p id="logoutButton">로그아웃</p>
             </div>

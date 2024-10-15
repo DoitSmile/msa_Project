@@ -51,7 +51,7 @@ export class Post {
   @ManyToMany(() => PostTag, (postTag) => postTag.post)
   postTag: PostTag[];
 
-  @OneToMany(() => Comment, (comment) => comment.post)
+  @OneToMany(() => Comment, (comment) => comment.post, { cascade: true })
   // 관계의 대상 엔티티를 지정 // 엔티티 쪽에서 현재 엔티티를 참조하는 속성을 지정
   comment: Comment[];
 

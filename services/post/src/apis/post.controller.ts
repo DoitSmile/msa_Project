@@ -115,4 +115,14 @@ export class PostController {
     async getPopularPosts(data) {
         return await this.postService.getPopularPosts(data.limit);
     }
+
+    // 새로운 검색 메서드
+    @MessagePattern({ cmd: 'searchPosts' })
+    async searchPosts(data: { query: string; page: number; pageSize: number }) {
+        return await this.postService.searchPosts(
+            data.query,
+            data.page,
+            data.pageSize,
+        );
+    }
 }

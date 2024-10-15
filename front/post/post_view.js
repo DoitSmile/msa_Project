@@ -61,6 +61,16 @@ const PostManager = (function () {
     setElementText("likeCount", post.likes || "0");
     setElementText("comment-count", post.commentCount || "0");
 
+    setElementHTML(
+      ".post-info",
+      `
+      작성자: <a href="/msa_Project/front/user/user_page.html?id=${
+        post.userId
+      }" class="user-link">${post.name}</a> |
+      작성일: ${new Date(post.createdAt).toLocaleString()}
+    `
+    );
+
     const imageGallery = document.getElementById("image-gallery");
     if (!imageGallery) {
       console.error("Image gallery element not found");
@@ -80,7 +90,6 @@ const PostManager = (function () {
         img.onerror = (e) => {
           console.error(`Failed to load image ${index}:`, url);
           console.error("Error details:", e);
-          // 오류 발생 시 이미지 대신 오류 메시지를 표시
           const errorDiv = document.createElement("div");
           errorDiv.textContent = `Image ${index + 1} failed to load`;
           errorDiv.className = "image-error";
@@ -89,15 +98,6 @@ const PostManager = (function () {
         img.onload = () => console.log(`Image ${index} loaded successfully`);
         img.onclick = () => openImageModal(url);
         imageGallery.appendChild(img);
-
-        // 이미지 URL을 직접 확인할 수 있는 링크 추가
-        const linkDiv = document.createElement("div");
-        const link = document.createElement("a");
-        link.href = url;
-        link.textContent = `Check Image ${index + 1}`;
-        link.target = "_blank";
-        linkDiv.appendChild(link);
-        imageGallery.appendChild(linkDiv);
       });
       imageGallery.style.display = "block";
     } else {
@@ -162,15 +162,6 @@ const PostManager = (function () {
 
       displayPostContent(post);
       setElementHTML("#category-link", createCategoryLink(post.category));
-      setElementHTML(
-        ".post-info",
-        `
-    작성자: <a href="/msa_Project/front/user/user_page.html?id=${
-      post.userId
-    }" class="user-link">${post.name}</a> |
-    작성일: ${new Date(post.createdAt).toLocaleString()}
-    `
-      );
 
       fetchComments();
     } catch (error) {
@@ -182,7 +173,23 @@ const PostManager = (function () {
     }
   }
 
-  function renderComments(comments) {
+  async function fetchUserProfilePicture(userId) {
+    try {
+      const response = await axiosInstance.get(`/user/fetch/${userId}`);
+      return (
+        response.data.profilePictureUrl ||
+        "/msa_Project/front/assets/default-profile-picture.jpg"
+      );
+    } catch (error) {
+      console.error(
+        `Error fetching user profile picture for user ${userId}:`,
+        error
+      );
+      return "/msa_Project/front/assets/default-profile-picture.jpg";
+    }
+  }
+
+  async function renderComments(comments) {
     const commentsContainer = document.getElementById("comments-container");
     if (!commentsContainer) return;
 
@@ -190,27 +197,27 @@ const PostManager = (function () {
 
     const currentUser = AuthService.getCurrentUser();
 
-    function createCommentElement(comment, isReply = false) {
+    for (const comment of comments) {
       const commentElement = document.createElement("div");
-      commentElement.className = isReply ? "comment reply" : "comment";
+      commentElement.className = "comment";
       commentElement.dataset.commentId = comment.id;
 
-      console.log("comment.userId:", comment.userId);
+      const profilePictureUrl = await fetchUserProfilePicture(comment.userId);
+
       const isCommentOwner = currentUser && currentUser.id === comment.userId;
       const actionButtons = isCommentOwner
         ? `<a href="#" class="edit-comment">수정</a>
            <a href="#" class="delete-comment">삭제</a>`
         : "";
 
-      const replyButton = isReply
-        ? ""
-        : '<a href="#" class="reply-button">답글</a>';
-
       commentElement.innerHTML = `
-        <img src="/path/to/default/avatar.png" alt="User Avatar" class="comment-avatar">
+        <img src="${profilePictureUrl}" 
+             alt="User Avatar" 
+             class="comment-avatar"
+             onerror="this.src='/msa_Project/front/assets/default-profile-picture.jpg'">
         <div class="comment-content">
           <div class="comment-header">
-            <span class="comment-author"><a href="/profile/${
+            <span class="comment-author"><a href="/msa_Project/front/user/user_page.html?id=${
               comment.userId
             }" class="user-link-comment">${comment.username}</a></span>
             <span class="comment-time">${new Date(
@@ -220,41 +227,30 @@ const PostManager = (function () {
           <p class="comment-text">${comment.content}</p>
           <div class="comment-actions">
             ${actionButtons}
-            ${replyButton}
+            <a href="#" class="reply-button">답글</a>
           </div>
-          ${
-            isReply
-              ? ""
-              : `
           <div class="reply-form" style="display:none;">
             <div class="comment-input-container">
               <textarea class="reply-text" placeholder="답글을 입력하세요..."></textarea>
               <button class="submit-reply">답글 작성</button>
             </div>
           </div>
-          `
-          }
         </div>
       `;
-      return commentElement;
-    }
 
-    comments.forEach((comment) => {
-      const commentElement = createCommentElement(comment);
       commentsContainer.appendChild(commentElement);
 
       if (comment.replies && comment.replies.length > 0) {
         const repliesContainer = document.createElement("div");
         repliesContainer.className = "replies";
-        comment.replies.forEach((reply) => {
-          const replyElement = createCommentElement(reply, true);
+        for (const reply of comment.replies) {
+          const replyElement = await createCommentElement(reply, true);
           repliesContainer.appendChild(replyElement);
-        });
+        }
         commentElement.appendChild(repliesContainer);
       }
-    });
+    }
   }
-
   function editComment(commentId) {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");

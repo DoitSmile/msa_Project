@@ -26,6 +26,9 @@ export class User {
   @Column()
   password: string;
 
+  @Column("simple-array", { nullable: true })
+  profilePictureUrl: string;
+
   // @OneToMany(() => Like, (like) => like.user)
   // likes: Like[];
 
