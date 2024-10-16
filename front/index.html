@@ -4,70 +4,36 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>진대</title>
-    <link rel="stylesheet" href="index.css" />
+    <link rel="stylesheet" href="css/index.css" />
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   </head>
   <body>
-    <header>
-      <div class="header-content">
-        <div class="logo-category">
-          <h1><a href="/msa_Project/front/index.html">TalkTime</a></h1>
-          <nav>
-            <ul>
-              <li><a href="/msa_Project/front/index.html">홈</a></li>
-              <li>
-                <a href="/msa_Project/front/post/bookmark.html">보관함</a>
-              </li>
-              <li class="category">
-                <button class="category-btn">카테고리</button>
-                <div class="category-content">
-                  <a
-                    href="post/post_list.html?type=a39a5e4b-847d-11ef-84d2-0242ac120007"
-                    >자유</a
-                  >
-                  <a
-                    href="post/post_list.html?type=afaf3aaf-847d-11ef-84d2-0242ac120007"
-                    >친목</a
-                  >
-                  <a
-                    href="post/post_list.html?type=0dcf3371-7996-11ef-b2ad-0242ac120004"
-                    >연애</a
-                  >
-                  <a
-                    href="post/post_list.html?type=b7b56a55-847d-11ef-84d2-0242ac120007"
-                    >게임</a
-                  >
-                  <a
-                    href="post/post_list.html?type=b2e6f193-847d-11ef-84d2-0242ac120007"
-                    >스터디모집</a
-                  >
-                </div>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        <form action="#" method="get" id="searchForm" class="search-form">
-          <input
-            type="search"
-            name="q"
-            id="searchInput"
-            placeholder="검색어를 입력하세요"
-            required
-          />
-          <button type="submit">검색</button>
-        </form>
-      </div>
-    </header>
+    <div id="header-placeholder"></div>
 
     <div class="container">
       <div class="main-content">
+        <section class="post-section popular-posts">
+          <h2>
+            <a href="/msa_Project/front/templates/post/post_list.html"
+              >인기 게시물
+            </a>
+          </h2>
+          <ul id="popularPostList" class="post-list">
+            <!-- 최근 게시물 목록이 여기에 동적으로 추가됩니다 -->
+          </ul>
+        </section>
         <section class="post-section recent-posts">
-          <h2><a href="post/post_list.html">최근 게시물</a></h2>
+          <h2>
+            <a href="/msa_Project/front/templates/post/post_list.html"
+              >최근 게시물</a
+            >
+          </h2>
           <ul id="recentPostList" class="post-list">
             <!-- 최근 게시물 목록이 여기에 동적으로 추가됩니다 -->
           </ul>
         </section>
       </div>
+
       <div class="sidebar">
         <section id="mypageSection" class="mypage">
           <h3 id="sectionTitle">마이페이지</h3>
@@ -87,7 +53,10 @@
               <button type="submit" class="btn login-btn">로그인</button>
             </form>
             <p class="signup-link">
-              계정이 없으신가요? <a href="./sign/signup.html">회원가입</a>
+              계정이 없으신가요?
+              <a href="/msa_Project/front/templates/user/signup.html"
+                >회원가입</a
+              >
             </p>
           </div>
           <div id="profileContent">
@@ -116,7 +85,18 @@
     <footer>
       <p>&copy; 2024 김가연 All rights reserved.</p>
     </footer>
+
+    <script type="module">
+      import { initializeHeader } from "./js/header/header.js";
+
+      // 헤더 로드 및 초기화
+      fetch("templates/header/header.html")
+        .then((response) => response.text())
+        .then((data) => {
+          document.getElementById("header-placeholder").innerHTML = data;
+          initializeHeader();
+        });
+    </script>
+    <script type="module" src="index.js"></script>
   </body>
-  <script type="module" src="index.js"></script>
-  <script type="module" src="auth.js"></script>
 </html>

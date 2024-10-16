@@ -1,4 +1,4 @@
-import { AuthService } from "/msa_Project/front/auth.js";
+import { AuthService } from "/msa_Project/front/js/auth/auth.js";
 
 // axios 기본 URL 설정
 axios.defaults.baseURL = "http://localhost:3000"; // API 서버 주소로 변경하세요

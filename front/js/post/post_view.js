@@ -1,4 +1,4 @@
-import { AuthService } from "/msa_Project/front/auth.js";
+import { AuthService } from "/msa_Project/front/js/auth/auth.js";
 
 const PostManager = (function () {
   let currentPostId;

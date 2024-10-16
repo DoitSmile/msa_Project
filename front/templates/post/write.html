@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title id="pageTitle">진대 - 게시글 작성</title>
-    <link rel="stylesheet" href="write.css" />
+    <link rel="stylesheet" href="/msa_Project/front/css/write.css" />
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <!-- Cropper.js 라이브러리 스타일 -->
     <link
@@ -19,55 +19,7 @@
   </head>
 
   <body>
-    <!-- 헤더 영역 -->
-    <header>
-      <div class="header-content">
-        <div class="logo-category">
-          <h1><a href="/msa_Project/front/index.html">TalkTime</a></h1>
-          <nav>
-            <ul>
-              <li><a href="/msa_Project/front/index.html">홈</a></li>
-              <li><a href="#">보관함</a></li>
-              <li class="category">
-                <button class="category-btn">카테고리</button>
-                <div class="category-content">
-                  <a
-                    href="post_list.html?type=a39a5e4b-847d-11ef-84d2-0242ac120007"
-                    >자유</a
-                  >
-                  <a
-                    href="post_list.html?type=afaf3aaf-847d-11ef-84d2-0242ac120007"
-                    >친목</a
-                  >
-                  <a
-                    href="post_list.html?type=0dcf3371-7996-11ef-b2ad-0242ac120004"
-                    >연애</a
-                  >
-                  <a
-                    href="post_list.html?type=b7b56a55-847d-11ef-84d2-0242ac120007"
-                    >게임</a
-                  >
-                  <a
-                    href="post_list.html?type=b2e6f193-847d-11ef-84d2-0242ac120007"
-                    >스터디모집</a
-                  >
-                </div>
-              </li>
-            </ul>
-          </nav>
-        </div>
-        <form action="#" method="get" class="search-form">
-          <input
-            type="search"
-            name="q"
-            placeholder="검색어를 입력하세요"
-            required
-          />
-          <button type="submit">검색</button>
-        </form>
-      </div>
-    </header>
-
+    <div id="header-placeholder"></div>
     <!-- 메인 컨텐츠 영역 -->
     <div class="container">
       <form
@@ -182,8 +134,19 @@
       <p>&copy; 2024 김가연 All rights reserved.</p>
     </footer>
   </body>
+  <script type="module">
+    import { initializeHeader } from "/msa_Project/front/js/header/header.js";
+
+    //  헤더 로드 및 초기화
+    fetch("/msa_Project/front/templates/header/header.html")
+      .then((response) => response.text())
+      .then((data) => {
+        document.getElementById("header-placeholder").innerHTML = data;
+        initializeHeader();
+      });
+  </script>
   <!-- Cropper.js 라이브러리 스크립트 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
-  <script type="module" src="/msa_Project/front/auth.js"></script>
-  <script type="module" src="write.js"></script>
+  <script type="module" src="/msa_Project/front/js/auth/auth.js"></script>
+  <script type="module" src="/msa_Project/front/js/post/write.js"></script>
 </html>

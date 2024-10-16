@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function viewPost(postId) {
-    window.location.href = `/msa_Project/front/post/post_view.html?id=${postId}`;
+    window.location.href = `/msa_Project/front/templates/post/post_view.html?id=${postId}`;
   }
 
   function displayError(message) {

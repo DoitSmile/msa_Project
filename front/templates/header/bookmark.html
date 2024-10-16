@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <title>진대 - 북마크</title>
+    <link rel="stylesheet" href="/msa_Project/front/css/bookmark.css" />
+  </head>
+  <body>
+    <div id="header-placeholder"></div>
+    <div class="detail-body">
+      <div class="container">
+        <h1>북마크한 글</h1>
+        <div class="bookmark-count-edit">
+          <p id="bookmark-count"></p>
+          <button class="edit-btn">목록편집</button>
+        </div>
+        <div class="edit-controls">
+          <div class="select-all-container">
+            <input type="checkbox" id="select-all" class="checkbox" />
+            <label for="select-all" class="select-all-label">전체선택</label>
+          </div>
+          <button class="delete-btn">삭제</button>
+        </div>
+        <ul class="bookmark-list">
+          <!-- 북마크 항목들이 여기에 동적으로 추가됩니다 -->
+        </ul>
+        <div class="pagination">
+          <!-- 페이지네이션 버튼들이 여기에 동적으로 추가됩니다 -->
+        </div>
+      </div>
+    </div>
+
+    <div class="popup" id="delete-popup">
+      <p class="popup-message">삭제할 글을 선택해주세요.</p>
+      <button class="popup-btn" onclick="closePopup()">확인</button>
+    </div>
+  </body>
+  <script type="module">
+    import { initializeHeader } from "/msa_Project/front/js/header/header.js";
+
+    // 헤더 로드 및 초기화
+    fetch("/msa_Project/front/templates/header/header.html")
+      .then((response) => response.text())
+      .then((data) => {
+        document.getElementById("header-placeholder").innerHTML = data;
+        initializeHeader();
+      });
+  </script>
+  <script src="/msa_Project/front/js/header/bookmark.js"></script>
+</html>

@@ -1,4 +1,4 @@
-import { AuthService } from "/msa_Project/front/auth.js";
+import { AuthService } from "/msa_Project/front/js/auth/auth.js";
 
 // 전역 변수 선언
 let posts = []; // 게시물 목록을 저장할 배열

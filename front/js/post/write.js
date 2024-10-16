@@ -1,4 +1,4 @@
-import { AuthService } from "/msa_Project/front/auth.js";
+import { AuthService } from "/msa_Project/front/js/auth/auth.js";
 
 document.addEventListener("DOMContentLoaded", function () {
   // DOM 요소들을 가져옵니다.
@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", function () {
             : "글이 성공적으로 등록되었습니다."
         );
 
-        window.location.href = `post_view.html?id=${
+        window.location.href = `/msa_Project/front/templates/post/post_view.html?id=${
           response.data.id || originalPostId
         }`;
       } catch (error) {

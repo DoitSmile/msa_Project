@@ -1,10 +1,7 @@
-import { AuthService } from "./auth.js";
+import { AuthService } from "./js/auth/auth.js";
 
 document.addEventListener("DOMContentLoaded", function () {
-  const popularPostList = document.getElementById("popularPostList");
   const recentPostList = document.getElementById("recentPostList");
-  const searchForm = document.getElementById("searchForm");
-  const searchInput = document.getElementById("searchInput");
 
   const itemsPerPage = 5; // 한 페이지에 표시할 게시물 수
   axios.defaults.baseURL = "http://localhost:3000";
@@ -25,7 +22,9 @@ document.addEventListener("DOMContentLoaded", function () {
       li.innerHTML = `
         <div class="post-info">
           <div class="post-title">
-            <a href="/msa_Project/front/post/post_view.html?id=${post.id}">
+            <a href="/msa_Project/front/templates/post/post_view.html?id=${
+              post.id
+            }">
               ${post.title || "제목 없음"}
               ${
                 commentCount > 0
@@ -53,27 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
       listElement.appendChild(li);
     });
   }
-  searchForm.addEventListener("submit", function (event) {
-    event.preventDefault();
-    const query = searchInput.value.trim();
-    if (query) {
-      window.location.href = `/msa_Project/front/post/search_results.html?q=${encodeURIComponent(
-        query
-      )}`;
-    }
-  });
-  async function searchPosts(query) {
-    try {
-      const response = await axios.get(
-        `/posts/search?q=${encodeURIComponent(query)}`
-      );
-      const searchResults = response.data;
-      renderPosts(searchResults, recentPostList);
-    } catch (error) {
-      console.error("검색 중 오류 발생:", error);
-      alert("검색 중 오류가 발생했습니다. 다시 시도해 주세요.");
-    }
-  }
+
   function formatDate(dateString) {
     if (!dateString) return "날짜 없음";
     const date = new Date(dateString);
@@ -116,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function viewPost(postId) {
-    window.location.href = `/msa_Project/front/post/post_view.html?id=${postId}`;
+    window.location.href = `/msa_Project/front/templates/post/post_view.html?id=${postId}`;
   }
 
   async function updateUserProfile(userId) {
@@ -164,13 +143,13 @@ document.addEventListener("DOMContentLoaded", function () {
       updateUserProfile(currentUser.id);
 
       // 내가 쓴 글 링크 설정
-      myPostsLink.href = `/msa_Project/front/user/user_page.html?id=${currentUser.id}`;
+      myPostsLink.href = `/msa_Project/front/templates/user/user_page.html?id=${currentUser.id}`;
 
       // 계정 관리 링크 설정
-      accountManagementLink.href = `/msa_Project/front/user/user_update.html?id=${currentUser.id}`;
+      accountManagementLink.href = `/msa_Project/front/templates/user/user_update.html?id=${currentUser.id}`;
 
       // 새 글쓰기 링크 설정
-      writePost.href = `/msa_Project/front/post/write.html?id=${currentUser.id}`;
+      writePost.href = `/msa_Project/front/templates/post/write.html?id=${currentUser.id}`;
     } else {
       loginContent.style.display = "block";
       profileContent.style.display = "none";
