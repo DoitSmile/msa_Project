@@ -21,7 +21,6 @@ services:
     env_file:
       - ./services/post/.env.docker
 
-  # redis
   my-redis:
     image: redis:latest
     ports:
@@ -36,7 +35,7 @@ services:
     ports:
       - 3000:3000
 
-  auth-service: # module에 있는 host 이름이랑 같음
+  auth-service:
     build:
       context: ./services/auth
       dockerfile: Dockerfile
@@ -65,15 +64,13 @@ services:
       - ./shared:/post-service/shared
     env_file:
       - ./services/post/.env.docker
+    environment:
+      - REDIS_URL=redis://my-redis:6379
+    depends_on:
+      - my-redis
 
-  # 컴퓨터이름
   my-auth-redis:
     image: redis:latest
     ports:
       - 6380:6379
-
-  # signup-front:
-  #   build:
-  #     context: ./front/signup
-  #     dockerfile: Dockerfile
-  #   volumes:
+# signup-front 서비스는 주석 처리되어 있습니다.

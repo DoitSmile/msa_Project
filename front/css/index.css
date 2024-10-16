@@ -148,15 +148,12 @@ nav ul li a,
   align-items: center;
   padding: 10px 0;
   border-bottom: 1px solid #eee;
-  cursor: pointer;
 }
 
-.post-list li:hover {
-  background-color: #f5f5f5;
-}
-
-.post-info {
+.post-main-info {
   flex: 1;
+  display: flex;
+  align-items: center;
 }
 
 .post-title {
@@ -168,6 +165,7 @@ nav ul li a,
 .post-title a {
   color: #1a1a1a;
   text-decoration: none;
+  font-weight: bold;
 }
 
 .comment-count {
@@ -179,25 +177,27 @@ nav ul li a,
   fill: #888;
   width: 18px;
   height: 18px;
-  flex-shrink: 0;
-}
-.post-meta {
-  display: flex;
-  font-size: 0.8em;
-  color: #666;
 }
 
-.post-meta > * {
-  margin-right: 10px;
-}
-
-.post-stats {
+.post-sub-info {
   display: flex;
+  gap: 8px;
+  font-size: 0.9em;
   align-items: center;
 }
 
-.post-stats > * {
-  margin-left: 10px;
+.post-author {
+  color: #1a1a1a;
+  font-weight: bold;
+}
+
+.post-views,
+.post-date {
+  color: #888;
+}
+
+.separator {
+  color: #ddd;
 }
 
 .container .main-content .post-section {
@@ -318,6 +318,32 @@ footer {
   color: #777;
 }
 
+/* 인기 게시물 순위 스타일 */
+.popular-posts .post-list {
+  counter-reset: ranking;
+}
+
+.popular-posts .post-list li {
+  position: relative;
+  padding-left: 25px;
+}
+
+.popular-posts .post-list li::before {
+  counter-increment: ranking;
+  content: counter(ranking);
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.popular-posts .post-list li:nth-child(-n + 3)::before {
+  color: #333;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 1200px) {
   .container {
@@ -357,18 +383,22 @@ footer {
     flex-direction: column;
     align-items: flex-start;
   }
-  .post-stats {
+  .post-sub-info {
     margin-top: 5px;
   }
 }
 
 @media (max-width: 576px) {
-  .post-meta {
+  .post-main-info,
+  .post-sub-info {
     flex-direction: column;
+    align-items: flex-start;
   }
-  .post-meta > * {
-    margin-right: 0;
-    margin-bottom: 5px;
+  .post-sub-info > * {
+    margin-top: 3px;
+  }
+  .separator {
+    display: none;
   }
 }
 
@@ -378,7 +408,7 @@ footer {
   transition: background-color 0.3s ease;
 }
 
-.post-item:hover {
+.post-list li:hover {
   background-color: #f5f5f5;
   transition: background-color 0.3s ease;
 }
@@ -389,5 +419,5 @@ footer {
 }
 
 a:hover {
-  text-decoration: none;
+  text-decoration: underline;
 }

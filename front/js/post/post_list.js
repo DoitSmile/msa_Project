@@ -61,6 +61,7 @@ function renderPosts(isSpecialPage = false) {
 
   renderPagination();
 }
+
 // 페이지네이션을 렌더링하는 함수
 function renderPagination() {
   const pagination = document.getElementById("pagination");
@@ -89,11 +90,11 @@ function fetchPosts(categoryId = null, isSpecialPage = false) {
   console.log("가져온 categoryId:", categoryId);
   let url;
 
-  if (categoryId) {
-    // 카테고리별 조회 시 URL에 category를 직접 포함
+  if (categoryId === "popular") {
+    url = "http://localhost:3000/posts/popular";
+  } else if (categoryId) {
     url = `http://localhost:3000/post/fetch/category/${categoryId}`;
   } else {
-    // 전체 게시물 조회
     url = "http://localhost:3000/posts/fetch/all";
   }
 
@@ -145,14 +146,16 @@ window.onload = function () {
   console.log("categoryId-type:", categoryId);
   const pageTitle = document.querySelector(".board-header h1");
 
-  if (categoryId) {
-    // 카테고리 ID에 해당하는 이름을 찾습니다.
+  if (categoryId === "popular") {
+    pageTitle.textContent = "인기 게시물";
+    fetchPosts("popular", true);
+  } else if (categoryId) {
     const categoryName = getCategoryName(categoryId);
     pageTitle.textContent = categoryName || "카테고리 게시판";
-    fetchPosts(categoryId, true); // 특정 카테고리 페이지임을 나타냄
+    fetchPosts(categoryId, true);
   } else {
     pageTitle.textContent = "최근 게시물";
-    fetchPosts(null, false); // 전체 게시판 나타냄
+    fetchPosts(null, false);
   }
 
   // 글쓰기 버튼에 이벤트 리스너 추가

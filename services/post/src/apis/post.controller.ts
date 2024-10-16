@@ -41,6 +41,7 @@ export class PostController {
             imageFiles,
         );
     }
+
     @MessagePattern({ cmd: 'deletePost' })
     async deletePosts(data) {
         return await this.postService.deletePosts(data.postId);
@@ -106,17 +107,11 @@ export class PostController {
         return await this.postService.deleteComment(data.commentId);
     }
 
-    @MessagePattern({ cmd: 'getPostViews' })
-    async getPostViews(data) {
-        return await this.postService.getPostViews(data.postId);
-    }
-
     @MessagePattern({ cmd: 'getPopularPosts' })
-    async getPopularPosts(data) {
+    async getPopularPosts(data: { limit?: number }) {
         return await this.postService.getPopularPosts(data.limit);
     }
 
-    // 새로운 검색 메서드
     @MessagePattern({ cmd: 'searchPosts' })
     async searchPosts(data: { query: string; page: number; pageSize: number }) {
         return await this.postService.searchPosts(

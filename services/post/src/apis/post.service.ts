@@ -1,21 +1,24 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from '@shared/entites/post/post.entity';
 import { Comment } from '@shared/entites/post/post-comment.entity';
 import { Bookmark } from '@shared/entites/post/post-bookmark.entity';
-import { IsNull, Repository } from 'typeorm';
+import { Repository, IsNull, In } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Storage } from '@google-cloud/storage';
 import { ConfigService } from '@nestjs/config';
 import { Logger } from '@nestjs/common';
 import { ImageFile } from 'src/interfaces/post-service.interface';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { createClient } from 'redis';
 
 @Injectable()
 export class PostService {
     private storage: Storage;
     private bucket: string;
     private readonly logger = new Logger(PostService.name);
+    private redisClient: ReturnType<typeof createClient>;
 
     constructor(
         @InjectRepository(Post)
@@ -37,14 +40,33 @@ export class PostService {
         });
 
         this.bucket = this.configService.get<string>('GCP_STORAGE_BUCKET');
-    }
 
+        this.initRedisClient();
+    }
+    private async initRedisClient() {
+        const redisUrl =
+            this.configService.get<string>('REDIS_URL') ||
+            'redis://localhost:6379';
+        this.redisClient = createClient({ url: redisUrl });
+
+        this.redisClient.on('error', (err) =>
+            console.error('Redis Client Error', err),
+        );
+
+        try {
+            await this.redisClient.connect();
+            console.log('Connected to Redis');
+        } catch (error) {
+            console.error('Failed to connect to Redis', error);
+        }
+    }
     private removeBase64Images(content: string): string {
         return content.replace(
             /<img[^>]*src="data:image\/[^;]+;base64,[^"]*"[^>]*>/g,
             '',
         );
     }
+
     async uploadImages(files: ImageFile[]): Promise<string[]> {
         this.logger.debug(`Starting upload of ${files.length} images`);
         if (!files || files.length === 0) {
@@ -151,6 +173,7 @@ export class PostService {
 
         return await this.postRepository.softRemove(post);
     }
+
     async fetchPosts() {
         const posts = await this.postRepository.find({
             order: { createdAt: 'DESC' },
@@ -208,6 +231,35 @@ export class PostService {
         };
     }
 
+    async incrementPostView(postId: string, userId: string) {
+        const now = new Date();
+        const key = `popular_posts:${now.toISOString().split('T')[0]}`;
+
+        const multi = this.redisClient.multi();
+        await multi.zIncrBy(key, 1, postId);
+        await multi.expire(key, 60 * 60 * 24 * 7); // 7일 후 만료
+
+        const cacheKey = `post:${postId}:views`;
+        const userViewCacheKey = `post:${postId}:user:${userId}:view`;
+
+        const [cachedViews, userViewed] = await Promise.all([
+            this.cacheManager.get<number>(cacheKey),
+            this.cacheManager.get(userViewCacheKey),
+        ]);
+
+        let views = cachedViews || 0;
+
+        if (!userViewed) {
+            views++;
+            await multi.set(cacheKey, views.toString());
+            await multi.set(userViewCacheKey, 'true', { EX: 300 }); // 5분 동안 유효
+        }
+
+        await multi.exec();
+
+        return views;
+    }
+
     async fetchPost(postId: string, currentUserId: string) {
         const post = await this.postRepository.findOne({
             where: { id: postId },
@@ -218,22 +270,9 @@ export class PostService {
             throw new NotFoundException('Post not found');
         }
 
-        const cacheKey = `post:${postId}:views`;
-        let views = post.views;
+        const views = await this.incrementPostView(postId, currentUserId);
+        post.views = views;
 
-        if (post.userId !== currentUserId) {
-            const userViewCacheKey = `post:${postId}:user:${currentUserId}:view`;
-            const userViewed = await this.cacheManager.get(userViewCacheKey);
-
-            if (!userViewed) {
-                views++;
-                await this.cacheManager.set(cacheKey, views, 3600000);
-                await this.cacheManager.set(userViewCacheKey, true, 300000);
-                await this.postRepository.update(postId, { views });
-            }
-        }
-
-        // 북마크 정보 가져오기
         const bookmark = await this.bookmarkRepository.findOne({
             where: { userId: currentUserId, post: { id: postId } },
         });
@@ -243,34 +282,38 @@ export class PostService {
 
         return {
             ...post,
-            views,
             isBookmarked: !!bookmark,
             bookmarkCount,
         };
     }
 
-    async getPostViews(postId: string) {
-        const cacheKey = `post:${postId}:views`;
-        let views = await this.cacheManager.get<number>(cacheKey);
-
-        if (views === undefined) {
-            const post = await this.postRepository.findOne({
-                where: { id: postId },
-                select: ['views'],
-            });
-            views = post?.views || 0;
-            await this.cacheManager.set(cacheKey, views, 3600000);
+    async getPopularPosts(limit: number = 10) {
+        const keys = [];
+        for (let i = 0; i < 7; i++) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            keys.push(`popular_posts:${date.toISOString().split('T')[0]}`);
         }
 
-        return { postId, views };
-    }
+        const results = await this.redisClient.zUnion(keys);
 
-    async getPopularPosts(limit: number = 10) {
-        return this.postRepository.find({
-            order: { views: 'DESC' },
-            take: limit,
-            relations: ['category'],
+        const sortedPostIds = results.slice(0, limit * 2);
+        const postIds = sortedPostIds.filter((_, index) => index % 2 === 0);
+
+        const posts = await this.postRepository.findBy({
+            id: In(postIds),
         });
+
+        await this.postRepository
+            .createQueryBuilder('post')
+            .leftJoinAndSelect('post.category', 'category')
+            .leftJoinAndSelect('post.comment', 'comment')
+            .where('post.id IN (:...ids)', { ids: postIds })
+            .getMany();
+
+        return postIds
+            .map((id) => posts.find((post) => post.id === id))
+            .filter(Boolean);
     }
 
     async createComment(createCommentInput, username, userId) {
@@ -359,6 +402,15 @@ export class PostService {
         return { deletedComment, deletedReplies };
     }
 
+    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+    async cleanupOldData() {
+        const date = new Date();
+        date.setDate(date.getDate() - 7);
+        const oldKey = `popular_posts:${date.toISOString().split('T')[0]}`;
+        await this.redisClient.del(oldKey);
+    }
+
+    @Cron(CronExpression.EVERY_HOUR)
     async syncViewsToDatabase() {
         const posts = await this.postRepository.find();
         for (const post of posts) {
@@ -457,6 +509,7 @@ export class PostService {
             return { isBookmarked: true, bookmarkCount };
         }
     }
+
     async deleteBookmark(userId: string, postId: string) {
         const bookmark = await this.bookmarkRepository.findOne({
             where: { userId, post: { id: postId } },

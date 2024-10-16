@@ -59,6 +59,7 @@ export class PostController {
       throw new InternalServerErrorException('Post creation failed');
     }
   }
+
   @UseGuards(AuthGuard('access'))
   @Put('/post/update/:postId')
   @UseInterceptors(FilesInterceptor('images', 10))
@@ -106,6 +107,7 @@ export class PostController {
       { userId, page, pageSize },
     );
   }
+
   // 게시글 조회
   @Get('/post/fetch/:id')
   async fetchPost(
@@ -117,6 +119,7 @@ export class PostController {
       { postId, userId },
     );
   }
+
   // 카테고리별 게시글 조회
   @Get('/post/fetch/category/:categoryId')
   fetchCategoryPosts(@Param('categoryId') categoryId) {
@@ -125,10 +128,31 @@ export class PostController {
       { categoryId },
     );
   }
+
   // 전체 게시글 조회
   @Get('/posts/fetch/all')
   fetchPosts() {
     return this.clientPostService.send({ cmd: 'fetchPosts' }, {});
+  }
+
+  // 인기 게시글 조회
+  @Get('/posts/popular')
+  async getPopularPosts(@Query('limit') limit: number = 10) {
+    return this.clientPostService.send({ cmd: 'getPopularPosts' }, { limit });
+  }
+
+  // 검색
+  @Get('/posts/search')
+  async searchPosts(
+    @Query('q') query: string,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 10,
+  ) {
+    console.log('실행');
+    return this.clientPostService.send(
+      { cmd: 'searchPosts' },
+      { query, page, pageSize },
+    );
   }
 
   // ------------------------ Comment ------------------------
@@ -173,35 +197,18 @@ export class PostController {
       { commentId, content },
     );
   }
+
   // 댓글 삭제
   @Delete('/post/comment/delete/:id')
   deleteComment(@Param('id') commentId: string) {
     return this.clientPostService.send({ cmd: 'deleteComment' }, { commentId });
   }
 
-  //  ------------------------ View, Popular ------------------------
+  //  ------------------------ View, BookMark ------------------------
   // 조회수 조회
   @Get('/post/views/:id')
   async getPostViews(@Param('id') postId: string) {
     return this.clientPostService.send({ cmd: 'getPostViews' }, { postId });
-  }
-  // 인기 게시글 조회
-  @Get('/posts/popular')
-  async getPopularPosts(@Query('limit') limit: number = 10) {
-    return this.clientPostService.send({ cmd: 'getPopularPosts' }, { limit });
-  }
-
-  @Get('/posts/search')
-  async searchPosts(
-    @Query('q') query: string,
-    @Query('page') page: number = 1,
-    @Query('pageSize') pageSize: number = 10,
-  ) {
-    console.log('실행');
-    return this.clientPostService.send(
-      { cmd: 'searchPosts' },
-      { query, page, pageSize },
-    );
   }
 
   @UseGuards(AuthGuard('access'))

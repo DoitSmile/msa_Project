@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", function () {
       tr.innerHTML = `
         <td class="title">
           <div class="title-wrapper">
-            <a href="post_view.html?id=${post.id}">${
+            <a href="post_view.html?id=${post.id}" class="post-title-link">${
         post.title || "제목 없음"
       }</a>
           </div>
@@ -50,12 +50,20 @@ document.addEventListener("DOMContentLoaded", function () {
         <td class="date">${formatDate(post.createdAt)}</td>
         <td class="views">${post.views || 0}</td>
       `;
-      tr.addEventListener("click", () => viewPost(post.id));
+
+      // 제목 링크에 이벤트 리스너 추가
+      const titleLink = tr.querySelector(".post-title-link");
+      titleLink.addEventListener("click", function (event) {
+        event.preventDefault(); // 기본 링크 동작 방지
+        viewPost(post.id);
+      });
+
       searchResults.appendChild(tr);
     });
 
     console.log("Rendered search results");
   }
+
   function formatDate(dateString) {
     if (!dateString) return "날짜 없음";
     const date = new Date(dateString);
