@@ -7,14 +7,13 @@ import {
   Req,
   Res,
   UseGuards,
-  UnauthorizedException, InternalServerErrorException
+  UnauthorizedException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { AuthGuard } from '@nestjs/passport';
 import { lastValueFrom } from 'rxjs';
 import { AuthLoginInput } from 'src/dto/authdto/auth-login.Input';
-import { AuthPhoneInput } from 'src/dto/authdto/check-phone.Input';
-
 
 @Controller()
 export class AuthController {
@@ -41,7 +40,7 @@ export class AuthController {
         httpOnly: true,
         sameSite: 'strict',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7일
-        domain: 'localhost'
+        domain: 'localhost',
       });
 
       res.header('Authorization', `Bearer ${accessToken}`);
@@ -55,8 +54,6 @@ export class AuthController {
       throw new InternalServerErrorException('Login failed');
     }
   }
-  
-  
 
   // 로그아웃 api
   @UseGuards(AuthGuard('access'))
@@ -80,28 +77,4 @@ export class AuthController {
       { user: user },
     );
   }
-
-  // 핸드폰 인증번호 발송 api
-  @Post('/auth/sendPhone')
-  async sendPhone(@Body('phone_num') phone_num: string) {
-    console.log('phone_num:', phone_num);
-    return await this.clientAuthService.send(
-      { cmd: 'sendPhone' },
-      { phone_num },
-    );
-  }
-
-  // 핸드폰 인증번호 확인 로직 api
-  @Post('/auth/checkPhone')
-  async checkValidPhone(@Body() authPhoneInput: AuthPhoneInput) {
-    console.log('auth_num:', authPhoneInput);
-
-    return await this.clientAuthService.send(
-      { cmd: 'checkValidPhone' },
-      { authPhoneInput },
-    );
-  }
-
-
-  
 }

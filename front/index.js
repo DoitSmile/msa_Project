@@ -58,18 +58,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  function formatDateTime(dateString) {
-    if (!dateString) return "날짜 없음";
-    const date = new Date(dateString);
-    return date.toLocaleString("ko-KR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-  }
   function formatDate(dateString) {
     if (!dateString) return "날짜 없음";
     const date = new Date(dateString);

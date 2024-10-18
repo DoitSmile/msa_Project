@@ -60,9 +60,7 @@ const PostManager = (function () {
     setElementText("post-date", new Date(post.createdAt).toLocaleString());
     setElementHTML("#post-content", post.content);
     setElementText("post-views", post.views || "0");
-    setElementText("comment-count", post.commentCount || "0");
 
-    // 북마크 상태 및 카운트 업데이트
     isBookmarked = post.isBookmarked;
     bookmarkCount = post.bookmarkCount || 0;
     updateBookmarkUI();
@@ -70,7 +68,7 @@ const PostManager = (function () {
     setElementHTML(
       ".post-info",
       `
-      작성자: <a href="/msa_Project/front/user/user_page.html?id=${
+      작성자: <a href="/msa_Project/front/templates/user/user_page.html?id=${
         post.userId
       }" class="user-link">${post.name}</a> |
       작성일: ${new Date(post.createdAt).toLocaleString()}
@@ -82,7 +80,7 @@ const PostManager = (function () {
       console.error("Image gallery element not found");
       return;
     }
-    imageGallery.innerHTML = ""; // 기존 이미지 제거
+    imageGallery.innerHTML = "";
 
     console.log("Image URLs:", post.imageUrls);
 
@@ -102,7 +100,7 @@ const PostManager = (function () {
           imageGallery.appendChild(errorDiv);
         };
         img.onload = () => console.log(`Image ${index} loaded successfully`);
-        img.onclick = () => openImageModal(url);
+        // 이미지 클릭 이벤트 리스너 제거
         imageGallery.appendChild(img);
       });
       imageGallery.style.display = "block";
@@ -110,8 +108,6 @@ const PostManager = (function () {
       console.log("No images to display");
       imageGallery.style.display = "none";
     }
-
-    // 수정/삭제 버튼 표시 여부 결정
     const currentUser = AuthService.getCurrentUser();
     const postActions = document.querySelector(".edit-delete-buttons");
     if (postActions) {
@@ -126,12 +122,25 @@ const PostManager = (function () {
   function updateBookmarkUI() {
     const bookmarkButton = document.getElementById("bookmarkButton");
     if (bookmarkButton) {
-      bookmarkButton.classList.toggle("bookmarked", isBookmarked);
+      const isAuthenticated = AuthService.isAuthenticated();
+      bookmarkButton.classList.toggle(
+        "bookmarked",
+        isAuthenticated && isBookmarked
+      );
       bookmarkButton.setAttribute(
         "aria-label",
         isBookmarked ? "북마크 제거" : "북마크 추가"
       );
       bookmarkButton.innerHTML = `<span class="bookmark-icon"></span><span class="bookmark-count">${bookmarkCount}</span>`;
+
+      // 로그아웃 상태에서는 북마크 버튼 클릭 시 로그인 페이지로 이동
+      if (!isAuthenticated) {
+        bookmarkButton.onclick = () => {
+          alert("로그인이 필요한 서비스입니다.");
+        };
+      } else {
+        bookmarkButton.onclick = toggleBookmark;
+      }
     }
   }
 
@@ -174,6 +183,7 @@ const PostManager = (function () {
         response.data
       );
       const post = response.data;
+      console.log("post받아온 값", post);
       if (!post) {
         throw new Error("게시글 데이터가 없습니다.");
       }
@@ -181,7 +191,6 @@ const PostManager = (function () {
       displayPostContent(post);
       setElementHTML("#category-link", createCategoryLink(post.category));
 
-      // 북마크 상태와 카운트 업데이트
       isBookmarked = post.isBookmarked;
       bookmarkCount = post.bookmarkCount;
       updateBookmarkUI();
@@ -218,67 +227,85 @@ const PostManager = (function () {
 
     commentsContainer.innerHTML = "";
 
-    const currentUser = AuthService.getCurrentUser();
-
     for (const comment of comments) {
-      const commentElement = document.createElement("div");
-      commentElement.className = "comment";
-      commentElement.dataset.commentId = comment.id;
-
-      const profilePictureUrl = await fetchUserProfilePicture(comment.userId);
-
-      const isCommentOwner = currentUser && currentUser.id === comment.userId;
-      const actionButtons = isCommentOwner
-        ? `<a href="#" class="edit-comment">수정</a>
-           <a href="#" class="delete-comment">삭제</a>`
-        : "";
-
-      commentElement.innerHTML = `
-        <img src="${profilePictureUrl}" 
-             alt="User Avatar" 
-             class="comment-avatar"
-             onerror="this.src='/msa_Project/front/assets/default-profile-picture.jpg'">
-        <div class="comment-content">
-          <div class="comment-header">
-            <span class="comment-author"><a href="/msa_Project/front/user/user_page.html?id=${
-              comment.userId
-            }" class="user-link-comment">${comment.username}</a></span>
-            <span class="comment-time">${new Date(
-              comment.createdAt
-            ).toLocaleString()}</span>
-          </div>
-          <p class="comment-text">${comment.content}</p>
-          <div class="comment-actions">
-            ${actionButtons}
-            <a href="#" class="reply-button">답글</a>
-          </div>
-          <div class="reply-form" style="display:none;">
-            <div class="comment-input-container">
-              <textarea class="reply-text" placeholder="답글을 입력하세요..."></textarea>
-              <button class="submit-reply">답글 작성</button>
-            </div>
-          </div>
-        </div>
-      `;
-
+      const commentElement = await createCommentElement(comment, false);
       commentsContainer.appendChild(commentElement);
 
       if (comment.replies && comment.replies.length > 0) {
         const repliesContainer = document.createElement("div");
         repliesContainer.className = "replies";
+        repliesContainer.style.marginLeft = "20px";
+
         for (const reply of comment.replies) {
           const replyElement = await createCommentElement(reply, true);
           repliesContainer.appendChild(replyElement);
         }
+
         commentElement.appendChild(repliesContainer);
       }
     }
   }
 
+  async function createCommentElement(comment, isReply) {
+    const commentElement = document.createElement("div");
+    commentElement.className = isReply ? "comment reply" : "comment";
+    commentElement.dataset.commentId = comment.id;
+
+    const profilePictureUrl = await fetchUserProfilePicture(comment.userId);
+
+    const currentUser = AuthService.getCurrentUser();
+    const isCommentOwner = currentUser && currentUser.id === comment.userId;
+    const actionButtons = isCommentOwner
+      ? `<a href="#" class="edit-comment">수정</a>
+         <a href="#" class="delete-comment">삭제</a>`
+      : "";
+
+    const replyButton =
+      isReply || !AuthService.isAuthenticated()
+        ? ""
+        : '<a href="#" class="reply-button">답글</a>';
+
+    const replyForm =
+      isReply || !AuthService.isAuthenticated()
+        ? ""
+        : `
+        <div class="reply-form" style="display:none;">
+          <div class="comment-input-container">
+            <textarea class="reply-text" placeholder="답글을 입력하세요..."></textarea>
+            <button class="submit-reply">답글 작성</button>
+          </div>
+        </div>
+      `;
+
+    commentElement.innerHTML = `
+      <img src="${profilePictureUrl}" 
+           alt="User Avatar" 
+           class="comment-avatar"
+           onerror="this.src='/msa_Project/front/assets/default-profile-picture.jpg'">
+      <div class="comment-content">
+        <div class="comment-header">
+          <span class="comment-author"><a href="/msa_Project/front/templates/user/user_page.html?id=${
+            comment.userId
+          }" class="user-link-comment">${comment.username}</a></span>
+          <span class="comment-time">${new Date(
+            comment.createdAt
+          ).toLocaleString()}</span>
+        </div>
+        <p class="comment-text">${comment.content}</p>
+        <div class="comment-actions">
+          ${actionButtons}
+          ${replyButton}
+        </div>
+        ${replyForm}
+      </div>
+    `;
+
+    return commentElement;
+  }
+
   function editComment(commentId) {
     if (!AuthService.isAuthenticated()) {
-      alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
+      alert("로그인이 필요한 서비스입니다.");
       return;
     }
 
@@ -347,8 +374,12 @@ const PostManager = (function () {
     axiosInstance
       .post(`/post/bookmark/${currentPostId}`)
       .then((response) => {
+        console.log("토글실행");
         isBookmarked = response.data.isBookmarked;
         bookmarkCount = response.data.bookmarkCount;
+        console.log("isBookmarked:", isBookmarked);
+        console.log("bookmarkCount:", bookmarkCount);
+
         updateBookmarkUI();
       })
       .catch((error) => {
@@ -362,6 +393,7 @@ const PostManager = (function () {
         }
       });
   }
+
   function editPost() {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
@@ -409,7 +441,10 @@ const PostManager = (function () {
           `Received comments for post ID: ${currentPostId}`,
           response.data
         );
-        renderComments(response.data);
+        console.log("가져온 댓글데이터 : ", response.data);
+        setElementText("comment-count", response.data.total || "0");
+
+        renderComments(response.data.comments);
       })
       .catch((error) => {
         console.error(
@@ -470,7 +505,7 @@ const PostManager = (function () {
     const currentUser = AuthService.getCurrentUser();
 
     const commentTextarea = document.getElementById("commentText");
-    const commentSubmitButton = document.querySelector(".comment-form button");
+    const commentSubmitButton = document.getElementById("commentSubmitBtn");
 
     if (isAuthenticated) {
       commentTextarea.placeholder = "댓글을 입력하세요...";
@@ -479,7 +514,16 @@ const PostManager = (function () {
     } else {
       commentTextarea.placeholder = "댓글과 글은 로그인 후 작성할 수 있습니다.";
       commentTextarea.disabled = true;
-      commentSubmitButton.style.display = "none"; // 버튼 숨김
+      commentSubmitButton.disabled = true;
+    }
+
+    const bookmarkButton = document.getElementById("bookmarkButton");
+    if (bookmarkButton) {
+      if (isAuthenticated) {
+        bookmarkButton.classList.remove("logged-out");
+      } else {
+        bookmarkButton.classList.add("logged-out");
+      }
     }
 
     const authButton = document.getElementById("authButton");
@@ -504,6 +548,50 @@ const PostManager = (function () {
     }
   }
 
+  function toggleReplyForm(commentElement) {
+    const replyForm = commentElement.querySelector(".reply-form");
+    if (replyForm) {
+      replyForm.style.display =
+        replyForm.style.display === "none" ? "block" : "none";
+    }
+  }
+
+  async function addReply(commentId, replyText) {
+    if (!AuthService.isAuthenticated()) {
+      alert("로그인이 필요합니다.");
+      window.location.href = "/msa_Project/front/index.html";
+      return;
+    }
+
+    if (replyText.trim() === "") {
+      alert("답글 내용을 입력해주세요.");
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.post("/post/comment/create", {
+        postId: currentPostId,
+        parentId: commentId,
+        content: replyText.trim(),
+      });
+
+      if (response.data) {
+        fetchComments();
+      } else {
+        alert("답글 추가에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("답글 추가 중 오류 발생:", error);
+      if (error.response && error.response.status === 401) {
+        alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+        AuthService.logout();
+        window.location.href = "/msa_Project/front/index.html";
+      } else {
+        alert("답글 추가에 실패했습니다.");
+      }
+    }
+  }
+
   async function init() {
     const editPostBtn = document.getElementById("editPostBtn");
     const deletePostBtn = document.getElementById("deletePostBtn");
@@ -511,9 +599,8 @@ const PostManager = (function () {
 
     if (editPostBtn) editPostBtn.addEventListener("click", editPost);
     if (deletePostBtn) deletePostBtn.addEventListener("click", deletePost);
-    if (bookmarkButton)
-      bookmarkButton.addEventListener("click", toggleBookmark);
 
+    updateBookmarkUI();
     currentPostId = getUrlParameter("id");
     console.log("Initialized. currentPostId:", currentPostId);
 
@@ -558,7 +645,10 @@ const PostManager = (function () {
           editComment(commentId);
         } else if (target.classList.contains("delete-comment")) {
           deleteComment(commentId);
-        } else if (target.classList.contains("reply-button")) {
+        } else if (
+          target.classList.contains("reply-button") &&
+          !commentElement.classList.contains("reply")
+        ) {
           toggleReplyForm(commentElement);
         } else if (target.classList.contains("submit-reply")) {
           const replyText = commentElement.querySelector(".reply-text").value;
@@ -576,6 +666,8 @@ const PostManager = (function () {
     deleteComment: deleteComment,
     editPost: editPost,
     deletePost: deletePost,
+    toggleReplyForm: toggleReplyForm,
+    addReply: addReply,
   };
 })();
 

@@ -34,20 +34,5 @@ export class AuthController {
     });
   }
 
-  // 핸드폰 인증 발송
-  @MessagePattern({ cmd: 'sendPhone' })
-  async sendPhone(data) {
-    console.log('phone_num:', data);
-    const phone_num = await data.phone_num;
-    return await this.authService.sendPhone(phone_num);
-  }
 
-  // 핸드폰 인증 확인
-  @MessagePattern({ cmd: 'checkValidPhone' })
-  async checkValidPhone(data) {
-    console.log('auth_num/c', data.authPhoneInput);
-
-    const authPhoneInput = await data.authPhoneInput;
-    return await this.authService.checkValidPhone(authPhoneInput);
-  }
 }

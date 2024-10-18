@@ -54,12 +54,26 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       if (title) title.value = post.title;
-      if (editor) editor.innerHTML = post.content;
+      if (editor) {
+        editor.innerHTML = post.content;
+
+        // 기존 이미지 로드
+        if (post.imageUrls && post.imageUrls.length > 0) {
+          post.imageUrls.forEach((imageUrl) => {
+            const img = document.createElement("img");
+            img.src = imageUrl;
+            img.style.maxWidth = "80%";
+            img.style.height = "auto";
+            img.setAttribute("contenteditable", "false");
+            editor.appendChild(img);
+          });
+        }
+      }
 
       // 카테고리 정보를 hidden input에 설정
       const hiddenCategoryInput = document.getElementById("hiddenCategoryId");
       if (hiddenCategoryInput && post.category) {
-        hiddenCategoryInput.value = post.category.categoryId;
+        hiddenCategoryInput.value = post.category.id;
       }
 
       // hidden input으로 postId 추가
@@ -72,6 +86,9 @@ document.addEventListener("DOMContentLoaded", function () {
         form.appendChild(postIdInput);
       }
       postIdInput.value = postId;
+
+      // 기존 이미지 URL을 uploadedImages 배열에 추가
+      uploadedImages = post.imageUrls ? post.imageUrls : [];
     } catch (error) {
       console.error("게시글 로드 중 오류 발생:", error);
       alert("게시글을 불러오는데 실패했습니다. 오류: " + error.message);
@@ -91,10 +108,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const formData = new FormData();
 
-      // 제목 추가
       formData.append("title", document.getElementById("title").value);
 
-      // 카테고리 ID 추가
       const categoryId =
         document.getElementById("categoryId") ||
         document.getElementById("hiddenCategoryId");
@@ -102,22 +117,17 @@ document.addEventListener("DOMContentLoaded", function () {
         formData.append("categoryId", categoryId.value);
       }
 
-      // 에디터 내용 추가
       formData.append("content", editor.innerHTML);
 
-      // 이미지 파일 추가
-      uploadedImages.forEach((file, index) => {
-        formData.append(`images`, file, `image${index}`);
+      // 이미지 파일 처리
+      uploadedImages.forEach((image, index) => {
+        if (image instanceof File) {
+          formData.append(`images`, image);
+        }
       });
 
-      // postId를 FormData에 추가 (수정 모드일 때만)
       if (isEditMode && originalPostId) {
         formData.append("postId", originalPostId);
-      }
-
-      // FormData 내용 로깅
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value instanceof File ? `File: ${value.name}` : value);
       }
 
       try {
@@ -150,7 +160,6 @@ document.addEventListener("DOMContentLoaded", function () {
             ? "글이 성공적으로 수정되었습니다."
             : "글이 성공적으로 등록되었습니다."
         );
-
         window.location.href = `/msa_Project/front/templates/post/post_view.html?id=${
           response.data.id || originalPostId
         }`;
@@ -187,7 +196,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function handleError(error) {
     if (error.response) {
+      console.log("Error response:", error.response);
       switch (error.response.status) {
+        case 400:
+          alert("잘못된 요청입니다. 입력 내용을 확인해주세요.");
+          break;
         case 401:
           alert("인증이 만료되었습니다. 다시 로그인해주세요.");
           AuthService.logout();
@@ -199,10 +212,12 @@ document.addEventListener("DOMContentLoaded", function () {
         default:
           alert("글 작성/수정 중 오류가 발생했습니다. 다시 시도해 주세요.");
       }
+    } else if (error.request) {
+      console.log("Error request:", error.request);
+      alert("서버에 연결할 수 없습니다. 네트워크 연결을 확인해주세요.");
     } else {
-      alert(
-        "서버와의 통신 중 오류가 발생했습니다. 네트워크 연결을 확인해주세요."
-      );
+      console.log("Error message:", error.message);
+      alert("오류가 발생했습니다: " + error.message);
     }
   }
 
@@ -259,40 +274,4 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   if (imageBtn && imageUpload)
     imageBtn.addEventListener("click", () => imageUpload.click());
-
-  // 이미지 리사이즈 기능
-  let isResizing = false;
-  let currentImage = null;
-  let startX, startY, startWidth, startHeight;
-
-  function initResize(e) {
-    if (e.target.tagName === "IMG") {
-      isResizing = true;
-      currentImage = e.target;
-      startX = e.clientX;
-      startY = e.clientY;
-      startWidth = currentImage.clientWidth;
-      startHeight = currentImage.clientHeight;
-      document.addEventListener("mousemove", resize, false);
-      document.addEventListener("mouseup", stopResize, false);
-      e.preventDefault();
-    }
-  }
-
-  function resize(e) {
-    if (isResizing) {
-      const width = startWidth + (e.clientX - startX);
-      const height = startHeight + (e.clientY - startY);
-      currentImage.style.width = width + "px";
-      currentImage.style.height = height + "px";
-    }
-  }
-
-  function stopResize() {
-    isResizing = false;
-    document.removeEventListener("mousemove", resize, false);
-    document.removeEventListener("mouseup", stopResize, false);
-  }
-
-  editor.addEventListener("mousedown", initResize, false);
 });

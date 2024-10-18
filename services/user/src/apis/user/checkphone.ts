@@ -2,13 +2,14 @@ import 'dotenv/config';
 export class PhoneAuthentication {
   coolsms = require('coolsms-node-sdk').default;
 
-  checkphone(myphone) {
+  async checkphone(myphone) {
+    console.log("myphone:",myphone)
     if (myphone.length < 10 || myphone.length > 11) {
       console.log('유효하지 않은 핸드폰 번호');
       return false;
     } else {
       console.log('유효한 번호');
-      true;
+      return true;
     }
   }
 
@@ -21,7 +22,6 @@ export class PhoneAuthentication {
     const SMS_KEY = process.env.SMS_KEY;
     const SMS_SECRET = process.env.SMS_SECRET;
     const SMS_SENDER = process.env.SMS_SENDER;
-    // const messageService = new this.mysms(SMS_KEY, SMS_SECRET);
     const messageService = await new this.coolsms(SMS_KEY, SMS_SECRET);
     const result = await messageService.sendOne({
       to: myphone,

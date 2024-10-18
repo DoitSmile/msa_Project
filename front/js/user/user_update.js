@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", function () {
       this.src = "/msa_Project/front/assets/default-profile-picture.jpg";
     };
 
-    lastModifiedDate.textContent = userData.lastModified || "해당 없음";
+    lastModifiedDate.textContent = userData.updatedAt || "해당 없음";
   }
 
   // 변경사항 저장

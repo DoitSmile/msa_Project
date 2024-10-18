@@ -6,7 +6,6 @@ import { JwtModule } from '@nestjs/jwt';
 import { User } from '@shared/entites/user/user.entity';
 import { AuthController } from './apis/auth.controller';
 import { AuthService } from './apis/auth.service';
-import { PhoneAuthentication } from './apis/checkphone';
 import { JWtAccessStrategy } from './strategies/jwt-access.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh-strategy';
 import { RedisClientOptions } from 'redis'; // 추가
@@ -41,7 +40,6 @@ import * as redisStore from 'cache-manager-redis-store'; // 추가
   controllers: [AuthController],
   providers: [
     AuthService,
-    PhoneAuthentication,
     JWtAccessStrategy,
     JwtRefreshStrategy,
   ],

@@ -147,11 +147,12 @@ export class PostController {
     @Query('q') query: string,
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 10,
+    @Query('sort') sort: string = 'date',
   ) {
-    console.log('실행');
+    console.log('Search request received:', { query, page, pageSize, sort });
     return this.clientPostService.send(
       { cmd: 'searchPosts' },
-      { query, page, pageSize },
+      { query, page, pageSize, sort },
     );
   }
 

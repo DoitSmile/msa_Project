@@ -62,7 +62,9 @@ function renderBookmarks(bookmarks) {
         <li class="bookmark-item" data-id="${bookmarks.post.id}">
             <input type="checkbox" class="checkbox">
             <div class="bookmark-content">
-                <div class="bookmark-title">${bookmarks.post.title}</div>
+                <div class="bookmark-title"><a href="/msa_Project/front/templates/post/post_view.html?id=${
+                  bookmarks.post.id
+                }">${bookmarks.post.title}<a/></div>
                 <div class="bookmark-info">${bookmarks.post.name} 
        ${new Date(bookmarks.createdAt).toLocaleDateString()}</div>
             </div>

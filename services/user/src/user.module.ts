@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
-// import { Like } from '@shared/entites/post/post-like.entity';
 import { User } from '@shared/entites/user/user.entity';
 import { UserController } from './apis/user/user.controller';
 import { UserService } from './apis/user/user.service';
+import { PhoneAuthentication } from '../src/apis/user/checkphone';
 
 @Module({
   imports: [
@@ -24,8 +24,7 @@ import { UserService } from './apis/user/user.service';
     TypeOrmModule.forFeature([User]),
   ],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, PhoneAuthentication],
   exports: [UserService],
 })
 export class UserModule {}
-

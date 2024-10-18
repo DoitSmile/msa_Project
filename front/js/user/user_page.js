@@ -42,7 +42,6 @@ const UserProfileManager = (function () {
       const response = await axios.get(`/user/fetch/${userId}`);
       const userData = response.data;
       console.log("사용자 정보:", userData);
-
       setElementText("userName", userData.name || "이름 없음");
 
       // 프로필 이미지 업데이트
@@ -57,7 +56,8 @@ const UserProfileManager = (function () {
       }
     } catch (error) {
       console.error("사용자 정보 로드 중 오류 발생:", error);
-      alert("사용자 정보를 불러오는 데 실패했습니다.");
+      alert("탈퇴한 유저입니다.");
+      window.history.back();
     }
   }
   // 게시글 데이터 로드
@@ -173,7 +173,9 @@ const UserProfileManager = (function () {
 
         itemElement.innerHTML = `
           <h3>
-            <a href="/msa_Project/front/post/post_view.html?id=${item.id}">
+            <a href="/msa_Project/front/templates/post/post_view.html?id=${
+              item.id
+            }">
               ${item.title}
               ${
                 commentCount > 0
@@ -194,7 +196,7 @@ const UserProfileManager = (function () {
       } else {
         itemElement.innerHTML = `
           <p class="comment-content">${item.content}</p>
-          <p class="post-title">댓글 단 글: <a href="/msa_Project/front/post/post_view.html?id=${
+          <p class="post-title">댓글 단 글: <a href="/msa_Project/front/templates/post/post_view.html?id=${
             item.post.id
           }">${item.post.title || "Unknown"}</a></p>
           <p>${new Date(item.createdAt).toLocaleString()}</p>
@@ -259,6 +261,38 @@ const UserProfileManager = (function () {
       }
     }
   }
+  function setupAccountManagementButton(viewedUserId) {
+    const currentUser = AuthService.getCurrentUser();
+    const accountManagementBtn = document.getElementById(
+      "accountManagementBtn"
+    );
+
+    if (accountManagementBtn) {
+      if (currentUser && currentUser.id === viewedUserId) {
+        accountManagementBtn.style.display = "block";
+        accountManagementBtn.addEventListener("click", () => {
+          // 계정 관리 페이지로 이동
+          window.location.href =
+            "/msa_Project/front/templates/user/account_management.html";
+        });
+      } else {
+        accountManagementBtn.style.display = "none";
+      }
+    }
+  }
+  // 계정 관리 버튼 표시 여부 설정
+  function setupAccountManagementButton(viewedUserId) {
+    const currentUser = AuthService.getCurrentUser();
+    const accountManagementLink = document.querySelector(".account-link");
+
+    if (accountManagementLink) {
+      if (currentUser && currentUser.id === viewedUserId) {
+        accountManagementLink.style.display = "inline-block";
+      } else {
+        accountManagementLink.style.display = "none";
+      }
+    }
+  }
 
   // 초기화 함수
   async function init() {
@@ -274,6 +308,9 @@ const UserProfileManager = (function () {
     await loadPostData(viewedUserId, 1);
     await loadCommentData(viewedUserId, 1);
     switchTab("posts"); // 초기 탭을 게시글로 설정
+
+    // 계정 관리 버튼 설정
+    setupAccountManagementButton(viewedUserId);
 
     // 탭 전환 이벤트 리스너 추가
     document.querySelectorAll(".content-nav li").forEach((tab) => {

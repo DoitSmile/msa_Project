@@ -149,20 +149,31 @@ nav ul li a,
   color: white;
   text-decoration: none;
   font-size: 14px;
-  display: flex;
-  align-items: center;
+  display: inline-flex; /* inline-flex로 변경 */
+  align-items: center; /* 세로 중앙 정렬 */
   background-color: rgba(255, 255, 255, 0.2);
   padding: 8px 12px;
   border-radius: 20px;
   transition: background-color 0.3s;
 }
+
 .account-link:hover {
   background-color: rgba(255, 255, 255, 0.3);
+  text-decoration: none;
 }
+
 .account-icon {
   width: 16px;
   height: 16px;
   margin-right: 8px;
+  display: inline-block; /* inline-block으로 변경 */
+  vertical-align: middle; /* 세로 중앙 정렬 */
+}
+
+/* 텍스트를 위한 새로운 span 요소 추가 */
+.account-text {
+  display: inline-block;
+  vertical-align: middle;
 }
 .profile-stats {
   display: flex;
@@ -241,9 +252,7 @@ nav ul li a,
   margin-bottom: 10px;
   cursor: pointer;
 }
-.comment-content:hover {
-  text-decoration: underline;
-}
+
 .post-title {
   display: flex;
   align-items: center;

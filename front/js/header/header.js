@@ -1,3 +1,4 @@
+import { AuthService } from "/msa_Project/front/js/auth/auth.js";
 export function initializeHeader() {
   const searchForm = document.getElementById("searchForm");
   const searchInput = document.getElementById("searchInput");
@@ -11,6 +12,25 @@ export function initializeHeader() {
       )}`;
     }
   });
+
+  // 북마크 버튼에 이벤트 리스너 추가
+  const bookMark = document.getElementById("bookMark");
+  if (bookMark) {
+    bookMark.addEventListener("click", handleBookMarkClick);
+  }
+
+  // 북마크 버튼 클릭 처리 함수
+  function handleBookMarkClick(event) {
+    event.preventDefault(); // 기본 동작 방지
+    if (AuthService.isAuthenticated()) {
+      // 로그인 상태일 때 글쓰기 페이지로 이동
+      window.location.href =
+        "/msa_Project/front/templates/header/bookmark.html";
+    } else {
+      // 비로그인 상태일 때 경고 메시지 표시
+      alert("로그인이 필요한 서비스입니다.");
+    }
+  }
 
   // 카테고리 버튼 토글 기능
   const categoryBtn = document.querySelector(".category-btn");

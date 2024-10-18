@@ -16,6 +16,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { UpdateUserInput } from 'src/dto/userdto/update-user.input.dto';
 import { UpdatePasswordInput } from 'src/dto/userdto/update-userpassword.input.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthPhoneInput } from 'src/dto/authdto/check-phone.Input';
 
 @Controller()
 export class UserController {
@@ -39,7 +40,6 @@ export class UserController {
     // API에 넘겨줄 데이터 값이 있다면, 두 번째 인자로 정할 수 있습니다. 넘겨줄 데이터 값이 없을 경우 빈 객체`{}`로 작성합니다.
   }
 
-  @UseGuards(AuthGuard('access'))
   @Get('/user/fetch/:id')
   async fetchUser(@Param('id') userId) {
     return await this.clientUserService.send({ cmd: 'fetchUser' }, { userId });
@@ -91,19 +91,35 @@ export class UserController {
     );
   }
 
-  // // 핸드폰 인증번호 발송 api
-  // @Post('/user/sendPhone')
-  // async sendPhone(@Body('qqq') qqq: string, @Res() res): Promise<void> {
-  //   const myphone = qqq;
-  //   const result = await this.authService.sendPhone(myphone);
-  //   res.send(result);
-  // }
+  @Post('/user/check-email')
+  async checkEmail(@Body('email') email: string) {
+    return this.clientUserService.send({ cmd: 'checkEmail' }, { email });
+  }
 
-  // // 핸드폰 인증번호 확인 로직 api
-  // @Post('/user/checkPhone')
-  // async checkValidPhone(@Body('qqq') qqq: string, @Res() res): Promise<void> {
-  //   const in_num = qqq;
-  //   const result = await this.authService.checkValidPhone(in_num);
-  //   res.send(result);
-  // }
+  @Post('/user/check-name')
+  async checkName(@Body('name') name: string) {
+    console.log('name:', name);
+    return this.clientUserService.send({ cmd: 'checkName' }, { name });
+  }
+
+  // 핸드폰 인증번호 발송 api
+  @Post('/user/sendPhone')
+  async sendPhone(@Body('phone_num') phone_num: string) {
+    console.log('phone_num:', phone_num);
+    return await this.clientUserService.send(
+      { cmd: 'sendPhone' },
+      { phone_num },
+    );
+  }
+
+  // 핸드폰 인증번호 확인 로직 api
+  @Post('/user/checkPhone')
+  async checkValidPhone(@Body() authPhoneInput: AuthPhoneInput) {
+    console.log('auth_num:', authPhoneInput);
+
+    return await this.clientUserService.send(
+      { cmd: 'checkValidPhone' },
+      { authPhoneInput },
+    );
+  }
 }

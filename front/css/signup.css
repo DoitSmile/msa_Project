@@ -280,6 +280,55 @@ a:hover {
   font-size: 0.9rem;
 }
 
+/* 인증 상태 메시지 스타일 */
+#verification-status {
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.verification-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+#timer,
+#verification-status {
+  margin: 0 0.5rem;
+  font-weight: bold;
+}
+
+#timer {
+  color: #333;
+}
+
+#verification-status.success {
+  color: green;
+}
+
+#verification-status.failure {
+  color: red;
+}
+
+/* 인증번호 입력 필드와 버튼 간격 조정 */
+.input-group-button {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.input-group-button input {
+  flex: 1;
+}
+
+.input-group-button button {
+  white-space: nowrap;
+  padding: 0.8rem 1rem;
+  font-size: 0.9rem;
+}
 /* 푸터 스타일 */
 footer {
   background-color: #ffffff;

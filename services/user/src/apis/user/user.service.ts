@@ -12,6 +12,8 @@ import * as bcrypt from 'bcrypt';
 import { IUserEmail } from '@shared/interfaces/user/user-service.interface';
 import { Storage } from '@google-cloud/storage';
 import { ConfigService } from '@nestjs/config'; // 환경변수 읽을 수 있음
+import { PhoneAuthentication } from './checkphone';
+import { CreateUserInput } from '../../../src/interfaces/user-service.interface';
 
 @Injectable()
 export class UserService {
@@ -21,6 +23,7 @@ export class UserService {
     @InjectRepository(User) // 사용할 entitiy를 명시한 대상 repository로 주입 ( forFeature에 등록한 repository들이 대상)
     private readonly userRepository: Repository<User>,
     private configService: ConfigService,
+    private readonly authPhone: PhoneAuthentication,
   ) {
     const projectId = this.configService.get<string>('GCP_PROJECT_ID');
     const keyFilename = this.configService.get<string>('GCP_KEY_FILENAME');
@@ -33,12 +36,7 @@ export class UserService {
     this.bucket = this.configService.get<string>('GCP_STORAGE_BUCKET');
   }
 
-  // 이메일로 유저 찾기
-  async findEmail({ email }: IUserEmail) {
-    return await this.userRepository.findOne({
-      where: { email },
-    });
-  }
+  private verificationCodes: Map<string, { code: string }> = new Map();
 
   // 아이디로 유저 찾기
   async findId({ id }) {
@@ -48,14 +46,10 @@ export class UserService {
   }
 
   // 회원가입
-  async createUser(createUserInput): Promise<User> {
+  async createUser(createUserInput: CreateUserInput): Promise<User> {
     console.log('service:', createUserInput);
     const { email, name, phone, password } = createUserInput;
     console.log('email:', email);
-    const user = await this.findEmail({ email });
-
-    // null 이면 fasle와 동일하게 작동
-    if (user) throw new ConflictException('이미 존재하는 이메일입니다.');
     const hashPassword = await bcrypt.hash(password, 10);
     console.log(hashPassword);
     return await this.userRepository.save({
@@ -166,5 +160,45 @@ export class UserService {
 
     console.log('비밀번호 변경 완료');
     return { success: true, message: '비밀번호가 성공적으로 변경되었습니다.' };
+  }
+
+  // 핸드폰 인증번호 전송.
+  async sendPhone(phone_num: string): Promise<any> {
+    console.log('service phone_num', phone_num);
+    const checkValid = await this.authPhone.checkphone(phone_num);
+    if (!checkValid) throw new ConflictException('유효하지 않은 핸드폰 번호');
+    const myToken = await this.authPhone.getToken();
+    const expiry = Date.now() + 300000; // 5분 후 만료
+    console.log('expiry:', expiry);
+    // await this.authPhone.sendTokenToSMS(phone_num, myToken);
+    const set = this.verificationCodes.set(phone_num, {
+      code: myToken,
+    }); // 인증번호 임시저장하기
+    console.log('set:', set);
+    return set;
+  }
+
+  // 핸드폰 인증번호 확인
+  async checkValidPhone(authPhoneInput): Promise<any> {
+    console.log('authPhoneInput:', authPhoneInput);
+    const storedData = this.verificationCodes.get(authPhoneInput.phone_num);
+    console.log('storedData:', storedData);
+    console.log('storedData:', storedData.code);
+    console.log('authPhoneInput.auth_num:', authPhoneInput.auth_num);
+    if (storedData.code === authPhoneInput.auth_num) {
+      return '인증이 완료되었습니다.';
+    } else {
+      throw new ConflictException('인증실패');
+    }
+  }
+
+  async checkEmailAvailability(email: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({ where: { email } });
+    return !user; // 사용자가 없으면 true (사용 가능), 있으면 false (사용 불가)
+  }
+
+  async checkNameAvailability(name: string): Promise<boolean> {
+    const user = await this.userRepository.findOne({ where: { name } });
+    return !user; // 사용자가 없으면 true (사용 가능), 있으면 false (사용 불가)
   }
 }

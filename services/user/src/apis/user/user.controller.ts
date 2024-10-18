@@ -49,4 +49,30 @@ export class UserController {
     console.log('data:', data);
     return await this.userService.updateUser(data.userId, data.password);
   }
+
+  // 핸드폰 인증 발송
+  @MessagePattern({ cmd: 'sendPhone' })
+  async sendPhone(data) {
+    return await this.userService.sendPhone(data.phone_num);
+  }
+
+  // 핸드폰 인증 확인
+  @MessagePattern({ cmd: 'checkValidPhone' })
+  async checkValidPhone(data) {
+    return await this.userService.checkValidPhone(data.authPhoneInput);
+  }
+
+  @MessagePattern({ cmd: 'checkEmail' })
+  async checkEmail(data: { email: string }) {
+    const isAvailable = await this.userService.checkEmailAvailability(
+      data.email,
+    );
+    return { available: isAvailable };
+  }
+
+  @MessagePattern({ cmd: 'checkName' })
+  async checkName(data: { name: string }) {
+    const isAvailable = await this.userService.checkNameAvailability(data.name);
+    return { available: isAvailable };
+  }
 }

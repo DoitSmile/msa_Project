@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from '@shared/entites/post/post.entity';
 import { Comment } from '@shared/entites/post/post-comment.entity';
 import { Bookmark } from '@shared/entites/post/post-bookmark.entity';
-import { Repository, IsNull, In } from 'typeorm';
+import { Repository, IsNull, In, ILike } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Storage } from '@google-cloud/storage';
@@ -220,6 +220,7 @@ export class PostService {
             const cacheKey = `post:${post.id}:views`;
             const cachedViews = await this.cacheManager.get<number>(cacheKey);
             post.views = cachedViews || post.views;
+            post.name;
         }
 
         return {
@@ -230,36 +231,36 @@ export class PostService {
             totalPages: Math.ceil(total / pageSize),
         };
     }
-
+    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+    async resetBestPosts() {
+        await this.redisClient.del('best_posts');
+        this.logger.log('Best posts ranking has been reset');
+    }
     async incrementPostView(postId: string, userId: string) {
-        const now = new Date();
-        const key = `popular_posts:${now.toISOString().split('T')[0]}`;
+        const postViewKey = `post:${postId}:views`;
+        const userViewCacheKey = `post:${postId}:user:${userId}:view`;
+        const bestPostsKey = 'best_posts';
 
         const multi = this.redisClient.multi();
-        await multi.zIncrBy(key, 1, postId);
-        await multi.expire(key, 60 * 60 * 24 * 7); // 7일 후 만료
 
-        const cacheKey = `post:${postId}:views`;
-        const userViewCacheKey = `post:${postId}:user:${userId}:view`;
-
-        const [cachedViews, userViewed] = await Promise.all([
-            this.cacheManager.get<number>(cacheKey),
-            this.cacheManager.get(userViewCacheKey),
-        ]);
-
-        let views = cachedViews || 0;
-
-        if (!userViewed) {
-            views++;
-            await multi.set(cacheKey, views.toString());
-            await multi.set(userViewCacheKey, 'true', { EX: 300 }); // 5분 동안 유효
-        }
+        multi.incr(postViewKey);
+        multi.zIncrBy(bestPostsKey, 1, postId);
+        multi.set(userViewCacheKey, 'true', { EX: 300 });
 
         await multi.exec();
 
+        const viewsStr = await this.redisClient.get(postViewKey);
+        const views = viewsStr ? parseInt(viewsStr) : 0;
+
+        // 데이터베이스 업데이트 (비동기로 처리)
+        this.postRepository.update(postId, { views }).catch((err) => {
+            this.logger.error(
+                `Failed to update views in database: ${err.message}`,
+            );
+        });
+
         return views;
     }
-
     async fetchPost(postId: string, currentUserId: string) {
         const post = await this.postRepository.findOne({
             where: { id: postId },
@@ -287,35 +288,48 @@ export class PostService {
         };
     }
 
-    async getPopularPosts(limit: number = 10) {
-        const keys = [];
-        for (let i = 0; i < 7; i++) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            keys.push(`popular_posts:${date.toISOString().split('T')[0]}`);
+    async getPopularPosts(limit: number = 5) {
+        const bestPostsKey = 'best_posts';
+
+        // Redis에서 상위 게시물 가져오기
+        const results = await this.redisClient.zRangeWithScores(
+            bestPostsKey,
+            0,
+            limit - 1,
+            { REV: true },
+        );
+
+        if (results.length === 0) {
+            return [];
         }
 
-        const results = await this.redisClient.zUnion(keys);
+        const postIds = results.map((result) => result.value);
 
-        const sortedPostIds = results.slice(0, limit * 2);
-        const postIds = sortedPostIds.filter((_, index) => index % 2 === 0);
-
-        const posts = await this.postRepository.findBy({
-            id: In(postIds),
+        // 데이터베이스에서 게시물 정보 가져오기
+        const posts = await this.postRepository.find({
+            where: { id: In(postIds) },
+            relations: ['category', 'comment'],
         });
 
-        await this.postRepository
-            .createQueryBuilder('post')
-            .leftJoinAndSelect('post.category', 'category')
-            .leftJoinAndSelect('post.comment', 'comment')
-            .where('post.id IN (:...ids)', { ids: postIds })
-            .getMany();
+        // 각 게시물의 최신 조회수를 Redis에서 가져오기
+        const sortedPosts = await Promise.all(
+            postIds.map(async (id) => {
+                const post = posts.find((p) => p.id === id);
+                const viewsKey = `post:${id}:views`;
+                const cachedViews = await this.redisClient.get(viewsKey);
+                const views = cachedViews
+                    ? parseInt(cachedViews, 10)
+                    : post?.views || 0;
+                return { ...post, realTimeViews: views };
+            }),
+        );
 
-        return postIds
-            .map((id) => posts.find((post) => post.id === id))
-            .filter(Boolean);
+        // 실시간 조회수를 기준으로 정렬
+        sortedPosts.sort((a, b) => b.realTimeViews - a.realTimeViews);
+
+        return sortedPosts;
     }
-
+    // 댓글 생성
     async createComment(createCommentInput, username, userId) {
         const { postId, parentId, content } = createCommentInput;
 
@@ -348,12 +362,22 @@ export class PostService {
         return this.commentRepository.save(comment);
     }
 
-    async fetchComment(postId): Promise<Comment[]> {
-        return this.commentRepository.find({
-            where: { post: { id: postId }, parentId: IsNull() },
+    async fetchComment(
+        postId: string,
+    ): Promise<{ comments: Comment[]; total: number }> {
+        const [comments, total] = await this.commentRepository.findAndCount({
+            where: {
+                post: { id: postId },
+                parentId: IsNull(),
+            },
             relations: ['replies', 'replies.replies'],
             order: { createdAt: 'DESC' },
         });
+
+        return {
+            comments,
+            total,
+        };
     }
 
     async fetchUserComments(
@@ -410,71 +434,97 @@ export class PostService {
         await this.redisClient.del(oldKey);
     }
 
-    @Cron(CronExpression.EVERY_HOUR)
+    @Cron(CronExpression.EVERY_10_MINUTES)
     async syncViewsToDatabase() {
         const posts = await this.postRepository.find();
         for (const post of posts) {
             const cacheKey = `post:${post.id}:views`;
-            const cachedViews = await this.cacheManager.get<number>(cacheKey);
-            if (cachedViews !== undefined && cachedViews !== post.views) {
-                await this.postRepository.update(post.id, {
-                    views: cachedViews,
-                });
+            const cachedViews = await this.redisClient.get(cacheKey);
+            if (cachedViews) {
+                const views = parseInt(cachedViews);
+                if (views !== post.views) {
+                    await this.postRepository.update(post.id, { views });
+                    await this.redisClient.set(cacheKey, views.toString());
+                }
             }
         }
     }
 
-    async searchPosts(query: string, page: number = 1, pageSize: number = 10) {
-        const queryBuilder = this.postRepository
-            .createQueryBuilder('post')
-            .leftJoinAndSelect('post.category', 'category')
-            .leftJoinAndSelect('post.comment', 'comment')
-            .where('post.title LIKE :query OR post.content LIKE :query', {
-                query: `%${query}%`,
-            })
-            .select([
-                'post.id',
-                'post.title',
-                'post.content',
-                'post.name',
-                'post.createdAt',
-                'post.views',
-                'category.name',
-                'COUNT(DISTINCT comment.id) AS commentCount',
-            ])
-            .groupBy('post.id')
-            .orderBy('post.createdAt', 'DESC');
+    async searchPosts(
+        query: string,
+        page: number = 1,
+        pageSize: number = 10,
+        sort: string = 'date',
+    ) {
+        console.log('Executing search with params:', {
+            query,
+            page,
+            pageSize,
+            sort,
+        });
 
-        const [posts, total] = await queryBuilder
-            .skip((page - 1) * pageSize)
-            .take(pageSize)
-            .getManyAndCount();
+        const [posts, total] = await this.postRepository.findAndCount({
+            where: [
+                { title: ILike(`%${query}%`) },
+                { content: ILike(`%${query}%`) },
+            ],
+            relations: ['category', 'comment'],
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+        });
 
-        // Redis 캐시에서 조회수 가져오기 및 검색어 하이라이트
-        const highlightedPosts = await Promise.all(
+        const processedPosts = await Promise.all(
             posts.map(async (post) => {
-                const cacheKey = `post:${post.id}:views`;
-                const cachedViews =
-                    await this.cacheManager.get<number>(cacheKey);
-                post.views = cachedViews || post.views;
+                const viewsKey = `post:${post.id}:views`;
+                const cachedViews = await this.redisClient.get(viewsKey);
 
-                // 제목과 내용에서 검색어 하이라이트
-                post.title = this.highlightText(post.title, query);
-                post.content = this.highlightText(post.content, query);
-
-                return post;
+                return {
+                    ...post,
+                    commentCount: post.comment.length,
+                    views: cachedViews ? parseInt(cachedViews, 10) : post.views,
+                    title: this.highlightText(post.title, query),
+                    content: this.highlightText(post.content, query),
+                };
             }),
         );
+
+        // 정렬 적용
+        switch (sort) {
+            case 'comments':
+                processedPosts.sort((a, b) => b.commentCount - a.commentCount);
+                break;
+            case 'views':
+                processedPosts.sort((a, b) => b.views - a.views);
+                break;
+            case 'date':
+            default:
+                processedPosts.sort(
+                    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+                );
+                break;
+        }
+
+        console.log('Processed posts:', processedPosts);
 
         const totalPages = Math.ceil(total / pageSize);
 
         return {
-            posts: highlightedPosts,
+            posts: processedPosts,
             total,
             page,
             pageSize,
             totalPages,
         };
+    }
+    /**
+     * 텍스트에서 검색어를 하이라이트하는 메서드
+     * @param text 원본 텍스트
+     * @param query 검색어
+     * @returns 검색어가 하이라이트된 텍스트
+     */
+    private highlightText(text: string, query: string): string {
+        const regex = new RegExp(query, 'gi');
+        return text.replace(regex, (match) => `<mark>${match}</mark>`);
     }
 
     async createBookmark(
@@ -551,16 +601,5 @@ export class PostService {
         });
 
         return { isBookmarked: !!bookmark };
-    }
-
-    /**
-     * 텍스트에서 검색어를 하이라이트하는 메서드
-     * @param text 원본 텍스트
-     * @param query 검색어
-     * @returns 검색어가 하이라이트된 텍스트
-     */
-    private highlightText(text: string, query: string): string {
-        const regex = new RegExp(query, 'gi');
-        return text.replace(regex, (match) => `<mark>${match}</mark>`);
     }
 }
