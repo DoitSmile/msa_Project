@@ -8,8 +8,6 @@ services:
       MYSQL_ROOT_PASSWORD: "root"
     ports:
       - 3308:3306
-    env_file:
-      - ./services/user/.env.docker
 
   my-post-database:
     image: mysql:latest
@@ -34,6 +32,8 @@ services:
       - ./api-gateway/src:/api-gateway/src
     ports:
       - 3000:3000
+    env_file:
+      - ./services/user/.env.docker
 
   auth-service:
     build:

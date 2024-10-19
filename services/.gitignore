@@ -4,6 +4,8 @@
 
 # my file
 gcp-file-storage.json
+.env.docker
+.env
 
 # Logs
 logs

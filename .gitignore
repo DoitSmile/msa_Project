@@ -3,7 +3,9 @@
 /node_modules
 /build
 services/post/gcp-file-storage.json
-
+services/post/.env.docker
+services/user/.env.docker
+services/auth/.env.docker
 # Logs
 logs
 *.log

@@ -64,6 +64,7 @@ export class UserService {
   async fetchUser(userId: string) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
+      console.log('회원쪽');
       throw new NotFoundException('User not found');
     }
     console.log('user:', user);
