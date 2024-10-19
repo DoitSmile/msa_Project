@@ -3,19 +3,16 @@ import { AuthService } from "/msa_Project/front/js/auth/auth.js";
 // 전역 변수 선언
 let posts = []; // 게시물 목록을 저장할 배열
 let categories = new Set(); // 카테고리 정보를 저장할 Set
-const itemsPerPage = 20; // 한 페이지에 표시할 게시물 수
 let currentPage = 1; // 현재 페이지 번호
+let totalPages = 1; // 총 페이지 수
+let itemsPerPage = 20; // 한 페이지에 표시할 게시물 수
 
 // 게시물 목록을 화면에 렌더링하는 함수
 function renderPosts(isSpecialPage = false) {
   const boardList = document.getElementById("boardList");
   boardList.innerHTML = ""; // 기존 목록 초기화
 
-  const start = (currentPage - 1) * itemsPerPage;
-  const end = Math.min(start + itemsPerPage, posts.length);
-  const paginatedPosts = posts.slice(start, end);
-
-  paginatedPosts.forEach((post) => {
+  posts.forEach((post) => {
     console.log("post:", post);
     const tr = document.createElement("tr");
     const commentCount = post.comment ? post.comment.length : 0;
@@ -67,9 +64,25 @@ function renderPagination() {
   const pagination = document.getElementById("pagination");
   pagination.innerHTML = "";
 
-  const pageCount = Math.ceil(posts.length / itemsPerPage);
+  // 이전 페이지 버튼
+  if (currentPage > 1) {
+    const prev = document.createElement("a");
+    prev.href = "#";
+    prev.textContent = "이전";
+    prev.addEventListener("click", (e) => {
+      e.preventDefault();
+      currentPage--;
+      fetchPosts();
+    });
+    pagination.appendChild(prev);
+  }
 
-  for (let i = 1; i <= pageCount; i++) {
+  // 페이지 번호
+  for (
+    let i = Math.max(1, currentPage - 2);
+    i <= Math.min(totalPages, currentPage + 2);
+    i++
+  ) {
     const a = document.createElement("a");
     a.href = "#";
     a.textContent = i;
@@ -79,9 +92,22 @@ function renderPagination() {
     a.addEventListener("click", (e) => {
       e.preventDefault();
       currentPage = i;
-      renderPosts();
+      fetchPosts();
     });
     pagination.appendChild(a);
+  }
+
+  // 다음 페이지 버튼
+  if (currentPage < totalPages) {
+    const next = document.createElement("a");
+    next.href = "#";
+    next.textContent = "다음";
+    next.addEventListener("click", (e) => {
+      e.preventDefault();
+      currentPage++;
+      fetchPosts();
+    });
+    pagination.appendChild(next);
   }
 }
 
@@ -91,18 +117,22 @@ function fetchPosts(categoryId = null, isSpecialPage = false) {
   let url;
 
   if (categoryId === "popular") {
-    url = "http://localhost:3000/posts/popular";
+    url = `http://localhost:3000/posts/popular?page=${currentPage}&pageSize=${itemsPerPage}`;
   } else if (categoryId) {
-    url = `http://localhost:3000/post/fetch/category/${categoryId}`;
+    url = `http://localhost:3000/post/fetch/category/${categoryId}?page=${currentPage}&pageSize=${itemsPerPage}`;
   } else {
-    url = "http://localhost:3000/posts/fetch/all";
+    url = `http://localhost:3000/posts/fetch/all?page=${currentPage}&pageSize=${itemsPerPage}`;
   }
 
   return axios
     .get(url)
     .then(function (response) {
       console.log("서버 응답:", response.data);
-      posts = Array.isArray(response.data) ? response.data : [];
+      posts = response.data.posts;
+      totalPages = response.data.totalPages;
+      currentPage = response.data.page;
+      itemsPerPage = response.data.pageSize;
+
       posts.forEach((post) => {
         if (post.category && post.category.id) {
           categories.add(post.category.id);

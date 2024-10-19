@@ -76,9 +76,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function fetchPopularPosts() {
     axios
-      .get("http://localhost:3000/posts/popular")
+      .get(
+        `http://localhost:3000/posts/popular?page=1&pageSize=${itemsPerPage}`
+      )
       .then(function (response) {
-        const popularPosts = Array.isArray(response.data) ? response.data : [];
+        console.log("Popular posts response:", response.data);
+        const popularPosts = response.data.posts || [];
         renderPosts(popularPosts, popularPostList);
       })
       .catch(function (error) {
@@ -90,9 +93,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function fetchRecentPosts() {
     axios
-      .get("http://localhost:3000/posts/fetch/all")
+      .get(
+        `http://localhost:3000/posts/fetch/all?page=1&pageSize=${itemsPerPage}`
+      )
       .then(function (response) {
-        const recentPosts = Array.isArray(response.data) ? response.data : [];
+        console.log("Recent posts response:", response.data);
+        const recentPosts = response.data.posts || [];
         renderPosts(recentPosts, recentPostList);
       })
       .catch(function (error) {
@@ -109,19 +115,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (AuthService.isAuthenticated()) {
       const currentUser = AuthService.getCurrentUser();
-      loginContent.style.display = "none";
-      profileContent.style.display = "block";
-      sectionTitle.textContent = "마이페이지";
+      if (loginContent) loginContent.style.display = "none";
+      if (profileContent) profileContent.style.display = "block";
+      if (sectionTitle) sectionTitle.textContent = "나의 정보";
 
       updateUserProfile(currentUser.id);
 
-      myPostsLink.href = `/msa_Project/front/templates/user/user_page.html?id=${currentUser.id}`;
-      accountManagementLink.href = `/msa_Project/front/templates/user/user_update.html?id=${currentUser.id}`;
-      writePostLink.href = `/msa_Project/front/templates/post/write.html?id=${currentUser.id}`;
+      if (myPostsLink)
+        myPostsLink.href = `/msa_Project/front/templates/user/user_page.html?id=${currentUser.id}`;
+      if (accountManagementLink)
+        accountManagementLink.href = `/msa_Project/front/templates/user/user_update.html?id=${currentUser.id}`;
+      if (writePostLink)
+        writePostLink.href = `/msa_Project/front/templates/post/write.html?id=${currentUser.id}`;
     } else {
-      loginContent.style.display = "block";
-      profileContent.style.display = "none";
-      sectionTitle.textContent = "로그인";
+      if (loginContent) loginContent.style.display = "block";
+      if (profileContent) profileContent.style.display = "none";
+      if (sectionTitle) sectionTitle.textContent = "로그인";
     }
   }
 
@@ -170,11 +179,13 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  logoutButton.addEventListener("click", function () {
-    AuthService.logout();
-    toggleLoginMypage();
-    alert("로그아웃되었습니다.");
-  });
+  if (logoutButton) {
+    logoutButton.addEventListener("click", function () {
+      AuthService.logout();
+      toggleLoginMypage();
+      alert("로그아웃되었습니다.");
+    });
+  }
 
   toggleLoginMypage();
   fetchPopularPosts();

@@ -170,7 +170,7 @@ export class UserService {
     const myToken = await this.authPhone.getToken();
     const expiry = Date.now() + 300000; // 5분 후 만료
     console.log('expiry:', expiry);
-    // await this.authPhone.sendTokenToSMS(phone_num, myToken);
+    await this.authPhone.sendTokenToSMS(phone_num, myToken);
     const set = this.verificationCodes.set(phone_num, {
       code: myToken,
     }); // 인증번호 임시저장하기

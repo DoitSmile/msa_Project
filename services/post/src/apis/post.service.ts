@@ -111,8 +111,13 @@ export class PostService {
         }
     }
 
-    async createPost(createPostInput, name, userId, files: ImageFile[]) {
-        this.logger.debug(`Creating post with ${files.length} images`);
+    async createPost(
+        createPostInput,
+        userId: string,
+        userName: string,
+        files: ImageFile[],
+    ) {
+        // userName을 파라미터로 직접 받아 사용
         const { title, content, categoryId } = createPostInput;
 
         const imageUrls = await this.uploadImages(files);
@@ -121,16 +126,13 @@ export class PostService {
         const newPost = this.postRepository.create({
             userId,
             category: categoryId,
-            name,
+            name: userName, // 전달받은 userName 사용
             title,
             content: cleanedContent,
             imageUrls,
         });
 
         const savedPost = await this.postRepository.save(newPost);
-        this.logger.debug(
-            `Post created with ID: ${savedPost.id}, Image URLs: ${savedPost.imageUrls}`,
-        );
         return savedPost;
     }
 
@@ -174,10 +176,11 @@ export class PostService {
         return await this.postRepository.softRemove(post);
     }
 
-    async fetchPosts() {
-        const posts = await this.postRepository.find({
+    async fetchPosts(page: number = 1, pageSize: number = 20) {
+        const [posts, total] = await this.postRepository.findAndCount({
             order: { createdAt: 'DESC' },
-            take: 100,
+            take: pageSize,
+            skip: (page - 1) * pageSize,
             relations: ['category', 'comment'],
         });
 
@@ -187,14 +190,25 @@ export class PostService {
             post.views = cachedViews || post.views;
         }
 
-        return posts;
+        return {
+            posts,
+            total,
+            page,
+            pageSize,
+            totalPages: Math.ceil(total / pageSize),
+        };
     }
 
-    async fetchCategoryPosts(categoryId) {
-        const posts = await this.postRepository.find({
+    async fetchCategoryPosts(
+        categoryId: string,
+        page: number = 1,
+        pageSize: number = 20,
+    ) {
+        const [posts, total] = await this.postRepository.findAndCount({
             where: { category: { id: categoryId } },
             order: { createdAt: 'DESC' },
-            take: 100,
+            take: pageSize,
+            skip: (page - 1) * pageSize,
             relations: ['category', 'comment'],
         });
 
@@ -204,7 +218,30 @@ export class PostService {
             post.views = cachedViews || post.views;
         }
 
-        return posts;
+        return {
+            posts,
+            total,
+            page,
+            pageSize,
+            totalPages: Math.ceil(total / pageSize),
+        };
+    }
+
+    async getPopularPosts(page: number = 1, pageSize: number = 20) {
+        const [posts, total] = await this.postRepository.findAndCount({
+            order: { views: 'DESC' },
+            take: pageSize,
+            skip: (page - 1) * pageSize,
+            relations: ['category', 'comment'],
+        });
+
+        return {
+            posts,
+            total,
+            page,
+            pageSize,
+            totalPages: Math.ceil(total / pageSize),
+        };
     }
 
     async fetchMyPost(userId: string, page: number = 1, pageSize: number = 10) {
@@ -288,49 +325,9 @@ export class PostService {
         };
     }
 
-    async getPopularPosts(limit: number = 5) {
-        const bestPostsKey = 'best_posts';
-
-        // Redis에서 상위 게시물 가져오기
-        const results = await this.redisClient.zRangeWithScores(
-            bestPostsKey,
-            0,
-            limit - 1,
-            { REV: true },
-        );
-
-        if (results.length === 0) {
-            return [];
-        }
-
-        const postIds = results.map((result) => result.value);
-
-        // 데이터베이스에서 게시물 정보 가져오기
-        const posts = await this.postRepository.find({
-            where: { id: In(postIds) },
-            relations: ['category', 'comment'],
-        });
-
-        // 각 게시물의 최신 조회수를 Redis에서 가져오기
-        const sortedPosts = await Promise.all(
-            postIds.map(async (id) => {
-                const post = posts.find((p) => p.id === id);
-                const viewsKey = `post:${id}:views`;
-                const cachedViews = await this.redisClient.get(viewsKey);
-                const views = cachedViews
-                    ? parseInt(cachedViews, 10)
-                    : post?.views || 0;
-                return { ...post, realTimeViews: views };
-            }),
-        );
-
-        // 실시간 조회수를 기준으로 정렬
-        sortedPosts.sort((a, b) => b.realTimeViews - a.realTimeViews);
-
-        return sortedPosts;
-    }
     // 댓글 생성
-    async createComment(createCommentInput, username, userId) {
+    async createComment(createCommentInput, userId: string, userName: string) {
+        // userName을 파라미터로 직접 받아 사용
         const { postId, parentId, content } = createCommentInput;
 
         const post = await this.postRepository.findOne({
@@ -353,7 +350,7 @@ export class PostService {
 
         const comment = this.commentRepository.create({
             content,
-            username,
+            username: userName, // 전달받은 userName 사용
             userId,
             post,
             parent,

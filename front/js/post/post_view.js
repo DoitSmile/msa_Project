@@ -184,6 +184,8 @@ const PostManager = (function () {
       );
       const post = response.data;
       console.log("post받아온 값", post);
+      setElementText("comment-count", post.comment.length || "0");
+
       if (!post) {
         throw new Error("게시글 데이터가 없습니다.");
       }
@@ -442,8 +444,6 @@ const PostManager = (function () {
           response.data
         );
         console.log("가져온 댓글데이터 : ", response.data);
-        setElementText("comment-count", response.data.total || "0");
-
         renderComments(response.data.comments);
       })
       .catch((error) => {

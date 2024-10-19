@@ -20,12 +20,14 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateCommentInput } from 'src/dto/postdto/create-comment.input-dto';
 import { CreatPostInput } from 'src/dto/postdto/create-post.input-dto';
 import { UpdatePostInput } from 'src/dto/postdto/update-post.input-dto';
+import { UserDataService } from '../service/user-data.service';
 
 @Controller()
 export class PostController {
   constructor(
     @Inject('POST_SERVICE')
     private readonly clientPostService: ClientProxy,
+    private readonly userDataService: UserDataService,
   ) {}
 
   // 게시글 작성
@@ -37,8 +39,8 @@ export class PostController {
     @Body() createPostInput: CreatPostInput,
     @Req() req,
   ) {
-    const name = req.user.name;
     const userId = req.user.id;
+    const userName = await this.userDataService.getUserName(userId);
 
     const fileData = files.map((file) => ({
       originalname: file.originalname,
@@ -50,7 +52,7 @@ export class PostController {
       const result = await this.clientPostService
         .send(
           { cmd: 'createPost' },
-          { createPostInput, name, userId, files: fileData },
+          { createPostInput, userId, userName, files: fileData },
         )
         .toPromise();
 
@@ -59,7 +61,6 @@ export class PostController {
       throw new InternalServerErrorException('Post creation failed');
     }
   }
-
   @UseGuards(AuthGuard('access'))
   @Put('/post/update/:postId')
   @UseInterceptors(FilesInterceptor('images', 10))
@@ -88,14 +89,12 @@ export class PostController {
     }
   }
 
-  // 게시글 삭제
   @UseGuards(AuthGuard('access'))
   @Delete('/post/delete/:id')
   deletePosts(@Param('id') postId: string) {
     return this.clientPostService.send({ cmd: 'deletePost' }, { postId });
   }
 
-  // 유저 게시글 조회
   @Get('/post/user_fetch/:id')
   async fetchMyPost(
     @Param('id') userId: string,
@@ -108,7 +107,6 @@ export class PostController {
     );
   }
 
-  // 게시글 조회
   @Get('/post/fetch/:id')
   async fetchPost(
     @Param('id') postId: string,
@@ -120,28 +118,40 @@ export class PostController {
     );
   }
 
-  // 카테고리별 게시글 조회
   @Get('/post/fetch/category/:categoryId')
-  fetchCategoryPosts(@Param('categoryId') categoryId) {
+  fetchCategoryPosts(
+    @Param('categoryId') categoryId: string,
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 20,
+  ) {
     return this.clientPostService.send(
       { cmd: 'fetchCategoryPosts' },
-      { categoryId },
+      { categoryId, page, pageSize },
     );
   }
 
-  // 전체 게시글 조회
   @Get('/posts/fetch/all')
-  fetchPosts() {
-    return this.clientPostService.send({ cmd: 'fetchPosts' }, {});
+  fetchPosts(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 20,
+  ) {
+    return this.clientPostService.send(
+      { cmd: 'fetchPosts' },
+      { page, pageSize },
+    );
   }
 
-  // 인기 게시글 조회
   @Get('/posts/popular')
-  async getPopularPosts(@Query('limit') limit: number = 10) {
-    return this.clientPostService.send({ cmd: 'getPopularPosts' }, { limit });
+  async getPopularPosts(
+    @Query('page') page: number = 1,
+    @Query('pageSize') pageSize: number = 20,
+  ) {
+    return this.clientPostService.send(
+      { cmd: 'getPopularPosts' },
+      { page, pageSize },
+    );
   }
 
-  // 검색
   @Get('/posts/search')
   async searchPosts(
     @Query('q') query: string,
@@ -160,12 +170,15 @@ export class PostController {
   // 댓글 작성
   @UseGuards(AuthGuard('access'))
   @Post('/post/comment/create')
-  createComment(@Body() createCommentInput: CreateCommentInput, @Req() req) {
+  async createComment(
+    @Body() createCommentInput: CreateCommentInput,
+    @Req() req,
+  ) {
     const userId = req.user.id;
-    const username = req.user.name;
+    const userName = await this.userDataService.getUserName(userId);
     return this.clientPostService.send(
       { cmd: 'createComment' },
-      { createCommentInput, username, userId },
+      { createCommentInput, userId, userName },
     );
   }
 

@@ -9,7 +9,7 @@ export class PostController {
 
     @MessagePattern({ cmd: 'createPost' })
     async createPost(data) {
-        const { createPostInput, name, userId, files } = data;
+        const { createPostInput, userId, userName, files } = data;
         const imageFiles: ImageFile[] = files
             ? files.map((file) => ({
                   originalname: file.originalname,
@@ -19,8 +19,8 @@ export class PostController {
             : [];
         return await this.postService.createPost(
             createPostInput,
-            name,
             userId,
+            userName,
             imageFiles,
         );
     }
@@ -62,21 +62,34 @@ export class PostController {
     }
 
     @MessagePattern({ cmd: 'fetchPosts' })
-    async fetchPosts() {
-        return await this.postService.fetchPosts();
+    async fetchPosts(data: { page?: number; pageSize?: number }) {
+        return await this.postService.fetchPosts(data.page, data.pageSize);
     }
 
     @MessagePattern({ cmd: 'fetchCategoryPosts' })
-    async fetchCategoryPosts(data: { categoryId: string }) {
-        return await this.postService.fetchCategoryPosts(data.categoryId);
+    async fetchCategoryPosts(data: {
+        categoryId: string;
+        page?: number;
+        pageSize?: number;
+    }) {
+        return await this.postService.fetchCategoryPosts(
+            data.categoryId,
+            data.page,
+            data.pageSize,
+        );
+    }
+
+    @MessagePattern({ cmd: 'getPopularPosts' })
+    async getPopularPosts(data: { page?: number; pageSize?: number }) {
+        return await this.postService.getPopularPosts(data.page, data.pageSize);
     }
 
     @MessagePattern({ cmd: 'createComment' })
     async createComment(data) {
         return await this.postService.createComment(
             data.createCommentInput,
-            data.username,
             data.userId,
+            data.userName,
         );
     }
 
@@ -105,11 +118,6 @@ export class PostController {
     @MessagePattern({ cmd: 'deleteComment' })
     async deleteComment(data) {
         return await this.postService.deleteComment(data.commentId);
-    }
-
-    @MessagePattern({ cmd: 'getPopularPosts' })
-    async getPopularPosts(data: { limit?: number }) {
-        return await this.postService.getPopularPosts(data.limit);
     }
 
     @MessagePattern({ cmd: 'searchPosts' })
