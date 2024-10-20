@@ -76,9 +76,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function fetchPopularPosts() {
     axios
-      .get(
-        `http://localhost:3000/posts/popular?page=1&pageSize=${itemsPerPage}`
-      )
+      .get(`/api/posts/popular?page=1&pageSize=${itemsPerPage}`)
       .then(function (response) {
         console.log("Popular posts response:", response.data);
         const popularPosts = response.data.posts || [];
@@ -136,9 +134,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function updateUserProfile(userId) {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/user/fetch/${userId}`
-      );
+      const response = await axios.get(`/api/user/fetch/${userId}`);
       const userData = response.data;
       console.log("사용자 정보:", userData);
 
