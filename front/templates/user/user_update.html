@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>진대 - 유저 계정 관리</title>
-    <link rel="stylesheet" href="/msa_Project/front/css/user_update.css" />
+    <link rel="stylesheet" href="/css/user_update.css" />
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <link
       rel="stylesheet"
@@ -20,7 +20,7 @@
         <h1>계정 관리</h1>
         <div class="profile-pic-container">
           <img
-            src="/msa_Project/front/assets/default-profile-picture.jpg"
+            src="/assets/default-profile-picture.jpg"
             alt="프로필 사진"
             class="profile-pic"
             id="profile-pic"
@@ -37,6 +37,7 @@
           <div class="form-group">
             <label for="name">닉네임</label>
             <input type="text" id="name" name="name" />
+            <div id="nickname-message" class="message"></div>
           </div>
           <div class="form-group">
             <label for="phone">전화번호</label>
@@ -151,18 +152,15 @@
     </footer>
   </body>
   <script type="module">
-    import { initializeHeader } from "/msa_Project/front/js/header/header.js";
+    import { initializeHeader } from "/js/header/header.js";
 
     // 헤더 로드 및 초기화
-    fetch("/msa_Project/front/templates/header/header.html")
+    fetch("/templates/header/header.html")
       .then((response) => response.text())
       .then((data) => {
         document.getElementById("header-placeholder").innerHTML = data;
         initializeHeader();
       });
   </script>
-  <script
-    type="module"
-    src="/msa_Project/front/js/user/user_update.js"
-  ></script>
+  <script type="module" src="/js/user/user_update.js"></script>
 </html>

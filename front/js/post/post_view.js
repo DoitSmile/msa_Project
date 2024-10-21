@@ -1,16 +1,11 @@
-import { AuthService } from "/msa_Project/front/js/auth/auth.js";
+import { AuthService } from "../auth/auth.js";
 
 const PostManager = (function () {
   let currentPostId;
   let isBookmarked = false;
   let bookmarkCount = 0;
 
-  const axiosInstance = axios.create({
-    baseURL: "http://localhost:3000",
-    timeout: 5000,
-  });
-
-  axiosInstance.interceptors.request.use(
+  axios.interceptors.request.use(
     (config) => {
       const token = AuthService.getToken();
       if (token) {
@@ -68,7 +63,7 @@ const PostManager = (function () {
     setElementHTML(
       ".post-info",
       `
-      작성자: <a href="/msa_Project/front/templates/user/user_page.html?id=${
+      작성자: <a href="../../templates/user/user_page.html?id=${
         post.userId
       }" class="user-link">${post.name}</a> |
       작성일: ${new Date(post.createdAt).toLocaleString()}
@@ -174,7 +169,7 @@ const PostManager = (function () {
 
     console.log("currentUserId:", currentUserId);
     try {
-      const response = await axiosInstance.get(`/post/fetch/${currentPostId}`, {
+      const response = await axios.get(`/api/post/fetch/${currentPostId}`, {
         params: { userId: currentUserId },
       });
 
@@ -209,17 +204,17 @@ const PostManager = (function () {
 
   async function fetchUserProfilePicture(userId) {
     try {
-      const response = await axiosInstance.get(`/user/fetch/${userId}`);
+      const response = await axios.get(`/api/user/fetch/${userId}`);
       return (
         response.data.profilePictureUrl ||
-        "/msa_Project/front/assets/default-profile-picture.jpg"
+        "../../assets/default-profile-picture.jpg"
       );
     } catch (error) {
       console.error(
         `Error fetching user profile picture for user ${userId}:`,
         error
       );
-      return "/msa_Project/front/assets/default-profile-picture.jpg";
+      return "../../assets/default-profile-picture.jpg";
     }
   }
 
@@ -283,10 +278,10 @@ const PostManager = (function () {
       <img src="${profilePictureUrl}" 
            alt="User Avatar" 
            class="comment-avatar"
-           onerror="this.src='/msa_Project/front/assets/default-profile-picture.jpg'">
+           onerror="this.src='assets/default-profile-picture.jpg'">
       <div class="comment-content">
         <div class="comment-header">
-          <span class="comment-author"><a href="/msa_Project/front/templates/user/user_page.html?id=${
+          <span class="comment-author"><a href="../../templates/user/user_page.html?id=${
             comment.userId
           }" class="user-link-comment">${comment.username}</a></span>
           <span class="comment-time">${new Date(
@@ -313,8 +308,8 @@ const PostManager = (function () {
 
     const newContent = prompt("수정할 내용을 입력하세요:");
     if (newContent !== null) {
-      axiosInstance
-        .put("/post/comment/update", {
+      axios
+        .put("/api/post/comment/update", {
           commentId: commentId,
           content: newContent,
         })
@@ -326,7 +321,7 @@ const PostManager = (function () {
           if (error.response && error.response.status === 401) {
             alert("인증이 만료되었습니다. 다시 로그인해주세요.");
             AuthService.logout();
-            window.location.href = "/msa_Project/front/index.html";
+            window.location.href = "../../index.html";
           } else if (error.response && error.response.status === 403) {
             alert("댓글을 수정할 권한이 없습니다.");
           } else {
@@ -339,13 +334,13 @@ const PostManager = (function () {
   function deleteComment(commentId) {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
+      window.location.href = "../../index.html";
       return;
     }
 
     if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
-      axiosInstance
-        .delete(`/post/comment/delete/${commentId}`, {
+      axios
+        .delete(`/api/post/comment/delete/${commentId}`, {
           data: { commentId: commentId },
         })
         .then(() => {
@@ -356,7 +351,7 @@ const PostManager = (function () {
           if (error.response && error.response.status === 401) {
             alert("인증이 만료되었습니다. 다시 로그인해주세요.");
             AuthService.logout();
-            window.location.href = "/msa_Project/front/index.html";
+            window.location.href = "../../index.html";
           } else if (error.response && error.response.status === 403) {
             alert("댓글을 삭제할 권한이 없습니다.");
           } else {
@@ -369,12 +364,12 @@ const PostManager = (function () {
   function toggleBookmark() {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
+      window.location.href = "../../index.html";
       return;
     }
 
-    axiosInstance
-      .post(`/post/bookmark/${currentPostId}`)
+    axios
+      .post(`/api/post/bookmark/${currentPostId}`)
       .then((response) => {
         console.log("토글실행");
         isBookmarked = response.data.isBookmarked;
@@ -389,7 +384,7 @@ const PostManager = (function () {
         if (error.response && error.response.status === 401) {
           alert("인증이 만료되었습니다. 다시 로그인해주세요.");
           AuthService.logout();
-          window.location.href = "/msa_Project/front/index.html";
+          window.location.href = "../../index.html";
         } else {
           alert("북마크 업데이트에 실패했습니다.");
         }
@@ -399,32 +394,32 @@ const PostManager = (function () {
   function editPost() {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
+      window.location.href = "../../index.html";
       return;
     }
-    window.location.href = `write.html?postId=${currentPostId}`;
+    window.location.href = `../../templates/post/write.html?postId=${currentPostId}`;
   }
 
   function deletePost() {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
+      window.location.href = "../../index.html";
       return;
     }
 
     if (confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
-      axiosInstance
-        .delete(`/post/delete/${currentPostId}`)
+      axios
+        .delete(`/api/post/delete/${currentPostId}`)
         .then(() => {
           alert("게시글이 삭제되었습니다.");
-          window.location.href = "post_list.html";
+          window.location.href = "../../templates/post/post_list.html";
         })
         .catch((error) => {
           console.error("게시글 삭제 중 오류 발생:", error);
           if (error.response && error.response.status === 401) {
             alert("인증이 만료되었습니다. 다시 로그인해주세요.");
             AuthService.logout();
-            window.location.href = "/msa_Project/front/index.html";
+            window.location.href = "../../index.html";
           } else if (error.response && error.response.status === 403) {
             alert("게시글을 삭제할 권한이 없습니다.");
           } else {
@@ -436,8 +431,8 @@ const PostManager = (function () {
 
   function fetchComments() {
     console.log(`Fetching comments for post ID: ${currentPostId}`);
-    axiosInstance
-      .get(`/post/comment/fetch/${currentPostId}`)
+    axios
+      .get(`/api/post/comment/fetch/${currentPostId}`)
       .then((response) => {
         console.log(
           `Received comments for post ID: ${currentPostId}`,
@@ -473,12 +468,12 @@ const PostManager = (function () {
 
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
+      window.location.href = "../../index.html";
       return false;
     }
 
-    axiosInstance
-      .post("/post/comment/create", {
+    axios
+      .post("/api/post/comment/create", {
         postId: currentPostId,
         content: commentText.value.trim(),
       })
@@ -491,7 +486,7 @@ const PostManager = (function () {
         if (error.response && error.response.status === 401) {
           alert("인증이 만료되었습니다. 다시 로그인해주세요.");
           AuthService.logout();
-          window.location.href = "/msa_Project/front/index.html";
+          window.location.href = "../../index.html";
         } else {
           alert("댓글 추가에 실패했습니다.");
         }
@@ -537,7 +532,7 @@ const PostManager = (function () {
       } else {
         authButton.textContent = "로그인";
         authButton.onclick = () => {
-          window.location.href = "/msa_Project/front/index.html";
+          window.location.href = "../../index.html";
         };
       }
     }
@@ -559,7 +554,7 @@ const PostManager = (function () {
   async function addReply(commentId, replyText) {
     if (!AuthService.isAuthenticated()) {
       alert("로그인이 필요합니다.");
-      window.location.href = "/msa_Project/front/index.html";
+      window.location.href = "../../index.html";
       return;
     }
 
@@ -569,7 +564,7 @@ const PostManager = (function () {
     }
 
     try {
-      const response = await axiosInstance.post("/post/comment/create", {
+      const response = await axios.post("/api/post/comment/create", {
         postId: currentPostId,
         parentId: commentId,
         content: replyText.trim(),
@@ -585,7 +580,7 @@ const PostManager = (function () {
       if (error.response && error.response.status === 401) {
         alert("인증이 만료되었습니다. 다시 로그인해주세요.");
         AuthService.logout();
-        window.location.href = "/msa_Project/front/index.html";
+        window.location.href = "../../index.html";
       } else {
         alert("답글 추가에 실패했습니다.");
       }
@@ -609,7 +604,7 @@ const PostManager = (function () {
     } else {
       console.error("게시글 ID가 제공되지 않았습니다.");
       alert("게시글 ID가 제공되지 않았습니다.");
-      window.location.href = "post_list.html";
+      window.location.href = "../../templates/post/post_list.html";
     }
 
     const categoryBtn = document.querySelector(".category-btn");

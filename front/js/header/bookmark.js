@@ -13,13 +13,7 @@ const itemsPerPage = 10;
 let currentPage = 1;
 let totalBookmarks = 0;
 
-// Axios 인스턴스 생성
-const axiosInstance = axios.create({
-  baseURL: "http://localhost:3000",
-  timeout: 5000,
-});
-
-axiosInstance.interceptors.request.use(
+axios.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("accessToken");
     if (token) {
@@ -35,7 +29,7 @@ axiosInstance.interceptors.request.use(
 // 북마크 목록 가져오기
 async function fetchBookmarks(page) {
   try {
-    const response = await axiosInstance.get("/user/bookmarks", {
+    const response = await axios.get("/api/user/bookmarks", {
       params: { page, pageSize: itemsPerPage },
     });
     console.log("response:", response);
@@ -62,7 +56,7 @@ function renderBookmarks(bookmarks) {
         <li class="bookmark-item" data-id="${bookmarks.post.id}">
             <input type="checkbox" class="checkbox">
             <div class="bookmark-content">
-                <div class="bookmark-title"><a href="/msa_Project/front/templates/post/post_view.html?id=${
+                <div class="bookmark-title"><a href="../../templates/post/post_view.html?id=${
                   bookmarks.post.id
                 }">${bookmarks.post.title}<a/></div>
                 <div class="bookmark-info">${bookmarks.post.name} 
@@ -141,7 +135,7 @@ async function deleteBookmarks() {
 
   try {
     await Promise.all(
-      deletedIds.map((id) => axiosInstance.delete(`/post/bookmark/${id}`))
+      deletedIds.map((id) => axios.delete(`/api/post/bookmark/${id}`))
     );
     loadBookmarks();
   } catch (error) {

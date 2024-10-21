@@ -1,4 +1,4 @@
-import { AuthService } from "/msa_Project/front/js/auth/auth.js";
+import { AuthService } from "../auth/auth.js";
 export function initializeHeader() {
   const searchForm = document.getElementById("searchForm");
   const searchInput = document.getElementById("searchInput");
@@ -7,7 +7,7 @@ export function initializeHeader() {
     event.preventDefault();
     const query = searchInput.value.trim();
     if (query) {
-      window.location.href = `/msa_Project/front/templates/header/search_results.html?q=${encodeURIComponent(
+      window.location.href = `../../templates/header/search_results.html?q=${encodeURIComponent(
         query
       )}`;
     }
@@ -24,8 +24,7 @@ export function initializeHeader() {
     event.preventDefault(); // 기본 동작 방지
     if (AuthService.isAuthenticated()) {
       // 로그인 상태일 때 글쓰기 페이지로 이동
-      window.location.href =
-        "/msa_Project/front/templates/header/bookmark.html";
+      window.location.href = "../../templates/header/bookmark.html";
     } else {
       // 비로그인 상태일 때 경고 메시지 표시
       alert("로그인이 필요한 서비스입니다.");

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <title>진대 - 북마크</title>
-    <link rel="stylesheet" href="/msa_Project/front/css/bookmark.css" />
+    <link rel="stylesheet" href="/css/bookmark.css" />
   </head>
   <body>
     <div id="header-placeholder"></div>
@@ -38,15 +38,15 @@
     </div>
   </body>
   <script type="module">
-    import { initializeHeader } from "/msa_Project/front/js/header/header.js";
+    import { initializeHeader } from "/js/header/header.js";
 
     // 헤더 로드 및 초기화
-    fetch("/msa_Project/front/templates/header/header.html")
+    fetch("/templates/header/header.html")
       .then((response) => response.text())
       .then((data) => {
         document.getElementById("header-placeholder").innerHTML = data;
         initializeHeader();
       });
   </script>
-  <script src="/msa_Project/front/js/header/bookmark.js"></script>
+  <script src="/js/header/bookmark.js"></script>
 </html>

@@ -25,7 +25,7 @@ export class AuthController {
   // ---------------------------- auth ----------------------------
 
   // 로그인 api
-  @Post('/auth/login')
+  @Post('api/auth/login')
   async login(
     @Body() authLoginInput: AuthLoginInput,
     @Res({ passthrough: true }) res,
@@ -57,7 +57,7 @@ export class AuthController {
 
   // 로그아웃 api
   @UseGuards(AuthGuard('access'))
-  @Post('/auth/logout')
+  @Post('api/auth/logout')
   async logout(@Res({ passthrough: true }) res, @Req() req) {
     const user = req.user;
     res.clearCookie('refreshToken');
@@ -67,7 +67,7 @@ export class AuthController {
   // 토큰 재발급 api
   @UseGuards(AuthGuard('refresh'))
   //인가를 성공하면 validate의 payload를 열어서 사용자의 정보를 반환해 주기에 유저 정보를 꺼내올 수 있다.
-  @Post('/auth/reissueToken')
+  @Post('api/auth/reissueToken')
   async restoreAccessToken(@Req() req) {
     const user = req.user;
     // const refreshToken = req.cookies['refreshToken'];

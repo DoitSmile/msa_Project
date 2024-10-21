@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>진대-회원가입</title>
-    <link rel="stylesheet" href="/msa_Project/front/css/signup.css" />
+    <link rel="stylesheet" href="/css/signup.css" />
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   </head>
   <body>
@@ -101,23 +101,15 @@
       </div>
     </div>
     <script type="module">
-      import { initializeHeader } from "/msa_Project/front/js/header/header.js";
-      fetch("/msa_Project/front/templates/header/header.html")
+      import { initializeHeader } from "/js/header/header.js";
+      fetch("/templates/header/header.html")
         .then((response) => response.text())
         .then((data) => {
           document.getElementById("header-placeholder").innerHTML = data;
           initializeHeader();
         });
     </script>
-    <script
-      type="module"
-      src="/msa_Project/front/js/sign/signup.js"
-      defer
-    ></script>
-    <script
-      type="module"
-      src="/msa_Project/front/js/sign/phone.js"
-      defer
-    ></script>
+    <script type="module" src="/js/sign/signup.js" defer></script>
+    <script type="module" src="/js/sign/phone.js" defer></script>
   </body>
 </html>

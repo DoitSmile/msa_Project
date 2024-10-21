@@ -14,9 +14,7 @@
       <div class="main-content">
         <section class="post-section recent-posts">
           <h2>
-            <a href="/msa_Project/front/templates/post/post_list.html"
-              >최근 게시물</a
-            >
+            <a href="./templates/post/post_list.html">최근 게시물</a>
           </h2>
           <ul id="recentPostList" class="post-list">
             <!-- 최근 게시물 목록이 여기에 동적으로 추가됩니다 -->
@@ -50,15 +48,13 @@
             </form>
             <p class="signup-link">
               계정이 없으신가요?
-              <a href="/msa_Project/front/templates/user/signup.html"
-                >회원가입</a
-              >
+              <a href="./templates/user/signup.html">회원가입</a>
             </p>
           </div>
           <div id="profileContent">
             <div class="profile-info">
               <img
-                src="/msa_Project/front/assets/default-profile-picture.jpg"
+                src="./assets/default-profile-picture.jpg"
                 alt="프로필 사진"
                 id="profileImage"
                 class="profile-image"
@@ -85,14 +81,21 @@
     <script type="module">
       import { initializeHeader } from "./js/header/header.js";
 
-      // 헤더 로드 및 초기화
-      fetch("templates/header/header.html")
-        .then((response) => response.text())
-        .then((data) => {
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          const response = await fetch("./templates/header/header.html");
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const data = await response.text();
           document.getElementById("header-placeholder").innerHTML = data;
           initializeHeader();
-        });
+        } catch (error) {
+          console.error("Error loading header:", error);
+        }
+      });
     </script>
-    <script type="module" src="index.js"></script>
+
+    <script type="module" src="./index.js"></script>
   </body>
 </html>

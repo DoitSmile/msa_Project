@@ -223,6 +223,23 @@ input[type="file"] {
   border-radius: 8px;
 }
 
+.message {
+  margin-top: 5px;
+  font-size: 0.9em;
+}
+
+.success-message {
+  color: green;
+}
+
+.failure-message {
+  color: red;
+}
+
+.hide {
+  display: none;
+}
+
 /* 푸터 스타일 */
 footer {
   background-color: #ffffff;

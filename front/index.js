@@ -29,9 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
       li.innerHTML = `
       <div class="post-main-info">
         <span class="post-title">
-          <a href="/msa_Project/front/templates/post/post_view.html?id=${
-            post.id
-          }">
+          <a href="/templates/post/post_view.html?id=${post.id}">
             ${post.title || "제목 없음"}
           </a>
           ${
@@ -91,9 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function fetchRecentPosts() {
     axios
-      .get(
-        `http://localhost:3000/posts/fetch/all?page=1&pageSize=${itemsPerPage}`
-      )
+      .get(`/api/posts/fetch/all?page=1&pageSize=${itemsPerPage}`)
       .then(function (response) {
         console.log("Recent posts response:", response.data);
         const recentPosts = response.data.posts || [];
@@ -120,11 +116,11 @@ document.addEventListener("DOMContentLoaded", function () {
       updateUserProfile(currentUser.id);
 
       if (myPostsLink)
-        myPostsLink.href = `/msa_Project/front/templates/user/user_page.html?id=${currentUser.id}`;
+        myPostsLink.href = `./templates/user/user_page.html?id=${currentUser.id}`;
       if (accountManagementLink)
-        accountManagementLink.href = `/msa_Project/front/templates/user/user_update.html?id=${currentUser.id}`;
+        accountManagementLink.href = `./templates/user/user_update.html?id=${currentUser.id}`;
       if (writePostLink)
-        writePostLink.href = `/msa_Project/front/templates/post/write.html?id=${currentUser.id}`;
+        writePostLink.href = `./templates/post/write.html?id=${currentUser.id}`;
     } else {
       if (loginContent) loginContent.style.display = "block";
       if (profileContent) profileContent.style.display = "none";
@@ -146,10 +142,9 @@ document.addEventListener("DOMContentLoaded", function () {
       const profileImage = document.querySelector(".profile-image");
       if (profileImage) {
         profileImage.src =
-          userData.profilePictureUrl ||
-          "/msa_Project/front/assets/default-profile-picture.jpg";
+          userData.profilePictureUrl || "/assets/default-profile-picture.jpg";
         profileImage.onerror = function () {
-          this.src = "/msa_Project/front/assets/default-profile-picture.jpg";
+          this.src = "/assets/default-profile-picture.jpg";
         };
       }
     } catch (error) {

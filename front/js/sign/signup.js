@@ -48,26 +48,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
   async function checkEmailAvailability(email) {
     try {
-      const response = await axios.post(
-        "http://localhost:3000/user/check-email",
-        { email }
-      );
+      const response = await axios.post("/api/user/check-email", { email });
       return response.data.available;
     } catch (error) {
       console.error("이메일 중복 확인 중 오류 발생:", error);
-      return false;
-    }
-  }
-
-  async function checkNameAvailability(name) {
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/user/check-name",
-        { name }
-      );
-      return response.data.available;
-    } catch (error) {
-      console.error("닉네임 중복 확인 중 오류 발생:", error);
       return false;
     }
   }
@@ -181,19 +165,15 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log("전송할 데이터:", createUserInput);
 
       try {
-        const response = await axios.post(
-          "http://localhost:3000/user/create",
-          createUserInput,
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const response = await axios.post("/api/user/create", createUserInput, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
         console.log("서버 응답:", response.data);
         alert("회원가입되었습니다.");
-        window.location.href = "/msa_Project/front/index.html";
+        window.location.href = "../../templates/index.html";
       } catch (error) {
         console.error("에러 발생:", error);
         showFormMessage(

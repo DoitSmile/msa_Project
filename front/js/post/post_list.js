@@ -1,4 +1,4 @@
-import { AuthService } from "/msa_Project/front/js/auth/auth.js";
+import { AuthService } from "../auth/auth.js";
 
 // 전역 변수 선언
 let posts = []; // 게시물 목록을 저장할 배열
@@ -23,12 +23,12 @@ function renderPosts(isSpecialPage = false) {
         <div class="title-wrapper">
           ${
             !isSpecialPage && post.category && post.category.name
-              ? `<a href="post_list.html?type=${encodeURIComponent(
+              ? `<a href="../../templates/post/post_list.html?type=${encodeURIComponent(
                   post.category.id
                 )}" class="board-type">${post.category.name}</a>`
               : ""
           }
-          <a href="post_view.html?id=${post.id}">${
+          <a href="../../templates/post/post_view.html?id=${post.id}">${
       post.title || "제목 없음"
     }</a>
            ${
@@ -117,11 +117,11 @@ function fetchPosts(categoryId = null, isSpecialPage = false) {
   let url;
 
   if (categoryId === "popular") {
-    url = `http://localhost:3000/posts/popular?page=${currentPage}&pageSize=${itemsPerPage}`;
+    url = `/api/posts/popular?page=${currentPage}&pageSize=${itemsPerPage}`;
   } else if (categoryId) {
-    url = `http://localhost:3000/post/fetch/category/${categoryId}?page=${currentPage}&pageSize=${itemsPerPage}`;
+    url = `/api/post/fetch/category/${categoryId}?page=${currentPage}&pageSize=${itemsPerPage}`;
   } else {
-    url = `http://localhost:3000/posts/fetch/all?page=${currentPage}&pageSize=${itemsPerPage}`;
+    url = `/api/posts/fetch/all?page=${currentPage}&pageSize=${itemsPerPage}`;
   }
 
   return axios
@@ -162,11 +162,11 @@ function handleWriteButtonClick(event) {
   event.preventDefault(); // 기본 동작 방지
   if (AuthService.isAuthenticated()) {
     // 로그인 상태일 때 글쓰기 페이지로 이동
-    window.location.href = "write.html";
+    window.location.href = "../../write.html";
   } else {
     // 비로그인 상태일 때 경고 메시지 표시
     alert("로그인이 필요한 서비스입니다.");
-    window.location.href = "/msa_Project/front/index.html";
+    window.location.href = "../../index.html";
   }
 }
 
@@ -210,12 +210,12 @@ function getCategoryName(categoryId) {
 // 게시물 보기 함수
 function viewPost(postId) {
   axios
-    .get(`http://localhost:3000/post/fetch/${postId}`)
+    .get(`/api/post/fetch/${postId}`)
     .then((response) => {
       // 여기서 게시물 데이터를 받아 처리합니다.
       console.log(response.data);
       // 실제로는 이 데이터를 사용하여 게시물 상세 페이지로 이동하거나 모달을 띄우는 등의 작업을 수행합니다.
-      window.location.href = `post_view.html?id=${postId}`;
+      window.location.href = `../../templates/post_view.html?id=${postId}`;
     })
     .catch((error) => {
       console.error("게시물 조회 중 오류 발생:", error);

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <title>진대 - 게시판 상세</title>
-    <link rel="stylesheet" href="/msa_Project/front/css/post_view.css" />
+    <link rel="stylesheet" href="/css/post_view.css" />
   </head>
   <body>
     <div id="header-placeholder"></div>
@@ -80,15 +80,15 @@
     </footer>
   </body>
   <script type="module">
-    import { initializeHeader } from "/msa_Project/front/js/header/header.js";
+    import { initializeHeader } from "/js/header/header.js";
 
     // 헤더 로드 및 초기화
-    fetch("/msa_Project/front/templates/header/header.html")
+    fetch("/templates/header/header.html")
       .then((response) => response.text())
       .then((data) => {
         document.getElementById("header-placeholder").innerHTML = data;
         initializeHeader();
       });
   </script>
-  <script type="module" src="/msa_Project/front/js/post/post_view.js"></script>
+  <script type="module" src="/js/post/post_view.js"></script>
 </html>

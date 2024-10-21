@@ -1,4 +1,4 @@
-import { AuthService } from "/msa_Project/front/js/auth/auth.js";
+import { AuthService } from "../auth/auth.js";
 
 document.addEventListener("DOMContentLoaded", function () {
   // DOM 요소들을 가져옵니다.
@@ -44,9 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // 기존 게시글 데이터 로드
   async function loadPostData(postId) {
     try {
-      const response = await axios.get(
-        `http://localhost:3000/post/fetch/${postId}`
-      );
+      const response = await axios.get(`/api/post/fetch/${postId}`);
 
       const post = response.data;
       if (!post) {
@@ -102,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (!AuthService.isAuthenticated()) {
         alert("로그인이 필요합니다.");
-        window.location.href = "/msa_Project/front/index.html";
+        window.location.href = "../../index.html";
         return;
       }
 
@@ -134,7 +132,7 @@ document.addEventListener("DOMContentLoaded", function () {
         let response;
         if (isEditMode) {
           response = await axios.put(
-            `http://localhost:3000/post/update/${originalPostId}`,
+            `/api/post/update/${originalPostId}`,
             formData,
             {
               headers: {
@@ -143,15 +141,11 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           );
         } else {
-          response = await axios.post(
-            "http://localhost:3000/post/create/",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
+          response = await axios.post("/api/post/create/", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
         }
 
         console.log("서버 응답:", response.data);
@@ -160,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
             ? "글이 성공적으로 수정되었습니다."
             : "글이 성공적으로 등록되었습니다."
         );
-        window.location.href = `/msa_Project/front/templates/post/post_view.html?id=${
+        window.location.href = `../../templates/post/post_view.html?id=${
           response.data.id || originalPostId
         }`;
       } catch (error) {
@@ -204,7 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
         case 401:
           alert("인증이 만료되었습니다. 다시 로그인해주세요.");
           AuthService.logout();
-          window.location.href = "/msa_Project/front/index.html";
+          window.location.href = "../../index.html";
           break;
         case 403:
           alert("글 작성/수정 권한이 없습니다.");

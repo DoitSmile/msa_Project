@@ -1,7 +1,4 @@
-import { AuthService } from "/msa_Project/front/js/auth/auth.js";
-
-// axios 기본 URL 설정
-axios.defaults.baseURL = "http://localhost:3000"; // API 서버 주소로 변경하세요
+import { AuthService } from "../auth/auth.js";
 
 const UserProfileManager = (function () {
   // 페이지네이션을 위한 상태 변수
@@ -39,7 +36,7 @@ const UserProfileManager = (function () {
   // 사용자 프로필 정보 업데이트
   async function updateUserProfile(userId) {
     try {
-      const response = await axios.get(`/user/fetch/${userId}`);
+      const response = await axios.get(`/api/user/fetch/${userId}`);
       const userData = response.data;
       console.log("사용자 정보:", userData);
       setElementText("userName", userData.name || "이름 없음");
@@ -49,9 +46,9 @@ const UserProfileManager = (function () {
       if (profileImage) {
         profileImage.src =
           userData.profilePictureUrl ||
-          "/msa_Project/front/assets/default-profile-picture.jpg";
+          "../../assets/default-profile-picture.jpg";
         profileImage.onerror = function () {
-          this.src = "/msa_Project/front/assets/default-profile-picture.jpg";
+          this.src = "../../assets/default-profile-picture.jpg";
         };
       }
     } catch (error) {
@@ -63,7 +60,7 @@ const UserProfileManager = (function () {
   // 게시글 데이터 로드
   async function loadPostData(userId, page = 1) {
     try {
-      const response = await axios.get(`/post/user_fetch/${userId}`, {
+      const response = await axios.get(`/api/post/user_fetch/${userId}`, {
         params: { page, pageSize },
       });
       const { posts, total, totalPages } = response.data;
@@ -106,7 +103,7 @@ const UserProfileManager = (function () {
   // 댓글 데이터 로드
   async function loadCommentData(userId, page = 1) {
     try {
-      const response = await axios.get(`/post/comment/user/${userId}`, {
+      const response = await axios.get(`/api/post/comment/user/${userId}`, {
         params: { page, pageSize },
       });
       const { comments, total, totalPages } = response.data;
@@ -173,9 +170,7 @@ const UserProfileManager = (function () {
 
         itemElement.innerHTML = `
           <h3>
-            <a href="/msa_Project/front/templates/post/post_view.html?id=${
-              item.id
-            }">
+            <a href="../../templates/post/post_view.html?id=${item.id}">
               ${item.title}
               ${
                 commentCount > 0
@@ -196,7 +191,7 @@ const UserProfileManager = (function () {
       } else {
         itemElement.innerHTML = `
           <p class="comment-content">${item.content}</p>
-          <p class="post-title">댓글 단 글: <a href="/msa_Project/front/templates/post/post_view.html?id=${
+          <p class="post-title">댓글 단 글: <a href="../../templates/post/post_view.html?id=${
             item.post.id
           }">${item.post.title || "Unknown"}</a></p>
           <p>${new Date(item.createdAt).toLocaleString()}</p>
@@ -272,8 +267,7 @@ const UserProfileManager = (function () {
         accountManagementBtn.style.display = "block";
         accountManagementBtn.addEventListener("click", () => {
           // 계정 관리 페이지로 이동
-          window.location.href =
-            "/msa_Project/front/templates/user/account_management.html";
+          window.location.href = "../../templates/user/user_update.html";
         });
       } else {
         accountManagementBtn.style.display = "none";
@@ -300,7 +294,7 @@ const UserProfileManager = (function () {
     if (!viewedUserId) {
       console.error("유효한 사용자 ID가 URL에 없습니다.");
       alert("유효한 사용자 정보가 없습니다.");
-      window.location.href = "/msa_Project/front/index.html";
+      window.location.href = "../../index.html";
       return;
     }
 

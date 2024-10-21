@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", function () {
     sendVerificationButton.addEventListener("click", function () {
       const phone = document.getElementById("phone").value;
       axios
-        .post("http://localhost:3000/user/sendPhone", {
+        .post("/api/user/sendPhone", {
           phone_num: phone,
         })
         .then((res) => {
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const verificationCode =
         document.getElementById("verificationCode").value;
       axios
-        .post("http://localhost:3000/user/checkPhone", {
+        .post("/api/user/checkPhone", {
           phone_num: phone,
           auth_num: verificationCode,
         })

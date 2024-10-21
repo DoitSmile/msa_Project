@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", function () {
-  axios.defaults.baseURL = "http://localhost:3000";
   const searchResults = document.getElementById("searchResults");
   const searchQuery = new URLSearchParams(window.location.search).get("q");
   const sortOption = document.getElementById("sortOption");
@@ -9,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
   async function fetchSearchResults(query, page, sort) {
     try {
       console.log("Sending search request for query:", query, "sort:", sort);
-      const response = await axios.get(`/posts/search`, {
+      const response = await axios.get(`/api/posts/search`, {
         params: {
           q: query,
           page: page,
@@ -117,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function viewPost(postId) {
-    window.location.href = `/msa_Project/front/templates/post/post_view.html?id=${postId}`;
+    window.location.href = `../../templates/post/post_view.html?id=${postId}`;
   }
 
   function displayError(message) {

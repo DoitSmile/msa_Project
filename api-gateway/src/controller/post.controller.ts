@@ -32,7 +32,7 @@ export class PostController {
 
   // 게시글 작성
   @UseGuards(AuthGuard('access'))
-  @Post('/post/create')
+  @Post('api/post/create')
   @UseInterceptors(FilesInterceptor('images', 10))
   async createPost(
     @UploadedFiles() files: Express.Multer.File[],
@@ -62,7 +62,7 @@ export class PostController {
     }
   }
   @UseGuards(AuthGuard('access'))
-  @Put('/post/update/:postId')
+  @Put('api/post/update/:postId')
   @UseInterceptors(FilesInterceptor('images', 10))
   async updatePost(
     @UploadedFiles() files: Express.Multer.File[],
@@ -90,12 +90,12 @@ export class PostController {
   }
 
   @UseGuards(AuthGuard('access'))
-  @Delete('/post/delete/:id')
+  @Delete('api/post/delete/:id')
   deletePosts(@Param('id') postId: string) {
     return this.clientPostService.send({ cmd: 'deletePost' }, { postId });
   }
 
-  @Get('/post/user_fetch/:id')
+  @Get('api/post/user_fetch/:id')
   async fetchMyPost(
     @Param('id') userId: string,
     @Query('page') page: number = 1,
@@ -107,7 +107,7 @@ export class PostController {
     );
   }
 
-  @Get('/post/fetch/:id')
+  @Get('api/post/fetch/:id')
   async fetchPost(
     @Param('id') postId: string,
     @Query('userId') userId: string,
@@ -118,7 +118,7 @@ export class PostController {
     );
   }
 
-  @Get('/post/fetch/category/:categoryId')
+  @Get('api/post/fetch/category/:categoryId')
   fetchCategoryPosts(
     @Param('categoryId') categoryId: string,
     @Query('page') page: number = 1,
@@ -130,7 +130,7 @@ export class PostController {
     );
   }
 
-  @Get('/posts/fetch/all')
+  @Get('api/posts/fetch/all')
   fetchPosts(
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 20,
@@ -141,7 +141,7 @@ export class PostController {
     );
   }
 
-  @Get('/posts/popular')
+  @Get('api/posts/popular')
   async getPopularPosts(
     @Query('page') page: number = 1,
     @Query('pageSize') pageSize: number = 20,
@@ -152,7 +152,7 @@ export class PostController {
     );
   }
 
-  @Get('/posts/search')
+  @Get('api/posts/search')
   async searchPosts(
     @Query('q') query: string,
     @Query('page') page: number = 1,
@@ -169,7 +169,7 @@ export class PostController {
   // ------------------------ Comment ------------------------
   // 댓글 작성
   @UseGuards(AuthGuard('access'))
-  @Post('/post/comment/create')
+  @Post('api/post/comment/create')
   async createComment(
     @Body() createCommentInput: CreateCommentInput,
     @Req() req,
@@ -183,12 +183,12 @@ export class PostController {
   }
 
   // 댓글 조회
-  @Get('/post/comment/fetch/:postId')
+  @Get('api/post/comment/fetch/:postId')
   async fetchComment(@Param('postId') postId) {
     return this.clientPostService.send({ cmd: 'fetchComment' }, { postId });
   }
 
-  @Get('/post/comment/user/:userId')
+  @Get('api/post/comment/user/:userId')
   async fetchUserComments(
     @Param('userId') userId: string,
     @Query('page') page: number = 1,
@@ -201,7 +201,7 @@ export class PostController {
   }
 
   // 댓글 수정
-  @Put('/post/comment/update')
+  @Put('api/post/comment/update')
   updateComment(
     @Body('commentId') commentId: string,
     @Body('content') content: string,
@@ -213,20 +213,20 @@ export class PostController {
   }
 
   // 댓글 삭제
-  @Delete('/post/comment/delete/:id')
+  @Delete('api/post/comment/delete/:id')
   deleteComment(@Param('id') commentId: string) {
     return this.clientPostService.send({ cmd: 'deleteComment' }, { commentId });
   }
 
   //  ------------------------ View, BookMark ------------------------
   // 조회수 조회
-  @Get('/post/views/:id')
+  @Get('api/post/views/:id')
   async getPostViews(@Param('id') postId: string) {
     return this.clientPostService.send({ cmd: 'getPostViews' }, { postId });
   }
 
   @UseGuards(AuthGuard('access'))
-  @Post('post/bookmark/:postId')
+  @Post('api/post/bookmark/:postId')
   async toggleBookmark(@Param('postId') postId: string, @Req() req) {
     const userId = req.user.id;
     try {
@@ -241,7 +241,7 @@ export class PostController {
   }
 
   @UseGuards(AuthGuard('access'))
-  @Delete('/post/bookmark/:postId')
+  @Delete('api/post/bookmark/:postId')
   async deleteBookmark(@Param('postId') postId: string, @Req() req) {
     const userId = req.user.id;
     return this.clientPostService.send(
@@ -251,7 +251,7 @@ export class PostController {
   }
 
   @UseGuards(AuthGuard('access'))
-  @Get('/user/bookmarks')
+  @Get('api/user/bookmarks')
   async getUserBookmarks(
     @Req() req,
     @Query('page') page: number = 1,
@@ -265,7 +265,7 @@ export class PostController {
   }
 
   @UseGuards(AuthGuard('access'))
-  @Get('/post/isBookmarked/:postId')
+  @Get('api/post/isBookmarked/:postId')
   async isPostBookmarked(@Param('postId') postId: string, @Req() req) {
     const userId = req.user.id;
     return this.clientPostService.send(
