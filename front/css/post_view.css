@@ -137,6 +137,14 @@ nav ul li a,
   margin: 5px 0 10px;
   font-weight: 300;
 }
+/* .prefix {
+  color: #888;
+  font-weight: normal;
+} */
+.post-title .prefix {
+  color: #888 !important;
+  font-weight: normal !important;
+}
 .post-info {
   font-size: 14px;
   color: #aaa;

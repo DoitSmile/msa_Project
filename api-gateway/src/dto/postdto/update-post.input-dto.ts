@@ -8,4 +8,6 @@ export class UpdatePostInput {
   @IsNotEmpty({ message: '내용을 입력해주세요' })
   @Length(4000)
   content?: string;
+
+  prefix?: string;
 }

@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const title = document.getElementById("title");
   const categoryId = document.getElementById("categoryId");
   const categoryWrapper = document.querySelector(".select-wrapper");
+  const postPrefix = document.getElementById("postPrefix");
   const editor = document.getElementById("content");
   const boldBtn = document.getElementById("boldBtn");
   const italicBtn = document.getElementById("italicBtn");
@@ -40,6 +41,55 @@ document.addEventListener("DOMContentLoaded", function () {
       categoryWrapper.replaceChild(hiddenCategoryInput, categoryId);
     }
   }
+  // 카테고리 선택 이벤트 리스너
+  if (categoryId) {
+    categoryId.addEventListener("change", function () {
+      updatePrefixVisibility();
+      updateTitle();
+    });
+  }
+
+  // 말머리 선택 이벤트 리스너
+  if (postPrefix) {
+    postPrefix.addEventListener("change", function () {
+      updateTitle();
+    });
+  }
+
+  // 제목 입력 필드 이벤트 리스너
+  if (title) {
+    title.addEventListener("input", function () {
+      updateTitle();
+    });
+  }
+  // 초기 말머리 가시성 설정
+  updatePrefixVisibility();
+
+  // 말머리 가시성 및 필수 여부 업데이트 함수
+  function updatePrefixVisibility() {
+    const selectedCategory = categoryId.value;
+    const requiredCategories = postPrefix.dataset.requiredFor.split(",");
+
+    if (requiredCategories.includes(selectedCategory)) {
+      postPrefix.style.display = "inline-block";
+      postPrefix.required = true;
+      postPrefix.classList.add("required");
+    } else {
+      postPrefix.style.display = "none";
+      postPrefix.required = false;
+      postPrefix.classList.remove("required");
+      postPrefix.value = ""; // 말머리 선택 초기화
+    }
+  }
+
+  function updateTitle() {
+    let currentTitle = title.value;
+    // 기존 말머리 제거
+    currentTitle = currentTitle.replace(/^\[.*?\]\s*/, "");
+
+    // 새 말머리 추가
+    title.value = currentTitle;
+  }
 
   // 기존 게시글 데이터 로드
   async function loadPostData(postId) {
@@ -47,11 +97,20 @@ document.addEventListener("DOMContentLoaded", function () {
       const response = await axios.get(`/api/post/fetch/${postId}`);
 
       const post = response.data;
+      console.log("post:", post);
       if (!post) {
         throw new Error("게시글 데이터가 없습니다.");
       }
 
-      if (title) title.value = post.title;
+      if (title) {
+        // 제목에서 말머리 제거
+        title.value = post.title.replace(/^\[.*?\]\s*/, "");
+      }
+      if (postPrefix) {
+        // 말머리 설정
+        postPrefix.value = post.prefix || "";
+        updatePrefixVisibility();
+      }
       if (editor) {
         editor.innerHTML = post.content;
 
@@ -104,18 +163,47 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
 
+      // formData 객체 생성
       const formData = new FormData();
 
-      formData.append("title", document.getElementById("title").value);
-
+      // 카테고리 ID 가져오기
       const categoryId =
         document.getElementById("categoryId") ||
         document.getElementById("hiddenCategoryId");
+
       if (categoryId) {
         formData.append("categoryId", categoryId.value);
+      } else {
+        alert("카테고리를 선택해주세요.");
+        return;
       }
 
-      formData.append("content", editor.innerHTML);
+      // 말머리 추가
+      if (postPrefix.style.display !== "none") {
+        if (postPrefix.required && !postPrefix.value) {
+          alert("이 카테고리에서는 말머리 선택이 필수입니다.");
+          return;
+        }
+        formData.append("prefix", postPrefix.value);
+      }
+
+      // 제목 추가 (말머리 제외)
+      let titleValue = title.value.trim();
+      // 혹시 남아있을 수 있는 말머리 제거
+      titleValue = titleValue.replace(/^\[.*?\]\s*/, "");
+      if (!titleValue) {
+        alert("제목을 입력해주세요.");
+        return;
+      }
+      formData.append("title", titleValue);
+
+      // 내용 추가
+      const contentValue = editor.innerHTML;
+      if (!contentValue.trim()) {
+        alert("내용을 입력해주세요.");
+        return;
+      }
+      formData.append("content", contentValue);
 
       // 이미지 파일 처리
       uploadedImages.forEach((image, index) => {
@@ -124,6 +212,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
+      // 수정 모드인 경우 postId 추가
       if (isEditMode && originalPostId) {
         formData.append("postId", originalPostId);
       }
@@ -163,7 +252,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
-
   // 이미지 업로드 처리
   if (imageUpload) {
     imageUpload.addEventListener("change", function (e) {

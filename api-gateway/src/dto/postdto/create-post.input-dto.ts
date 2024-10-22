@@ -13,4 +13,6 @@ export class CreatPostInput {
   @IsString()
   @IsNotEmpty({ message: '제목을 입력해주세요' })
   category: string;
+
+  prefix?: string;
 }

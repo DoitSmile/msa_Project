@@ -3,13 +3,19 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>진대-회원가입</title>
+    <title>LOPE</title>
     <link rel="stylesheet" href="/css/signup.css" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="../../assets/favicon.png"
+    />
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   </head>
   <body>
     <div id="header-placeholder"></div>
-    <div class="detail-body">
+    <main class="detail-body">
       <div class="container">
         <h1 class="sign_text">회원 가입</h1>
         <form class="sign_form" id="signupForm">
@@ -79,7 +85,6 @@
           </div>
           <div class="verification-container">
             <span id="timer" style="display: none"></span>
-            <!-- status element will be inserted here by JavaScript -->
           </div>
           <div class="input-group input-group-button">
             <input
@@ -99,7 +104,11 @@
           </button>
         </form>
       </div>
-    </div>
+    </main>
+    <footer>
+      <p>&copy; 2024 김가연 All rights reserved.</p>
+    </footer>
+
     <script type="module">
       import { initializeHeader } from "/js/header/header.js";
       fetch("/templates/header/header.html")

@@ -4,6 +4,7 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  DeleteDateColumn,
   Column,
 } from "typeorm";
 import { Post } from "./post.entity";
@@ -22,4 +23,7 @@ export class Bookmark {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @DeleteDateColumn({ name: "delete_at", comment: "삭제일" })
+  deletedAt?: Date | null;
 }

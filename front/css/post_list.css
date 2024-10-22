@@ -6,7 +6,16 @@ html {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
+  min-height: 100vh;
 }
+body {
+  background-image: url("../assets/post_list.png");
+  background-size: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
 header {
   border-bottom: 1px solid #e6e6e6;
   padding: 10px 0;
@@ -27,6 +36,7 @@ header {
 h1 {
   margin: 0;
   margin-right: 20px;
+  color: #353535;
 }
 h1 a {
   color: #1a1a1a;
@@ -132,16 +142,17 @@ a:hover {
 
 .list-body {
   padding: 20px 30px;
+  min-height: 100vh;
 }
 .container {
+  min-height: calc(100vh - 300px);
   max-width: 900px;
   margin: 20px auto;
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.9);
   padding: 20px;
   border-radius: 8px;
   border: 1px solid #e5e5e5;
 }
-
 .board-table {
   margin: 40px auto;
   width: 100%;
@@ -223,12 +234,6 @@ a:hover {
   background-color: #333;
 }
 
-.title-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
 .has-image {
   fill: #888;
 }
@@ -247,22 +252,17 @@ a:hover {
   font-size: 0.9em;
 }
 
-/* 푸터 스타일 */
-footer {
-  background-color: #ffffff;
-  text-align: center;
-  padding: 1rem;
-  margin-top: 2rem;
-  border-top: 1px solid #eee;
-  color: #777;
-}
-
-/* 수정 및 추가된 스타일 */
 .title-wrapper {
   display: flex;
   align-items: center;
   font-weight: 500;
   font-size: 16px;
+}
+
+.post-prefix {
+  color: #666;
+  margin-right: 8px;
+  font-weight: 500;
 }
 
 .board-type {
@@ -282,4 +282,14 @@ footer {
   margin-left: 5px;
   flex-shrink: 0;
   order: 3; /* 사진 아이콘을 세 번째로 */
+}
+
+/* 푸터 스타일 */
+footer {
+  background-color: #ffffff;
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+  border-top: 1px solid #eee;
+  color: #777;
 }

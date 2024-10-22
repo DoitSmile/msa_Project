@@ -19,39 +19,41 @@ function renderPosts(isSpecialPage = false) {
     const hasImage = post.imageUrls && post.imageUrls.length > 0;
 
     tr.innerHTML = `
-      <td class="title">
-        <div class="title-wrapper">
-          ${
-            !isSpecialPage && post.category && post.category.name
-              ? `<a href="../../templates/post/post_list.html?type=${encodeURIComponent(
-                  post.category.id
-                )}" class="board-type">${post.category.name}</a>`
-              : ""
-          }
-          <a href="../../templates/post/post_view.html?id=${post.id}">${
-      post.title || "제목 없음"
-    }</a>
-           ${
-             commentCount > 0
-               ? `<span class="comments">[ ${commentCount} ]</span>`
-               : ""
-           }
-          ${
-            hasImage
-              ? '<svg class="has-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="none" d="M0 0h24v24H0z"/><path d="M4.828 21l-.02.02-.021-.02H2.992A.993.993 0 0 1 2 20.007V3.993A1 1 0 0 1 2.992 3h18.016c.548 0 .992.445.992.993v16.014a1 1 0 0 1-.992.993H4.828zM20 15V5H4v14L14 9l6 6zm0 2.828l-6-6L6.828 19H20v-1.172zM8 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>'
-              : ""
-          }
-        </div>
-      </td>
-      <td class="author">${post.name || "익명"}</td>
-      <td class="date">${
-        post.createdAt
-          ? new Date(post.createdAt).toLocaleDateString()
-          : "날짜 없음"
-      }</td>
-      <td class="views">${post.views || 0}</td>
-    `;
-    tr.addEventListener("click", () => viewPost(post.id));
+    <td class="title">
+      <div class="title-wrapper">
+        ${
+          !isSpecialPage && post.category && post.category.name
+            ? `<a href="../../templates/post/post_list.html?type=${encodeURIComponent(
+                post.category.id
+              )}" class="board-type">${post.category.name}</a>`
+            : ""
+        }
+        ${
+          post.prefix ? `<span class="post-prefix">[${post.prefix}]</span>` : ""
+        }
+        <a href="../../templates/post/post_view.html?id=${
+          post.id
+        }" class="post-title-link">${post.title || "제목 없음"}</a>
+        ${
+          commentCount > 0
+            ? `<span class="comments">[ ${commentCount} ]</span>`
+            : ""
+        }
+        ${
+          hasImage
+            ? '<svg class="has-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18"><path fill="none" d="M0 0h24v24H0z"/><path d="M4.828 21l-.02.02-.021-.02H2.992A.993.993 0 0 1 2 20.007V3.993A1 1 0 0 1 2.992 3h18.016c.548 0 .992.445.992.993v16.014a1 1 0 0 1-.992.993H4.828zM20 15V5H4v14L14 9l6 6zm0 2.828l-6-6L6.828 19H20v-1.172zM8 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>'
+            : ""
+        }
+      </div>
+    </td>
+    <td class="author">${post.name || "익명"}</td>
+    <td class="date">${
+      post.createdAt
+        ? new Date(post.createdAt).toLocaleDateString()
+        : "날짜 없음"
+    }</td>
+    <td class="views">${post.views || 0}</td>
+  `;
 
     boardList.appendChild(tr);
   });
@@ -159,14 +161,16 @@ function getUrlParameter(name) {
 
 // 글쓰기 버튼 클릭 처리 함수
 function handleWriteButtonClick(event) {
-  event.preventDefault(); // 기본 동작 방지
+  console.log("함수실행@");
+  event.preventDefault();
   if (AuthService.isAuthenticated()) {
-    // 로그인 상태일 때 글쓰기 페이지로 이동
-    window.location.href = "../../write.html";
+    console.log("true@");
+    const currentUser = AuthService.getCurrentUser(); // 현재 사용자 정보 가져오기
+    // id를 포함한 URL로 이동
+    window.location.href = `../../templates/post/write.html?id=${currentUser.id}`;
   } else {
-    // 비로그인 상태일 때 경고 메시지 표시
+    console.log("false");
     alert("로그인이 필요한 서비스입니다.");
-    window.location.href = "../../index.html";
   }
 }
 
@@ -187,11 +191,18 @@ window.onload = function () {
     pageTitle.textContent = "최근 게시물";
     fetchPosts(null, false);
   }
-
   // 글쓰기 버튼에 이벤트 리스너 추가
   const writeButton = document.getElementById("writePostButton");
+  console.log("Write button element:", writeButton); // 버튼 요소 확인
+
   if (writeButton) {
-    writeButton.addEventListener("click", handleWriteButtonClick);
+    console.log("Adding click event listener to write button");
+    writeButton.addEventListener("click", function (event) {
+      console.log("Write button clicked!"); // 클릭 이벤트 확인
+      handleWriteButtonClick(event);
+    });
+  } else {
+    console.log("Write button not found!"); // 버튼을 찾지 못했을 때
   }
 };
 
@@ -200,25 +211,9 @@ function getCategoryName(categoryId) {
   const categoryMap = {
     "a39a5e4b-847d-11ef-84d2-0242ac120007": "자유 게시판",
     "afaf3aaf-847d-11ef-84d2-0242ac120007": "친목 게시판",
-    "0dcf3371-7996-11ef-b2ad-0242ac120004": "연애 게시판",
-    "b7b56a55-847d-11ef-84d2-0242ac120007": "게임 게시판",
-    "b2e6f193-847d-11ef-84d2-0242ac120007": "스터디모집 게시판",
+    "0dcf3371-7996-11ef-b2ad-0242ac120004": "애완용품 게시판",
+    "b7b56a55-847d-11ef-84d2-0242ac120007": "강아지/고양이 게시판",
+    "b2e6f193-847d-11ef-84d2-0242ac120007": "기타동물 게시판",
   };
   return categoryMap[categoryId] || null;
-}
-
-// 게시물 보기 함수
-function viewPost(postId) {
-  axios
-    .get(`/api/post/fetch/${postId}`)
-    .then((response) => {
-      // 여기서 게시물 데이터를 받아 처리합니다.
-      console.log(response.data);
-      // 실제로는 이 데이터를 사용하여 게시물 상세 페이지로 이동하거나 모달을 띄우는 등의 작업을 수행합니다.
-      window.location.href = `../../templates/post_view.html?id=${postId}`;
-    })
-    .catch((error) => {
-      console.error("게시물 조회 중 오류 발생:", error);
-      alert("게시물을 불러오는데 실패했습니다.");
-    });
 }

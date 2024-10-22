@@ -29,6 +29,9 @@ document.addEventListener("DOMContentLoaded", function () {
       li.innerHTML = `
       <div class="post-main-info">
         <span class="post-title">
+        ${
+          post.prefix ? `<span class="post-prefix">[${post.prefix}]</span>` : ""
+        }
           <a href="/templates/post/post_view.html?id=${post.id}">
             ${post.title || "제목 없음"}
           </a>

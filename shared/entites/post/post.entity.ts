@@ -40,6 +40,9 @@ export class Post {
   @Column()
   userId: string;
 
+  @Column({ nullable: true })
+  prefix: string;
+
   @JoinColumn({ name: "categoryId" }) //칼럼명을 Id가 아닌 내가 원하는 대로 정하고 싶다면
   // @Column({ nullable: true })
   @ManyToOne(() => Category, (category) => category.post)
@@ -55,7 +58,7 @@ export class Post {
   // 관계의 대상 엔티티를 지정 // 엔티티 쪽에서 현재 엔티티를 참조하는 속성을 지정
   comment: Comment[];
 
-  @OneToMany(() => Bookmark, (bookmark) => bookmark.post)
+  @OneToMany(() => Bookmark, (bookmark) => bookmark.post, { cascade: true })
   bookmarks: Bookmark[];
 
   @CreateDateColumn({ name: "create_at", comment: "생성일" })

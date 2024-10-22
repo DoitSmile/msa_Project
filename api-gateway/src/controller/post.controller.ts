@@ -42,6 +42,7 @@ export class PostController {
     const userId = req.user.id;
     const userName = await this.userDataService.getUserName(userId);
 
+    console.log('들어온값:', createPostInput);
     const fileData = files.map((file) => ({
       originalname: file.originalname,
       mimetype: file.mimetype,
@@ -225,10 +226,12 @@ export class PostController {
     return this.clientPostService.send({ cmd: 'getPostViews' }, { postId });
   }
 
+  // 북마크한 목록 조회
   @UseGuards(AuthGuard('access'))
   @Post('api/post/bookmark/:postId')
   async toggleBookmark(@Param('postId') postId: string, @Req() req) {
     const userId = req.user.id;
+
     try {
       const result = await this.clientPostService
         .send({ cmd: 'createBookmark' }, { userId, postId })

@@ -51,10 +51,33 @@ const PostManager = (function () {
 
   function displayPostContent(post) {
     console.log("Displaying post content:", post);
-    setElementText("post-title", post.title);
-    setElementText("post-date", new Date(post.createdAt).toLocaleString());
-    setElementHTML("#post-content", post.content);
-    setElementText("post-views", post.views || "0");
+
+    const prefixElement = document.getElementById("postPrefix");
+    const titleElement = document.getElementById("postTitle");
+
+    if (prefixElement && titleElement) {
+      if (post.prefix) {
+        prefixElement.textContent = `[${post.prefix}]`;
+        prefixElement.style.display = "inline";
+        prefixElement.className = "prefix"; // 클래스 이름 추가
+      } else {
+        prefixElement.style.display = "none";
+        prefixElement.textContent = "";
+      }
+      titleElement.textContent = post.title;
+    } else {
+      console.warn("Element with id 'postPrefix' or 'postTitle' not found");
+    }
+
+    if (document.getElementById("post-date")) {
+      setElementText("post-date", new Date(post.createdAt).toLocaleString());
+    }
+    if (document.getElementById("post-content")) {
+      setElementHTML("#post-content", post.content);
+    }
+    if (document.getElementById("post-views")) {
+      setElementText("post-views", post.views || "0");
+    }
 
     isBookmarked = post.isBookmarked;
     bookmarkCount = post.bookmarkCount || 0;
@@ -71,38 +94,38 @@ const PostManager = (function () {
     );
 
     const imageGallery = document.getElementById("image-gallery");
-    if (!imageGallery) {
-      console.error("Image gallery element not found");
-      return;
-    }
-    imageGallery.innerHTML = "";
+    if (imageGallery) {
+      imageGallery.innerHTML = "";
 
-    console.log("Image URLs:", post.imageUrls);
+      console.log("Image URLs:", post.imageUrls);
 
-    if (post.imageUrls && post.imageUrls.length > 0) {
-      post.imageUrls.forEach((url, index) => {
-        console.log(`Processing image URL ${index}:`, url);
-        const img = document.createElement("img");
-        img.src = url;
-        img.alt = `Post image ${index + 1}`;
-        img.className = "gallery-image";
-        img.onerror = (e) => {
-          console.error(`Failed to load image ${index}:`, url);
-          console.error("Error details:", e);
-          const errorDiv = document.createElement("div");
-          errorDiv.textContent = `Image ${index + 1} failed to load`;
-          errorDiv.className = "image-error";
-          imageGallery.appendChild(errorDiv);
-        };
-        img.onload = () => console.log(`Image ${index} loaded successfully`);
-        // 이미지 클릭 이벤트 리스너 제거
-        imageGallery.appendChild(img);
-      });
-      imageGallery.style.display = "block";
+      if (post.imageUrls && post.imageUrls.length > 0) {
+        post.imageUrls.forEach((url, index) => {
+          console.log(`Processing image URL ${index}:`, url);
+          const img = document.createElement("img");
+          img.src = url;
+          img.alt = `Post image ${index + 1}`;
+          img.className = "gallery-image";
+          img.onerror = (e) => {
+            console.error(`Failed to load image ${index}:`, url);
+            console.error("Error details:", e);
+            const errorDiv = document.createElement("div");
+            errorDiv.textContent = `Image ${index + 1} failed to load`;
+            errorDiv.className = "image-error";
+            imageGallery.appendChild(errorDiv);
+          };
+          img.onload = () => console.log(`Image ${index} loaded successfully`);
+          imageGallery.appendChild(img);
+        });
+        imageGallery.style.display = "block";
+      } else {
+        console.log("No images to display");
+        imageGallery.style.display = "none";
+      }
     } else {
-      console.log("No images to display");
-      imageGallery.style.display = "none";
+      console.warn("Image gallery element not found");
     }
+
     const currentUser = AuthService.getCurrentUser();
     const postActions = document.querySelector(".edit-delete-buttons");
     if (postActions) {

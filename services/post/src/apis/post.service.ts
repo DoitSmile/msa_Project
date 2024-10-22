@@ -118,7 +118,7 @@ export class PostService {
         files: ImageFile[],
     ) {
         // userName을 파라미터로 직접 받아 사용
-        const { title, content, categoryId } = createPostInput;
+        const { title, content, categoryId, prefix } = createPostInput;
 
         const imageUrls = await this.uploadImages(files);
         const cleanedContent = this.removeBase64Images(content);
@@ -130,6 +130,7 @@ export class PostService {
             title,
             content: cleanedContent,
             imageUrls,
+            prefix,
         });
 
         const savedPost = await this.postRepository.save(newPost);
@@ -140,7 +141,7 @@ export class PostService {
         this.logger.debug(
             `Updating post ${postId} with ${files.length} images`,
         );
-        const { title, content } = updatePostInput;
+        const { title, content, prefix } = updatePostInput;
         const post = await this.postRepository.findOne({
             where: { id: postId },
         });
@@ -155,6 +156,7 @@ export class PostService {
         post.title = title;
         post.content = cleanedContent;
         post.imageUrls = imageUrls;
+        post.prefix = prefix;
 
         const updatedPost = await this.postRepository.save(post);
         this.logger.debug(
@@ -166,7 +168,7 @@ export class PostService {
     async deletePosts(postId) {
         const post = await this.postRepository.findOne({
             where: { id: postId },
-            relations: ['comment'],
+            relations: ['comment', 'bookmarks'],
         });
 
         if (!post) {
@@ -181,7 +183,7 @@ export class PostService {
             order: { createdAt: 'DESC' },
             take: pageSize,
             skip: (page - 1) * pageSize,
-            relations: ['category', 'comment'],
+            relations: ['category', 'comment', 'bookmarks'],
         });
 
         for (const post of posts) {
@@ -566,7 +568,7 @@ export class PostService {
             throw new NotFoundException('Bookmark not found');
         }
 
-        await this.bookmarkRepository.remove(bookmark);
+        await this.bookmarkRepository.softRemove(bookmark);
         return { success: true };
     }
 
