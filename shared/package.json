@@ -1,10 +1,12 @@
 {
   "name": "entity_shared",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "entites/**/*",
+    "interfaces/**/*"
   ],
   "license": "MIT",
   "scripts": {
