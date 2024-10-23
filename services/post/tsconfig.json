@@ -12,7 +12,7 @@
         "baseUrl": "./",
         "moduleResolution": "node",
         "paths": {
-            "@shared/*": ["./shared/*"]
+            "@shared/*": ["node_modules/entity_shared/*"]
         },
         "incremental": true,
         "skipLibCheck": true,

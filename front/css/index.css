@@ -40,11 +40,6 @@ body {
   margin-top: 2rem; /* 상단 여백 추가 */
 }
 
-.post-section h2 {
-  margin-top: 2rem; /* 제목 상단 여백 추가 */
-  margin-bottom: 2rem; /* 하단 여백도 조금 더 추가 */
-}
-
 /* 로그인 섹션도 상단 여백 추가 */
 .mypage,
 .login-section {
@@ -135,20 +130,21 @@ body {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 1.5rem;
-  margin-bottom: 2rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
 }
 
 .container .main-content .post-section h2 {
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: 1.5rem;
-  border-bottom: 2px solid #333;
+  border-bottom: 2px solid #353535;
+  color: #353535;
   padding-bottom: 0.5rem;
 }
 
 .container .main-content .post-section h2 a {
-  color: #1a1a1a;
+  color: #353535;
   text-decoration: none;
 }
 

@@ -215,16 +215,15 @@ a:hover {
 
 /* 리치 텍스트 에디터 스타일 */
 .editor-content {
+  position: relative;
   min-height: 300px;
   max-height: 500px;
   overflow-y: auto;
   border: 1px solid #ccc;
   padding: 10px;
   margin-bottom: 10px;
-  font-size: 16px; /* 기본 글꼴 크기를 16px로 설정 */
-  line-height: 1.6; /* 줄 간격을 조정하여 가독성 개선 */
+  font-size: 14px;
 }
-
 .editor-toolbar {
   display: flex;
   align-items: center;
@@ -257,14 +256,37 @@ a:hover {
   background-size: 20px;
 }
 
-/* 이미지 스타일 수정 */
-.editor-content img {
-  max-width: 100%;
+/* 이미지 스타일 */
+.image-container img {
+  width: 250 !important;
+  height: auto !important;
+  display: block;
+  margin: 0 auto;
+}
+
+/* 이미지 컨테이너 스타일 */
+.image-container {
+  display: block;
+  width: 250px;
+  margin: 10px auto;
+  position: relative;
+}
+
+/* 이미지 컨테이너 스타일 */
+.editor-content .image-container {
+  position: relative;
+  width: 250px;
+  margin: 5px 0;
+}
+
+.editor-content .image-container img {
+  width: 250px;
   height: auto;
-  max-height: 300px;
-  border: 2px solid #000000;
-  padding: 2px;
-  transition: border-color 0.3s ease;
+  display: block;
+}
+.editor-content p {
+  margin: 10px 0 !important;
+  display: block !important;
 }
 
 /* 선택되지 않은 이미지 스타일 */
@@ -279,6 +301,32 @@ a:hover {
   font-size: 14px; /* 플레이스홀더 글꼴 크기도 16px로 설정 */
   line-height: 1.6;
   white-space: pre-wrap;
+}
+
+/* 삭제 버튼 스타일 */
+
+.delete-mark {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border-radius: 50%;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  z-index: 10;
+  text-align: center;
+  line-height: 24px;
+}
+/* 텍스트 노드 스타일 */
+.editor-content div:not(.image-container) {
+  display: inline !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* 글 작성 푸터 스타일 */

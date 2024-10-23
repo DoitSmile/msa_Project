@@ -6,10 +6,10 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { User } from '@shared/entites/user/user.entity';
+import { User } from 'entity_shared';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
-import { IUserEmail } from '@shared/interfaces/user/user-service.interface';
+import { IUserEmail } from 'entity_shared';
 import { Storage } from '@google-cloud/storage';
 import { ConfigService } from '@nestjs/config'; // 환경변수 읽을 수 있음
 import { PhoneAuthentication } from './checkphone';

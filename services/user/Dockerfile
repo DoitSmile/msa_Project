@@ -5,6 +5,7 @@ COPY ./package.json /user-service/
 COPY ./tsconfig.json /user-service/
 COPY ./yarn.lock /user-service/
 
+
 RUN yarn install
 
 COPY . /user-service/

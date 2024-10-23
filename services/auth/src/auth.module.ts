@@ -3,7 +3,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
-import { User } from '@shared/entites/user/user.entity';
+import { User } from 'entity_shared';
 import { AuthController } from './apis/auth.controller';
 import { AuthService } from './apis/auth.service';
 import { JWtAccessStrategy } from './strategies/jwt-access.strategy';

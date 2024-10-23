@@ -56,6 +56,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  async function checkNameAvailability(name) {
+    try {
+      const response = await axios.post("/api/user/check-name", { name });
+      return response.data.available;
+    } catch (error) {
+      console.error("닉네임 중복 확인 중 오류 발생:", error);
+      return false;
+    }
+  }
+
   emailInput.addEventListener("blur", async function () {
     hideEmailMessages();
     const value = this.value.trim();
@@ -173,7 +183,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         console.log("서버 응답:", response.data);
         alert("회원가입되었습니다.");
-        window.location.href = "../../templates/index.html";
+        window.location.href = "../../index.html";
       } catch (error) {
         console.error("에러 발생:", error);
         showFormMessage(

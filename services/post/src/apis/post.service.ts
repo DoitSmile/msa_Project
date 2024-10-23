@@ -1,8 +1,8 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Post } from '@shared/entites/post/post.entity';
-import { Comment } from '@shared/entites/post/post-comment.entity';
-import { Bookmark } from '@shared/entites/post/post-bookmark.entity';
+import { Post } from 'entity_shared';
+import { Comment } from 'entity_shared';
+import { Bookmark } from 'entity_shared';
 import { Repository, IsNull, In, ILike } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';

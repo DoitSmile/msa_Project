@@ -1,7 +1,7 @@
 import { ConflictException, Injectable, Inject } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { User } from '@shared/entites/user/user.entity';
+import { User } from 'entity_shared';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cache } from 'cache-manager';

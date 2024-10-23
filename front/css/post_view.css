@@ -117,7 +117,7 @@ nav ul li a,
   border-radius: 4px 0 0 4px;
 }
 .post-header {
-  background-color: #000;
+  background-color: #3a3933;
   color: white;
   padding: 20px;
   position: relative;
@@ -154,6 +154,28 @@ nav ul li a,
   font-size: 16px;
   line-height: 1.8;
 }
+.post-content .image-container {
+  position: relative;
+  width: 400px;
+  margin: 5px 0;
+}
+
+.post-content .image-container img {
+  width: 400px;
+  height: auto;
+  display: block;
+}
+
+.post-content p {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 불필요한 간격 제거 */
+.post-content br {
+  display: none;
+}
+
 .post-actions {
   display: flex;
   justify-content: space-between;
@@ -197,7 +219,7 @@ nav ul li a,
 }
 
 .bookmark-icon.bookmarked::after {
-  border-bottom-color: #007bff;
+  border-bottom-color: #000;
 }
 
 .comments {
@@ -241,7 +263,7 @@ nav ul li a,
 }
 .comment-actions a {
   margin-right: 10px;
-  color: #007bff;
+  color: #585858;
   text-decoration: none;
 }
 .comment-form {

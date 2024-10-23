@@ -51,7 +51,7 @@ const PostManager = (function () {
 
   function displayPostContent(post) {
     console.log("Displaying post content:", post);
-
+    console.log("받아온 content 구조:", post.content);
     const prefixElement = document.getElementById("postPrefix");
     const titleElement = document.getElementById("postTitle");
 
@@ -59,22 +59,55 @@ const PostManager = (function () {
       if (post.prefix) {
         prefixElement.textContent = `[${post.prefix}]`;
         prefixElement.style.display = "inline";
-        prefixElement.className = "prefix"; // 클래스 이름 추가
+        prefixElement.className = "prefix";
       } else {
         prefixElement.style.display = "none";
         prefixElement.textContent = "";
       }
       titleElement.textContent = post.title;
-    } else {
-      console.warn("Element with id 'postPrefix' or 'postTitle' not found");
     }
 
     if (document.getElementById("post-date")) {
       setElementText("post-date", new Date(post.createdAt).toLocaleString());
     }
+
     if (document.getElementById("post-content")) {
-      setElementHTML("#post-content", post.content);
+      const contentDiv = document.getElementById("post-content");
+      contentDiv.innerHTML = ""; // 기존 내용 초기화
+      contentDiv.innerHTML = post.content;
+
+      // 모든 br 태그 제거
+      const brs = contentDiv.getElementsByTagName("br");
+      while (brs.length > 0) {
+        brs[0].parentNode.removeChild(brs[0]);
+      }
+
+      // 이미지 컨테이너 스타일 재설정
+      const imageContainers = contentDiv.querySelectorAll(".image-container");
+      imageContainers.forEach((container) => {
+        container.style.position = "relative";
+        container.style.display = "block";
+        container.style.width = "400px";
+        container.style.margin = "10px auto";
+      });
+
+      // 이미지 스타일 재설정
+      const images = contentDiv.querySelectorAll(".image-container img");
+      images.forEach((img) => {
+        img.style.width = "400px";
+        img.style.height = "auto";
+        img.style.display = "block";
+      });
+
+      // 빈 p 태그 제거
+      const paragraphs = contentDiv.querySelectorAll("p");
+      paragraphs.forEach((p) => {
+        if (p.innerHTML.trim() === "") {
+          p.remove();
+        }
+      });
     }
+
     if (document.getElementById("post-views")) {
       setElementText("post-views", post.views || "0");
     }
@@ -85,45 +118,37 @@ const PostManager = (function () {
 
     setElementHTML(
       ".post-info",
-      `
-      작성자: <a href="../../templates/user/user_page.html?id=${
+      `작성자: <a href="../../templates/user/user_page.html?id=${
         post.userId
       }" class="user-link">${post.name}</a> |
-      작성일: ${new Date(post.createdAt).toLocaleString()}
-    `
+        작성일: ${new Date(post.createdAt).toLocaleString()}`
     );
 
     const imageGallery = document.getElementById("image-gallery");
     if (imageGallery) {
       imageGallery.innerHTML = "";
 
-      console.log("Image URLs:", post.imageUrls);
-
       if (post.imageUrls && post.imageUrls.length > 0) {
         post.imageUrls.forEach((url, index) => {
-          console.log(`Processing image URL ${index}:`, url);
           const img = document.createElement("img");
           img.src = url;
           img.alt = `Post image ${index + 1}`;
           img.className = "gallery-image";
+
           img.onerror = (e) => {
             console.error(`Failed to load image ${index}:`, url);
-            console.error("Error details:", e);
             const errorDiv = document.createElement("div");
             errorDiv.textContent = `Image ${index + 1} failed to load`;
             errorDiv.className = "image-error";
             imageGallery.appendChild(errorDiv);
           };
-          img.onload = () => console.log(`Image ${index} loaded successfully`);
+
           imageGallery.appendChild(img);
         });
         imageGallery.style.display = "block";
       } else {
-        console.log("No images to display");
         imageGallery.style.display = "none";
       }
-    } else {
-      console.warn("Image gallery element not found");
     }
 
     const currentUser = AuthService.getCurrentUser();
@@ -136,7 +161,6 @@ const PostManager = (function () {
       }
     }
   }
-
   function updateBookmarkUI() {
     const bookmarkButton = document.getElementById("bookmarkButton");
     if (bookmarkButton) {
