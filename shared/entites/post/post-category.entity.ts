@@ -1,4 +1,11 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  DeleteDateColumn,
+} from "typeorm";
 import { Post } from "./post.entity";
 
 // 특정 카테고리 선택 -> id값 넘겨줌

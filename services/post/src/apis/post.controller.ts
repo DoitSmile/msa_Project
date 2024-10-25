@@ -173,4 +173,9 @@ export class PostController {
             data.postId,
         );
     }
+
+    @MessagePattern({ cmd: 'getCategories' })
+    async getCategories() {
+        return await this.postService.getCategories();
+    }
 }

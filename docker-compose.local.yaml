@@ -33,7 +33,7 @@ services:
     ports:
       - 3000:3000
     env_file:
-      - ./services/user/.env.docker
+      - ./api-gateway/.env.docker
 
   auth-service:
     build:

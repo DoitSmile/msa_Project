@@ -1,8 +1,6 @@
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Post } from 'entity_shared';
-import { Comment } from 'entity_shared';
-import { Bookmark } from 'entity_shared';
+import { Post, Comment, Bookmark, Category } from 'entity_shared';
 import { Repository, IsNull, In, ILike, Brackets } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
@@ -27,6 +25,8 @@ export class PostService {
         private readonly commentRepository: Repository<Comment>,
         @InjectRepository(Bookmark)
         private readonly bookmarkRepository: Repository<Bookmark>,
+        @InjectRepository(Category)
+        private readonly categoryRepository: Repository<Category>,
         @Inject(CACHE_MANAGER)
         private readonly cacheManager: Cache,
         private configService: ConfigService,
@@ -666,5 +666,17 @@ export class PostService {
         });
 
         return { isBookmarked: !!bookmark };
+    }
+
+    async getCategories() {
+        try {
+            console.log('카테고리 조회 시작');
+            const categories = await this.categoryRepository.find();
+            console.log('조회된 카테고리:', categories);
+            return categories;
+        } catch (error) {
+            console.error('카테고리 조회 실패:', error);
+            throw error;
+        }
     }
 }

@@ -281,4 +281,9 @@ export class PostController {
       { userId, postId },
     );
   }
+
+  @Get('api/categories')
+  async getCategories() {
+    return this.clientPostService.send({ cmd: 'getCategories' }, {});
+  }
 }

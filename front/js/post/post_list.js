@@ -6,6 +6,27 @@ let categories = new Set(); // 카테고리 정보를 저장할 Set
 let currentPage = 1; // 현재 페이지 번호
 let totalPages = 1; // 총 페이지 수
 let itemsPerPage = 20; // 한 페이지에 표시할 게시물 수
+let categoryMap = new Map();
+
+async function loadCategories() {
+  try {
+    const response = await axios.get("/api/categories");
+    const categories = response.data;
+
+    categories.forEach((category) => {
+      categoryMap.set(category.id, category.name);
+    });
+
+    return categories;
+  } catch (error) {
+    console.error("카테고리 로딩 실패:", error);
+    return [];
+  }
+}
+
+function getCategoryName(categoryId) {
+  return categoryMap.get(categoryId) || null;
+}
 
 // 게시물 목록을 화면에 렌더링하는 함수
 function renderPosts(isSpecialPage = false) {
@@ -66,7 +87,6 @@ function renderPagination() {
   const pagination = document.getElementById("pagination");
   pagination.innerHTML = "";
 
-  // 이전 페이지 버튼
   if (currentPage > 1) {
     const prev = document.createElement("a");
     prev.href = "#";
@@ -80,7 +100,6 @@ function renderPagination() {
     pagination.appendChild(prev);
   }
 
-  // 페이지 번호
   for (
     let i = Math.max(1, currentPage - 2);
     i <= Math.min(totalPages, currentPage + 2);
@@ -90,18 +109,15 @@ function renderPagination() {
     a.href = "#";
     a.textContent = i;
 
-    // 현재 페이지인 경우 active 클래스 추가
     if (i === parseInt(currentPage)) {
-      a.className = "active"; // className 대신 classList를 사용하지 않음
+      a.className = "active";
     }
 
     a.addEventListener("click", (e) => {
       e.preventDefault();
-      // 페이지네이션의 모든 active 클래스 제거
       pagination
         .querySelectorAll("a")
         .forEach((link) => link.classList.remove("active"));
-      // 클릭된 페이지에 active 클래스 추가
       a.classList.add("active");
       currentPage = i;
       fetchPosts();
@@ -109,7 +125,6 @@ function renderPagination() {
     pagination.appendChild(a);
   }
 
-  // 다음 페이지 버튼
   if (currentPage < totalPages) {
     const next = document.createElement("a");
     next.href = "#";
@@ -123,10 +138,10 @@ function renderPagination() {
     pagination.appendChild(next);
   }
 }
+
 // 게시물 목록을 서버에서 가져오는 함수
 function fetchPosts(categoryId = null, isSpecialPage = false) {
   console.log("가져온 categoryId:", categoryId);
-  // console.log("currentPage":,currentPage)
   let url;
 
   if (categoryId === "popular") {
@@ -172,21 +187,18 @@ function getUrlParameter(name) {
 
 // 글쓰기 버튼 클릭 처리 함수
 function handleWriteButtonClick(event) {
-  console.log("함수실행@");
   event.preventDefault();
   if (AuthService.isAuthenticated()) {
-    console.log("true@");
-    const currentUser = AuthService.getCurrentUser(); // 현재 사용자 정보 가져오기
-    // id를 포함한 URL로 이동
+    const currentUser = AuthService.getCurrentUser();
     window.location.href = `../../templates/post/write.html?id=${currentUser.id}`;
   } else {
-    console.log("false");
     alert("로그인이 필요한 서비스입니다.");
   }
 }
 
 // 페이지 로드 시 실행되는 함수
-window.onload = function () {
+window.onload = async function () {
+  await loadCategories();
   const categoryId = getUrlParameter("type");
   console.log("categoryId-type:", categoryId);
   const pageTitle = document.querySelector(".board-header h1");
@@ -202,29 +214,9 @@ window.onload = function () {
     pageTitle.textContent = "최근 게시물";
     fetchPosts(null, false);
   }
-  // 글쓰기 버튼에 이벤트 리스너 추가
-  const writeButton = document.getElementById("writePostButton");
-  console.log("Write button element:", writeButton); // 버튼 요소 확인
 
+  const writeButton = document.getElementById("writePostButton");
   if (writeButton) {
-    console.log("Adding click event listener to write button");
-    writeButton.addEventListener("click", function (event) {
-      console.log("Write button clicked!"); // 클릭 이벤트 확인
-      handleWriteButtonClick(event);
-    });
-  } else {
-    console.log("Write button not found!"); // 버튼을 찾지 못했을 때
+    writeButton.addEventListener("click", handleWriteButtonClick);
   }
 };
-
-// 카테고리 ID에 해당하는 이름을 반환하는 함수
-function getCategoryName(categoryId) {
-  const categoryMap = {
-    "2e124876-9120-11ef-b125-0242ac120006": "자유 게시판",
-    "337e4172-9120-11ef-b125-0242ac120006": "기타동물 게시판",
-    "ec6ffedb-911f-11ef-b125-0242ac120006": "강아지/고양이 게시판",
-    "2f61277c-9120-11ef-b125-0242ac120006": "애완용품 게시판",
-    "e69bbb01-911f-11ef-b125-0242ac120006": "후기 게시판",
-  };
-  return categoryMap[categoryId] || null;
-}

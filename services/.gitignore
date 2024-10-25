@@ -6,6 +6,7 @@
 gcp-file-storage.json
 .env.docker
 .env
+.env.dev
 
 # Logs
 logs

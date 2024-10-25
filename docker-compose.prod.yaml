@@ -1,37 +1,37 @@
 version: "3.7"
 
 services:
-  my-user-database:
-    image: mysql:latest
-    environment:
-      MYSQL_DATABASE: "user"
-      MYSQL_ROOT_PASSWORD: "root"
-    ports:
-      - 3308:3306
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"] # MySQL 데이터베이스 연결 확인
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # my-user-database:
+  #   image: mysql:latest
+  #   environment:
+  #     MYSQL_DATABASE: "user"
+  #     MYSQL_ROOT_PASSWORD: "root"
+  #   ports:
+  #     - 3308:3306
+  #   networks:
+  #     - app-network
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"] # MySQL 데이터베이스 연결 확인
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
-  my-post-database:
-    image: mysql:latest
-    environment:
-      MYSQL_DATABASE: "post"
-      MYSQL_ROOT_PASSWORD: "root"
-    ports:
-      - 3307:3306
-    env_file:
-      - ./services/post/.env.docker
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # my-post-database:
+  #   image: mysql:latest
+  #   environment:
+  #     MYSQL_DATABASE: "post"
+  #     MYSQL_ROOT_PASSWORD: "root"
+  #   ports:
+  #     - 3307:3306
+  #   env_file:
+  #     - ./services/post/.env.docker
+  #   networks:
+  #     - app-network
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
   my-redis:
     image: redis:latest
@@ -52,7 +52,7 @@ services:
     ports:
       - 3000:3000
     env_file:
-      - ./services/user/.env.docker
+      - ./api-gateway/.env.docker
     environment:
       - POST_SERVICE_URL=http://post-service:3003
       - USER_SERVICE_URL=http://user-service:3002
@@ -74,7 +74,7 @@ services:
       context: ./services/auth
       dockerfile: Dockerfile
     env_file:
-      - ./services/auth/.env.docker
+      - ./services/auth/.env.dev
     networks:
       - app-network
     environment:
@@ -92,13 +92,13 @@ services:
       context: ./services/user
       dockerfile: Dockerfile
     env_file:
-      - ./services/user/.env.docker
+      - ./services/user/.env.dev
     networks:
       - app-network
     environment:
       - PORT=3002
-    depends_on:
-      - my-user-database
+    # depends_on:
+    #   - my-user-database
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3002"] # User 서비스 응답 확인
       interval: 10s
@@ -110,13 +110,13 @@ services:
       context: ./services/post
       dockerfile: Dockerfile
     env_file:
-      - ./services/post/.env.docker
+      - ./services/post/.env.dev
     environment:
       - REDIS_URL=redis://my-redis:6379
       - PORT=3003
     depends_on:
       - my-redis
-      - my-post-database
+      # - my-post-database
     networks:
       - app-network
     healthcheck:

@@ -1,5 +1,29 @@
 import { AuthService } from "../auth/auth.js";
 
+// 전역 카테고리-말머리 매핑
+const prefixesByCategory = {
+  "b11ad7db-92f9-11ef-9166-0242ac120007": {
+    // 기타동물
+    options: ["잡담", "질문", "정보"],
+    required: true,
+  },
+  "b11ad743-92f9-11ef-9166-0242ac120007": {
+    // 강아지/고양이
+    options: ["강아지", "고양이", "질문", "정보"],
+    required: true,
+  },
+  "2f61277c-9120-11ef-b125-0242ac120006": {
+    // 애완용품
+    options: ["강아지", "고양이", "기타동물", "질문", "정보"],
+    required: true,
+  },
+  "b11ad85d-92f9-11ef-9166-0242ac120007": {
+    // 후기
+    options: ["용품후기", "병원후기"],
+    required: true,
+  },
+};
+
 document.addEventListener("DOMContentLoaded", function () {
   const elements = {
     title: document.getElementById("title"),
@@ -25,46 +49,52 @@ document.addEventListener("DOMContentLoaded", function () {
     uploadedImages: [],
   };
 
-  // 카테고리별 말머리
-  const prefixesByCategory = {
-    "2f61277c-9120-11ef-b125-0242ac120006": {
-      // 애완용품
-      required: true,
-      options: ["판매", "나눔", "질문", "구해요"],
-    },
-    "ec6ffedb-911f-11ef-b125-0242ac120006": {
-      // 강아지/고양이
-      required: true,
-      options: ["자랑", "질문", "정보", "잡담"],
-    },
-    "337e4172-9120-11ef-b125-0242ac120006": {
-      // 기타동물
-      required: true,
-      options: ["자랑", "질문", "정보", "잡담"],
-    },
-    "e69bbb01-911f-11ef-b125-0242ac120006": {
-      // 후기
-      required: true,
-      options: ["병원", "사료", "간식", "애완용품", "기타"],
-    },
-  };
+  async function initializeCategorySelect() {
+    try {
+      console.log("카테고리 API 호출 시작");
+      const response = await axios.get("/api/categories");
+      console.log("API 응답:", response);
 
+      const categorySelect = document.getElementById("categoryId");
+      if (!categorySelect) {
+        console.error("categoryId element not found");
+        return;
+      }
+
+      response.data.forEach((category) => {
+        const option = document.createElement("option");
+        option.value = category.id;
+        option.textContent = category.name;
+        categorySelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error("카테고리 API 호출 실패:", error);
+    }
+  }
   // 초기화 함수
-  function initialize() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const postIdFromUrl = urlParams.get("postId");
 
-    if (postIdFromUrl) {
-      initializeEditMode(postIdFromUrl);
-    }
+  async function initialize() {
+    try {
+      // 카테고리 먼저 초기화
+      await initializeCategorySelect();
 
-    setupEventListeners();
-    if (elements.categoryId && elements.categoryId.value) {
-      updatePrefixVisibility();
-    }
+      const urlParams = new URLSearchParams(window.location.search);
+      const postIdFromUrl = urlParams.get("postId");
 
-    if (elements.editor) {
-      elements.editor.style.fontSize = "14px";
+      if (postIdFromUrl) {
+        initializeEditMode(postIdFromUrl);
+      }
+
+      setupEventListeners();
+      if (elements.categoryId && elements.categoryId.value) {
+        updatePrefixVisibility();
+      }
+
+      if (elements.editor) {
+        elements.editor.style.fontSize = "14px";
+      }
+    } catch (error) {
+      console.error("초기화 중 오류 발생:", error);
     }
   }
 
@@ -154,6 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
       );
     }
   }
+
   // 말머리 가시성 업데이트
   function updatePrefixVisibility() {
     const selectedCategory = elements.categoryId.value;
@@ -262,7 +293,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (elements.editor) {
       elements.editor.innerHTML = post.content;
 
-      // 이미지 로드
       if (post.imageUrls && post.imageUrls.length > 0) {
         state.uploadedImages = post.imageUrls;
         loadImages(post.imageUrls);
@@ -344,6 +374,7 @@ document.addEventListener("DOMContentLoaded", function () {
       selection.addRange(range);
     }
   }
+
   // hidden input
   function updateHiddenInputs(post) {
     const hiddenCategoryInput = document.getElementById("hiddenCategoryId");
@@ -405,12 +436,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     formData.append("title", titleValue);
 
-    // // 이미지만 따로 FormData에 추가
-    // state.uploadedImages.forEach((file) => {
-    //   formData.append("images", file);
-    // });
-
-    // HTML에서 x 버튼 제거하고 content 추가
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = elements.editor.innerHTML;
     const deleteButtons = tempDiv.querySelectorAll(".delete-mark");
@@ -418,12 +443,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
     formData.append("content", tempDiv.innerHTML);
 
+    state.uploadedImages.forEach((image) => {
+      if (image instanceof File) {
+        formData.append("images", image);
+      }
+    });
+
     if (state.isEditMode && state.originalPostId) {
       formData.append("postId", state.originalPostId);
     }
 
     return true;
   }
+
   // 폼 데이터 유효성 검사
   function validateFormData(categoryId) {
     if (!categoryId) {
@@ -441,40 +473,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     return true;
-  }
-
-  // 말머리 추가
-  function appendPrefix(formData) {
-    if (elements.postPrefix.style.display !== "none") {
-      formData.append("prefix", elements.postPrefix.value);
-    }
-  }
-
-  // 제목과 내용 추가
-  function appendTitleAndContent(formData) {
-    let titleValue = elements.title.value.trim().replace(/^\[.*?\]\s*/, "");
-    if (!titleValue) {
-      alert("제목을 입력해주세요.");
-      return false;
-    }
-    formData.append("title", titleValue);
-
-    const contentValue = elements.editor.innerHTML;
-    if (!contentValue.trim()) {
-      alert("내용을 입력해주세요.");
-      return false;
-    }
-    formData.append("content", contentValue);
-    return true;
-  }
-
-  // 이미지 추가
-  function appendImages(formData) {
-    state.uploadedImages.forEach((image) => {
-      if (image instanceof File) {
-        formData.append("images", image);
-      }
-    });
   }
 
   // 게시글 제출
