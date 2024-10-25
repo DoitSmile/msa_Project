@@ -3,7 +3,6 @@
 /node_modules
 
 # my file
-gcp-file-storage.json
 .env.docker
 .env
 
