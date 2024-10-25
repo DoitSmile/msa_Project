@@ -1,3 +1,9 @@
+:root {
+  --primary-color: #1a1a1a;
+  --secondary-color: #ffffff;
+  --text-color: #353535;
+}
+
 .detail-body {
   display: flex;
   justify-content: center;
@@ -11,7 +17,9 @@
   background-position: right 100px bottom 100px;
   position: relative;
 }
-
+h1 {
+  color: var(--text-color);
+}
 .container {
   font-family: "Noto Sans KR", sans-serif;
   width: 100%;
@@ -105,31 +113,40 @@
   margin-left: 5px;
   font-size: 14px;
 }
+
 .pagination {
+  margin-top: 20px;
+  text-align: center;
   display: flex;
   justify-content: center;
+  gap: 8px;
+}
+
+.pagination a {
+  color: #333;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 50%;
+  background-color: #ffffff;
+  /* border: 1px solid #f8cd41; */
+  min-width: 15px; /* 가로 길이 고정 */
+  height: 15px; /* 세로 길이 고정 */
+  display: inline-flex;
   align-items: center;
-  margin-top: 20px;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
-.pagination button {
-  background-color: #fff;
-  border: none;
-  padding: 8px 12px;
-  margin: 0 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
+
+.pagination a.active {
+  background-color: rgb(65, 55, 40);
+  color: #ffffff;
+  border-color: #f5911e;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-.pagination button:hover {
-  background-color: #f0f0f0;
+.pagination a:hover:not(.active) {
+  transform: translateY(-1px);
 }
-.pagination button.active {
-  background-color: #121213;
-  color: white;
-}
-.pagination button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+
 .popup {
   display: none;
   position: fixed;

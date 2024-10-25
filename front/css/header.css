@@ -56,7 +56,7 @@ nav ul li {
 
 nav ul li a,
 .category-btn {
-  color: #4e4e4e;
+  color: rgb(65, 55, 40);
   text-decoration: none;
   font-size: 20px;
   font-weight: 400;
@@ -72,7 +72,7 @@ nav ul li a,
   cursor: pointer;
   padding: 0;
   font-size: 20px;
-  color: #4e4e4e;
+  color: rgb(65, 55, 40);
 }
 
 .category-content {
@@ -115,7 +115,7 @@ nav ul li a,
 
 .search-form button {
   padding: 8px 12px;
-  background-color: #1a1a1a;
+  background-color: rgb(65, 55, 40);
   color: white;
   border: none;
   cursor: pointer;
@@ -136,7 +136,7 @@ a:hover {
 }
 
 .logo-image {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   height: 40px; /* 더 작은 높이로 조절 */
   width: auto; /* 비율 유지 */
   max-width: 100%; /* 컨테이너보다 커지지 않도록 */

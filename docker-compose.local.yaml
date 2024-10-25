@@ -1,0 +1,86 @@
+version: "3.7"
+
+services:
+  my-user-database:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: "user"
+      MYSQL_ROOT_PASSWORD: "root"
+    ports:
+      - 3308:3306
+
+  my-post-database:
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: "post"
+      MYSQL_ROOT_PASSWORD: "root"
+    ports:
+      - 3307:3306
+    env_file:
+      - ./services/post/.env.docker
+
+  my-redis:
+    image: redis:latest
+    ports:
+      - 6379:6379
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    volumes:
+      - ./api-gateway/src:/api-gateway/src
+    ports:
+      - 3000:3000
+    env_file:
+      - ./services/user/.env.docker
+
+  auth-service:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/auth/src:/auth-service/auth/src
+      - ./shared:/auth-service/shared
+    env_file:
+      - ./services/auth/.env.docker
+
+  user-service:
+    build:
+      context: ./services/user
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/user/src:/user-service/user/src
+      - ./shared:/user-service/shared
+    env_file:
+      - ./services/user/.env.docker
+
+  post-service:
+    build:
+      context: ./services/post
+      dockerfile: Dockerfile
+    volumes:
+      - ./services/post/src:/post-service/src
+      - ./shared:/post-service/shared
+    env_file:
+      - ./services/post/.env.docker
+    environment:
+      - REDIS_URL=redis://my-redis:6379
+    depends_on:
+      - my-redis
+
+  my-auth-redis:
+    image: redis:latest
+    ports:
+      - 6380:6379
+
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    ports:
+      - 8080:80
+    volumes:
+      - ./front:/usr/share/nginx/html
+    depends_on:
+      - api-gateway

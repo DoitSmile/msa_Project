@@ -121,12 +121,26 @@ export class PostController {
     }
 
     @MessagePattern({ cmd: 'searchPosts' })
-    async searchPosts(data: { query: string; page: number; pageSize: number }) {
-        return await this.postService.searchPosts(
-            data.query,
-            data.page,
-            data.pageSize,
-        );
+    async searchPosts(data: {
+        query: string;
+        page: number;
+        pageSize: number;
+        sort: string;
+    }) {
+        console.log('Post service received search request:', data); // 로깅 추가
+        try {
+            const result = await this.postService.searchPostsWithCache(
+                data.query,
+                data.page,
+                data.pageSize,
+                data.sort,
+            );
+            console.log('Search result:', result); // 로깅 추가
+            return result;
+        } catch (error) {
+            console.error('Post service search failed:', error); // 로깅 추가
+            throw error;
+        }
     }
 
     @MessagePattern({ cmd: 'createBookmark' })

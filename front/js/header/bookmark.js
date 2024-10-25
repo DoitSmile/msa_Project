@@ -70,54 +70,59 @@ function renderBookmarks(bookmarks) {
 }
 
 // 페이지네이션 렌더링 함수
-function renderPagination(total) {
-  const pageCount = Math.ceil(total / itemsPerPage);
-  let paginationHTML = "";
+function renderPagination(
+  totalPages,
+  currentPage,
+  paginationElement,
+  fetchFunction
+) {
+  paginationElement.innerHTML = "";
 
-  for (let i = 1; i <= pageCount; i++) {
-    if (
-      i === 1 ||
-      i === pageCount ||
-      (i >= currentPage - 1 && i <= currentPage + 1)
-    ) {
-      paginationHTML += `<button class="page-number ${
-        currentPage === i ? "active" : ""
-      }">${i}</button>`;
-    } else if (i === currentPage - 2 || i === currentPage + 2) {
-      paginationHTML += "<button disabled>...</button>";
-    }
+  // 이전 페이지 버튼
+  if (currentPage > 1) {
+    const prev = document.createElement("a");
+    prev.href = "#";
+    prev.textContent = "이전";
+    prev.addEventListener("click", (e) => {
+      e.preventDefault();
+      currentPage--;
+      fetchFunction();
+    });
+    paginationElement.appendChild(prev);
   }
 
-  pagination.innerHTML = `
-        <button id="prev-page" ${
-          currentPage === 1 ? "disabled" : ""
-        }>&lt;</button>
-        ${paginationHTML}
-        <button id="next-page" ${
-          currentPage === pageCount ? "disabled" : ""
-        }>&gt;</button>
-    `;
-
-  document.querySelectorAll(".page-number").forEach((button) => {
-    button.addEventListener("click", () => {
-      currentPage = parseInt(button.textContent);
-      loadBookmarks();
+  // 페이지 번호
+  for (
+    let i = Math.max(1, currentPage - 2);
+    i <= Math.min(totalPages, currentPage + 2);
+    i++
+  ) {
+    const a = document.createElement("a");
+    a.href = "#";
+    a.textContent = i;
+    if (i === currentPage) {
+      a.className = "active";
+    }
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      currentPage = i;
+      fetchFunction();
     });
-  });
+    paginationElement.appendChild(a);
+  }
 
-  document.getElementById("prev-page").addEventListener("click", () => {
-    if (currentPage > 1) {
-      currentPage--;
-      loadBookmarks();
-    }
-  });
-
-  document.getElementById("next-page").addEventListener("click", () => {
-    if (currentPage < pageCount) {
+  // 다음 페이지 버튼
+  if (currentPage < totalPages) {
+    const next = document.createElement("a");
+    next.href = "#";
+    next.textContent = "다음";
+    next.addEventListener("click", (e) => {
+      e.preventDefault();
       currentPage++;
-      loadBookmarks();
-    }
-  });
+      fetchFunction();
+    });
+    paginationElement.appendChild(next);
+  }
 }
 
 // 북마크 삭제 함수
@@ -149,13 +154,11 @@ async function deleteBookmarks() {
 
 // 북마크 목록 로드 함수
 async function loadBookmarks() {
-  const { bookmarks, total } = await fetchBookmarks(currentPage);
+  const { bookmarks, total, totalPages } = await fetchBookmarks(currentPage);
   renderBookmarks(bookmarks);
-  renderPagination(total);
+  renderPagination(totalPages, currentPage, pagination, loadBookmarks);
   updateBookmarkCount(total);
-  totalBookmarks = total;
 }
-
 // 팝업 표시 함수
 function showPopup() {
   deletePopup.style.display = "block";

@@ -69,7 +69,7 @@ const UserProfileManager = (function () {
       if (Array.isArray(posts) && posts.length > 0) {
         renderItems(posts, "posts-container");
         renderPagination(
-          page,
+          parseInt(page), // 페이지 숫자를 확실히 하기 위해 parseInt 사용
           totalPages,
           "posts-pagination",
           loadPostData,
@@ -82,7 +82,6 @@ const UserProfileManager = (function () {
         document.getElementById("posts-pagination").style.display = "none";
       }
 
-      // 총 게시글 수 업데이트
       setElementHTML(
         "postCount",
         `총 작성글 : <span class="stat-highlight">${total}</span>`
@@ -112,7 +111,7 @@ const UserProfileManager = (function () {
       if (Array.isArray(comments) && comments.length > 0) {
         renderItems(comments, "comments-container");
         renderPagination(
-          page,
+          parseInt(page), // 페이지 숫자를 확실히 하기 위해 parseInt 사용
           totalPages,
           "comments-pagination",
           loadCommentData,
@@ -125,7 +124,6 @@ const UserProfileManager = (function () {
         document.getElementById("comments-pagination").style.display = "none";
       }
 
-      // 총 댓글 수 업데이트
       setElementHTML(
         "commentCount",
         `총 작성댓글 수 : <span class="stat-highlight">${total}</span>`
@@ -216,18 +214,53 @@ const UserProfileManager = (function () {
     }
     container.innerHTML = "";
 
-    for (let i = 1; i <= totalPages; i++) {
-      const button = document.createElement("button");
-      button.textContent = i;
-      button.classList.add("pagination-button");
+    // 이전 페이지 버튼
+    if (currentPage > 1) {
+      const prev = document.createElement("a");
+      prev.href = "#";
+      prev.textContent = "이전";
+      prev.setAttribute("role", "button");
+      prev.addEventListener("click", (e) => {
+        e.preventDefault();
+        loadFunction(userId, currentPage - 1);
+      });
+      container.appendChild(prev);
+    }
+
+    // 페이지 번호
+    for (
+      let i = Math.max(1, currentPage - 2);
+      i <= Math.min(totalPages, currentPage + 2);
+      i++
+    ) {
+      const a = document.createElement("a");
+      a.href = "#";
+      a.textContent = i;
+
       if (i === currentPage) {
-        button.classList.add("active");
+        a.className = "active";
       }
-      button.addEventListener("click", () => loadFunction(userId, i));
-      container.appendChild(button);
+
+      a.addEventListener("click", (e) => {
+        e.preventDefault();
+        loadFunction(userId, i);
+      });
+      container.appendChild(a);
+    }
+
+    // 다음 페이지 버튼
+    if (currentPage < totalPages) {
+      const next = document.createElement("a");
+      next.href = "#";
+      next.textContent = "다음";
+      next.setAttribute("role", "button");
+      next.addEventListener("click", (e) => {
+        e.preventDefault();
+        loadFunction(userId, currentPage + 1);
+      });
+      container.appendChild(next);
     }
   }
-
   // 탭 전환
   function switchTab(tabName) {
     const tabs = document.querySelectorAll(".content-nav li");

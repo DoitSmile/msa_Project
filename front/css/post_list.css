@@ -56,7 +56,7 @@ nav ul li {
 }
 nav ul li a,
 .category-btn {
-  color: #1a1a1a;
+  color: rgb(65, 55, 40);
   text-decoration: none;
   font-size: 15px;
 }
@@ -198,19 +198,39 @@ a:hover {
   object-fit: cover;
   border-radius: 5px;
 }
+
 .pagination {
   margin-top: 20px;
   text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
 }
+
 .pagination a {
   color: #333;
-  padding: 5px 10px;
+  padding: 8px;
   text-decoration: none;
-  margin: 0 5px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  /* border: 1px solid #f8cd41; */
+  min-width: 15px; /* 가로 길이 고정 */
+  height: 15px; /* 세로 길이 고정 */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
 }
+
 .pagination a.active {
-  background-color: #121213;
-  color: white;
+  background-color: rgb(65, 55, 40);
+  color: #ffffff;
+  border-color: #f5911e;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pagination a:hover:not(.active) {
+  transform: translateY(-1px);
 }
 
 .board-header {
@@ -221,7 +241,7 @@ a:hover {
 }
 
 .write-btn {
-  background-color: #1a1a1a;
+  background-color: rgb(65, 55, 40);
   color: white;
   padding: 10px 20px;
   text-decoration: none;
@@ -231,7 +251,7 @@ a:hover {
 }
 
 .write-btn:hover {
-  background-color: #333;
+  background-color: rgb(97, 86, 69);
 }
 
 .has-image {

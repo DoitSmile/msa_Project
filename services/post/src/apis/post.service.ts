@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Post } from 'entity_shared';
 import { Comment } from 'entity_shared';
 import { Bookmark } from 'entity_shared';
-import { Repository, IsNull, In, ILike } from 'typeorm';
+import { Repository, IsNull, In, ILike, Brackets } from 'typeorm';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Storage } from '@google-cloud/storage';
@@ -462,58 +462,124 @@ export class PostService {
             sort,
         });
 
-        const [posts, total] = await this.postRepository.findAndCount({
-            where: [
-                { title: ILike(`%${query}%`) },
-                { content: ILike(`%${query}%`) },
-            ],
-            relations: ['category', 'comment'],
-            skip: (page - 1) * pageSize,
-            take: pageSize,
-        });
+        try {
+            let queryBuilder = this.postRepository
+                .createQueryBuilder('post')
+                .select([
+                    'post.id',
+                    'post.title',
+                    'post.content',
+                    'post.name',
+                    'post.views',
+                    'post.createdAt',
+                    'post.imageUrls',
+                ])
+                .where(
+                    new Brackets((qb) => {
+                        qb.where('LOWER(post.title) LIKE LOWER(:query)', {
+                            query: `%${query}%`,
+                        }).orWhere('LOWER(post.content) LIKE LOWER(:query)', {
+                            query: `%${query}%`,
+                        });
+                    }),
+                )
+                .andWhere('post.deletedAt IS NULL');
 
-        const processedPosts = await Promise.all(
-            posts.map(async (post) => {
-                const viewsKey = `post:${post.id}:views`;
-                const cachedViews = await this.redisClient.get(viewsKey);
+            // 댓글 수 서브쿼리
+            const commentCountSubQuery = this.commentRepository
+                .createQueryBuilder('comment')
+                .select('COUNT(DISTINCT comment.id)', 'commentCount')
+                .where('comment.postId = post.id')
+                .andWhere('comment.deletedAt IS NULL');
 
-                return {
-                    ...post,
-                    commentCount: post.comment.length,
-                    views: cachedViews ? parseInt(cachedViews, 10) : post.views,
-                    title: this.highlightText(post.title, query),
-                    content: this.highlightText(post.content, query),
-                };
-            }),
-        );
+            switch (sort) {
+                case 'comments':
+                    queryBuilder = queryBuilder
+                        .addSelect(
+                            `(${commentCountSubQuery.getQuery()})`,
+                            'commentCount',
+                        )
+                        .orderBy('commentCount', 'DESC')
+                        .addOrderBy('post.createdAt', 'DESC')
+                        .setParameters(commentCountSubQuery.getParameters());
+                    break;
+                case 'views':
+                    queryBuilder = queryBuilder
+                        .orderBy('post.views', 'DESC')
+                        .addOrderBy('post.createdAt', 'DESC');
+                    break;
+                default:
+                    queryBuilder = queryBuilder.orderBy(
+                        'post.createdAt',
+                        'DESC',
+                    );
+            }
 
-        // 정렬 적용
-        switch (sort) {
-            case 'comments':
-                processedPosts.sort((a, b) => b.commentCount - a.commentCount);
-                break;
-            case 'views':
-                processedPosts.sort((a, b) => b.views - a.views);
-                break;
-            case 'date':
-            default:
-                processedPosts.sort(
-                    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-                );
-                break;
+            const [posts, total] = await queryBuilder
+                .offset((page - 1) * pageSize)
+                .limit(pageSize)
+                .getManyAndCount();
+
+            const postsWithComments = await Promise.all(
+                posts.map(async (post) => {
+                    const commentCount = await this.commentRepository.count({
+                        where: {
+                            post: { id: post.id },
+                            deletedAt: IsNull(),
+                        },
+                    });
+
+                    return {
+                        ...post,
+                        commentCount,
+                        title: this.highlightText(post.title, query),
+                        content: this.highlightText(post.content, query),
+                    };
+                }),
+            );
+
+            return {
+                posts: postsWithComments,
+                total,
+                page,
+                pageSize,
+                totalPages: Math.ceil(total / pageSize),
+            };
+        } catch (error) {
+            this.logger.error(`Search failed: ${error.message}`);
+            throw error;
         }
+    }
+    // 캐시 래퍼 메서드 추가
+    async searchPostsWithCache(
+        query: string,
+        page: number = 1,
+        pageSize: number = 10,
+        sort: string = 'date',
+    ) {
+        const cacheKey = `search:${query}:${sort}:${page}:${pageSize}`;
 
-        console.log('Processed posts:', processedPosts);
+        try {
+            // 캐시 확인
+            const cachedResult = await this.redisClient.get(cacheKey);
+            if (cachedResult) {
+                return JSON.parse(cachedResult);
+            }
 
-        const totalPages = Math.ceil(total / pageSize);
+            // DB 검색 실행
+            const result = await this.searchPosts(query, page, pageSize, sort);
 
-        return {
-            posts: processedPosts,
-            total,
-            page,
-            pageSize,
-            totalPages,
-        };
+            // 결과 캐싱
+            await this.redisClient.set(cacheKey, JSON.stringify(result), {
+                EX: 300, // 5분 캐시
+            });
+
+            return result;
+        } catch (error) {
+            this.logger.error(`Cache operation failed: ${error.message}`);
+            // 캐시 실패 시 직접 검색 결과 반환
+            return this.searchPosts(query, page, pageSize, sort);
+        }
     }
     /**
      * 텍스트에서 검색어를 하이라이트하는 메서드

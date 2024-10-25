@@ -71,6 +71,7 @@ function renderPagination() {
     const prev = document.createElement("a");
     prev.href = "#";
     prev.textContent = "이전";
+    prev.setAttribute("role", "button");
     prev.addEventListener("click", (e) => {
       e.preventDefault();
       currentPage--;
@@ -88,11 +89,20 @@ function renderPagination() {
     const a = document.createElement("a");
     a.href = "#";
     a.textContent = i;
-    if (i === currentPage) {
-      a.className = "active";
+
+    // 현재 페이지인 경우 active 클래스 추가
+    if (i === parseInt(currentPage)) {
+      a.className = "active"; // className 대신 classList를 사용하지 않음
     }
+
     a.addEventListener("click", (e) => {
       e.preventDefault();
+      // 페이지네이션의 모든 active 클래스 제거
+      pagination
+        .querySelectorAll("a")
+        .forEach((link) => link.classList.remove("active"));
+      // 클릭된 페이지에 active 클래스 추가
+      a.classList.add("active");
       currentPage = i;
       fetchPosts();
     });
@@ -104,6 +114,7 @@ function renderPagination() {
     const next = document.createElement("a");
     next.href = "#";
     next.textContent = "다음";
+    next.setAttribute("role", "button");
     next.addEventListener("click", (e) => {
       e.preventDefault();
       currentPage++;
@@ -112,10 +123,10 @@ function renderPagination() {
     pagination.appendChild(next);
   }
 }
-
 // 게시물 목록을 서버에서 가져오는 함수
 function fetchPosts(categoryId = null, isSpecialPage = false) {
   console.log("가져온 categoryId:", categoryId);
+  // console.log("currentPage":,currentPage)
   let url;
 
   if (categoryId === "popular") {

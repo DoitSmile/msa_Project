@@ -1,7 +1,7 @@
 :root {
-  --primary-color: #000000;
+  --primary-color: rgb(65, 55, 40);
   --secondary-color: #ffffff;
-  --accent-color: #333333;
+  --accent-color: rgb(97, 86, 69);
   --text-color: #333333;
   --border-color: #cccccc;
   --failure-color: #ff3b30;
@@ -17,8 +17,8 @@
   padding: 20px;
   padding-top: 50px;
   background-image: url("../assets/signup.png"), url("../assets/signup2.png");
-  background-size: 50%, 20%;
-  background-position: 100% center, center left 15%;
+  background-size: 50%, 35%;
+  background-position: 100% center, left 17% top 30%;
   /* transform: rotate(30deg); */
   background-repeat: no-repeat;
   background-attachment: scroll, fixed;

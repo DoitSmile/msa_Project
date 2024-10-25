@@ -152,7 +152,6 @@ export class PostController {
       { page, pageSize },
     );
   }
-
   @Get('api/posts/search')
   async searchPosts(
     @Query('q') query: string,
@@ -161,12 +160,18 @@ export class PostController {
     @Query('sort') sort: string = 'date',
   ) {
     console.log('Search request received:', { query, page, pageSize, sort });
-    return this.clientPostService.send(
-      { cmd: 'searchPosts' },
-      { query, page, pageSize, sort },
-    );
-  }
+    try {
+      const response = await this.clientPostService
+        .send({ cmd: 'searchPosts' }, { query, page, pageSize, sort })
+        .toPromise();
 
+      console.log('Search response:', response); // 로깅 추가
+      return response;
+    } catch (error) {
+      console.error('Search failed:', error); // 로깅 추가
+      throw new InternalServerErrorException('Search failed');
+    }
+  }
   // ------------------------ Comment ------------------------
   // 댓글 작성
   @UseGuards(AuthGuard('access'))

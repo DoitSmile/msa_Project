@@ -1,7 +1,6 @@
 import { AuthService } from "../auth/auth.js";
 
 document.addEventListener("DOMContentLoaded", function () {
-  // DOM 요소 한 번에 가져오기
   const elements = {
     title: document.getElementById("title"),
     categoryId: document.getElementById("categoryId"),
@@ -26,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
     uploadedImages: [],
   };
 
-  // 카테고리별 말머리 설정
+  // 카테고리별 말머리
   const prefixesByCategory = {
     "2f61277c-9120-11ef-b125-0242ac120006": {
       // 애완용품
@@ -36,17 +35,17 @@ document.addEventListener("DOMContentLoaded", function () {
     "ec6ffedb-911f-11ef-b125-0242ac120006": {
       // 강아지/고양이
       required: true,
-      options: ["내새끼자랑", "질문", "정보", "잡담"],
+      options: ["자랑", "질문", "정보", "잡담"],
     },
     "337e4172-9120-11ef-b125-0242ac120006": {
       // 기타동물
       required: true,
-      options: ["내새끼자랑", "질문", "정보", "잡담"],
+      options: ["자랑", "질문", "정보", "잡담"],
     },
     "e69bbb01-911f-11ef-b125-0242ac120006": {
       // 후기
       required: true,
-      options: ["내새끼자랑", "병원", "사료", "간식", "애완용품", "기타"],
+      options: ["병원", "사료", "간식", "애완용품", "기타"],
     },
   };
 
@@ -64,9 +63,8 @@ document.addEventListener("DOMContentLoaded", function () {
       updatePrefixVisibility();
     }
 
-    // 초기 폰트 크기 설정을 에디터 초기화 시점에 설정
     if (elements.editor) {
-      elements.editor.style.fontSize = "14px"; // 기본 폰트 크기 설정
+      elements.editor.style.fontSize = "14px";
     }
   }
 
@@ -131,7 +129,6 @@ document.addEventListener("DOMContentLoaded", function () {
       elements.imageUpload.addEventListener("change", handleImageUpload);
     }
 
-    // 에디터 버튼 이벤트 리스너
     setupEditorButtons();
   }
 
@@ -157,7 +154,6 @@ document.addEventListener("DOMContentLoaded", function () {
       );
     }
   }
-
   // 말머리 가시성 업데이트
   function updatePrefixVisibility() {
     const selectedCategory = elements.categoryId.value;
@@ -210,128 +206,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // 폼 데이터 업데이트
-  function updateFormWithPostData(post) {
-    if (elements.title) {
-      elements.title.value = post.title.replace(/^\[.*?\]\s*/, "");
-    }
-
-    if (elements.postPrefix) {
-      elements.postPrefix.value = post.prefix || "";
-    }
-
-    if (elements.editor) {
-      // HTML 태그를 제거하고 순수 텍스트만 표시
-      const tempDiv = document.createElement("div");
-      tempDiv.innerHTML = post.content;
-      elements.editor.textContent = tempDiv.textContent;
-
-      // 이미지 로드
-      if (post.imageUrls && post.imageUrls.length > 0) {
-        state.uploadedImages = post.imageUrls;
-        loadImages(post.imageUrls);
-      }
-    }
-
-    updateHiddenInputs(post);
-  }
-  // 이미지 업로드 처리
-  function handleImageUpload(e) {
-    const files = e.target.files;
-    const maxSize = 5 * 1024 * 1024;
-
-    // 현재 선택된 요소 확인
-    const selection = window.getSelection();
-    const range = selection.getRangeAt(0);
-    const currentElement = range.commonAncestorContainer;
-
-    // 제목 입력란인지 확인
-    const titleInput = document.getElementById("title");
-    if (titleInput.contains(currentElement)) {
-      alert("제목에는 이미지를 삽입할 수 없습니다.");
-      return;
-    }
-
-    // 에디터 영역인지 확인
-    const editor = elements.editor;
-    if (!editor.contains(currentElement)) {
-      // 커서가 에디터 안에 없으면 에디터 끝에 추가
-      range.setStart(editor, editor.childNodes.length);
-      range.setEnd(editor, editor.childNodes.length);
-    }
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (file.size > maxSize) {
-        alert(
-          `파일 크기는 5MB를 초과할 수 없습니다. 현재 파일 크기: ${(
-            file.size /
-            1024 /
-            1024
-          ).toFixed(2)}MB`
-        );
-        continue;
-      }
-
-      if (file) {
-        state.uploadedImages.push(file);
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          const wrapper = document.createElement("div");
-          wrapper.style.display = "block";
-
-          const imgContainer = document.createElement("div");
-          imgContainer.className = "image-container";
-
-          const img = document.createElement("img");
-          img.src = e.target.result;
-          img.setAttribute("contenteditable", "false");
-          img.setAttribute("data-filename", file.name);
-
-          const xMark = document.createElement("span");
-          xMark.textContent = "×";
-          xMark.className = "delete-mark";
-
-          imgContainer.addEventListener(
-            "mouseenter",
-            () => (xMark.style.display = "block")
-          );
-          imgContainer.addEventListener(
-            "mouseleave",
-            () => (xMark.style.display = "none")
-          );
-          xMark.addEventListener("click", () => {
-            const index = state.uploadedImages.findIndex(
-              (f) => f.name === file.name
-            );
-            if (index > -1) {
-              state.uploadedImages.splice(index, 1);
-            }
-            wrapper.remove();
-          });
-
-          imgContainer.appendChild(img);
-          imgContainer.appendChild(xMark);
-          wrapper.appendChild(imgContainer);
-
-          // 줄바꿈 추가
-          const br = document.createElement("br");
-          wrapper.appendChild(br);
-
-          // 현재 선택 위치에 삽입
-          range.insertNode(wrapper);
-
-          // 커서를 이미지 다음으로 이동
-          range.setStartAfter(wrapper);
-          range.setEndAfter(wrapper);
-          selection.removeAllRanges();
-          selection.addRange(range);
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-  }
-  // 이미지 로드
   function loadImages(imageUrls) {
     if (!imageUrls?.length) return;
 
@@ -348,11 +222,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
       const xMark = document.createElement("span");
       xMark.textContent = "×";
-      xMark.className = "delete-mark";
+      xMark.className = "delete-mark write-mode";
 
       imgContainer.addEventListener(
         "mouseenter",
-        () => (xMark.style.display = "block")
+        () => (xMark.style.display = "flex")
       );
       imgContainer.addEventListener(
         "mouseleave",
@@ -374,7 +248,103 @@ document.addEventListener("DOMContentLoaded", function () {
       elements.editor.appendChild(wrapper);
     });
   }
-  // hidden input 업데이트
+
+  // 폼 데이터 업데이트
+  function updateFormWithPostData(post) {
+    if (elements.title) {
+      elements.title.value = post.title.replace(/^\[.*?\]\s*/, "");
+    }
+
+    if (elements.postPrefix) {
+      elements.postPrefix.value = post.prefix || "";
+    }
+
+    if (elements.editor) {
+      elements.editor.innerHTML = post.content;
+
+      // 이미지 로드
+      if (post.imageUrls && post.imageUrls.length > 0) {
+        state.uploadedImages = post.imageUrls;
+        loadImages(post.imageUrls);
+      }
+    }
+
+    updateHiddenInputs(post);
+  }
+
+  // 이미지 업로드 처리
+  function handleImageUpload(e) {
+    const files = e.target.files;
+    const maxSize = 5 * 1024 * 1024;
+
+    try {
+      const selection = window.getSelection();
+      const range = selection.getRangeAt(0);
+      const currentElement = range.commonAncestorContainer;
+
+      const editor = elements.editor;
+      if (!editor.contains(currentElement)) {
+        range.setStart(editor, editor.childNodes.length);
+        range.setEnd(editor, editor.childNodes.length);
+      }
+
+      Array.from(files).forEach((file) => {
+        if (file.size > maxSize) {
+          alert(
+            `파일 크기는 5MB를 초과할 수 없습니다. 현재 파일 크기: ${(
+              file.size /
+              1024 /
+              1024
+            ).toFixed(2)}MB`
+          );
+          return;
+        }
+
+        state.uploadedImages.push(file);
+
+        const wrapper = document.createElement("div");
+        wrapper.style.display = "block";
+
+        const imgContainer = document.createElement("div");
+        imgContainer.className = "image-container";
+
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(file);
+        img.setAttribute("data-filename", file.name);
+
+        const deleteSpan = document.createElement("span");
+        deleteSpan.textContent = "×";
+        deleteSpan.className = "delete-mark";
+        deleteSpan.addEventListener("click", () => {
+          const index = state.uploadedImages.indexOf(file);
+          if (index > -1) {
+            state.uploadedImages.splice(index, 1);
+            wrapper.remove();
+          }
+        });
+
+        imgContainer.appendChild(img);
+        imgContainer.appendChild(deleteSpan);
+        wrapper.appendChild(imgContainer);
+
+        range.insertNode(wrapper);
+        range.setStartAfter(wrapper);
+        range.setEndAfter(wrapper);
+      });
+
+      selection.removeAllRanges();
+      selection.addRange(range);
+    } catch (error) {
+      const editor = elements.editor;
+      const range = document.createRange();
+      range.selectNodeContents(editor);
+      range.collapse(false);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    }
+  }
+  // hidden input
   function updateHiddenInputs(post) {
     const hiddenCategoryInput = document.getElementById("hiddenCategoryId");
     if (hiddenCategoryInput && post.category) {
@@ -423,9 +393,30 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!validateFormData(categoryId)) return false;
 
     formData.append("categoryId", categoryId.value);
-    appendPrefix(formData);
-    appendTitleAndContent(formData);
-    appendImages(formData);
+
+    if (elements.postPrefix.style.display !== "none") {
+      formData.append("prefix", elements.postPrefix.value);
+    }
+
+    let titleValue = elements.title.value.trim().replace(/^\[.*?\]\s*/, "");
+    if (!titleValue) {
+      alert("제목을 입력해주세요.");
+      return false;
+    }
+    formData.append("title", titleValue);
+
+    // // 이미지만 따로 FormData에 추가
+    // state.uploadedImages.forEach((file) => {
+    //   formData.append("images", file);
+    // });
+
+    // HTML에서 x 버튼 제거하고 content 추가
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = elements.editor.innerHTML;
+    const deleteButtons = tempDiv.querySelectorAll(".delete-mark");
+    deleteButtons.forEach((button) => button.remove());
+
+    formData.append("content", tempDiv.innerHTML);
 
     if (state.isEditMode && state.originalPostId) {
       formData.append("postId", state.originalPostId);
@@ -433,7 +424,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     return true;
   }
-
   // 폼 데이터 유효성 검사
   function validateFormData(categoryId) {
     if (!categoryId) {
@@ -475,6 +465,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return false;
     }
     formData.append("content", contentValue);
+    return true;
   }
 
   // 이미지 추가
@@ -489,7 +480,11 @@ document.addEventListener("DOMContentLoaded", function () {
   // 게시글 제출
   async function submitPost(formData) {
     const config = {
-      headers: { "Content-Type": "multipart/form-data" },
+      headers: {
+        "Content-Type": "multipart/form-data",
+        maxContentLength: 5 * 1024 * 1024,
+        maxBodyLength: 5 * 1024 * 1024,
+      },
     };
 
     if (state.isEditMode) {
@@ -514,17 +509,6 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = `../../templates/post/post_view.html?id=${
       response.data.id || state.originalPostId
     }`;
-  }
-
-  // 이미지 미리보기 생성
-  function createImagePreview(src, filename) {
-    const img = document.createElement("img");
-    img.src = src;
-    img.style.maxWidth = "80%";
-    img.style.height = "auto";
-    img.setAttribute("contenteditable", "false");
-    img.setAttribute("data-filename", filename);
-    elements.editor.appendChild(img);
   }
 
   // 에디터 플레이스홀더 관리

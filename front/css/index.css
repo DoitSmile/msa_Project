@@ -1,5 +1,4 @@
 /* 전체 페이지 스타일 */
-
 html,
 body {
   margin: 0;
@@ -7,43 +6,41 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   font-size: 14px;
-  height: 100%; /* 추가 */
-  width: 100%; /* 추가 */
+  height: 100%;
+  width: 100%;
 }
 
 body {
   background-image: url("../assets/index.png");
-
-  background-size: 70%;
-  background-position: center 200px;
+  background-size: 95%; /* 70%에서 cover로 변경 */
+  background-position: center; /* 200px 제거 */
   background-repeat: no-repeat;
   background-attachment: fixed;
-  min-height: 100vh; /* 추가 */
+  min-height: 100vh;
+  position: relative; /* 추가 */
 }
 
 /* 메인 컨테이너 스타일 */
 .container {
   display: flex;
   max-width: 1200px;
-  /* min-height 값을 조정 */
-  min-height: calc(100vh - 300px); /* 기존 200px에서 300px로 조정 */
-  margin: 2rem auto;
-  padding: 2rem;
+  min-height: calc(100vh - 300px);
+  margin: 1rem auto;
+  padding: 1rem;
   gap: 2rem;
-  background-color: rgba(255, 255, 255, 0.8);
+  /* background-color: #fff; */
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* 최근 게시물과 실시간 인기 게시물 섹션의 상단 여백 추가 */
 .post-section {
-  margin-top: 2rem; /* 상단 여백 추가 */
+  margin-top: 1rem;
 }
 
 /* 로그인 섹션도 상단 여백 추가 */
 .mypage,
 .login-section {
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .main-content {
@@ -129,22 +126,21 @@ body {
 .container .main-content .post-section {
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 1rem;
-  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px #cfcfcf;
 }
 
 .container .main-content .post-section h2 {
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: 1.5rem;
-  border-bottom: 2px solid #353535;
-  color: #353535;
+  border-bottom: 2px solid #1a1a1a;
+  color: #1a1a1a;
   padding-bottom: 0.5rem;
 }
 
 .container .main-content .post-section h2 a {
-  color: #353535;
+  color: #1a1a1a;
   text-decoration: none;
 }
 
@@ -153,15 +149,15 @@ body {
   background-color: #ffffff;
   padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px #cfcfcf;
 }
 
 .mypage h3 {
-  color: #333;
+  color: #1a1a1a;
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: 1.3rem;
-  border-bottom: 2px solid #333;
+  border-bottom: 2px solid #1a1a1a;
   padding-bottom: 0.5rem;
 }
 
@@ -227,7 +223,7 @@ body {
 .login-btn {
   width: 100%;
   padding: 0.8rem;
-  background-color: #1a1a1a;
+  background-color: rgb(65, 55, 40);
   color: white;
   border: none;
   border-radius: 4px;
@@ -237,7 +233,7 @@ body {
 }
 
 .login-btn:hover {
-  background-color: #333;
+  background-color: rgb(97, 86, 69);
 }
 
 .signup-link {
@@ -253,18 +249,17 @@ body {
 
 /* 푸터 스타일 */
 footer {
-  background-color: #ffffff;
+  background-color: transparent; /* 배경색 제거 */
   text-align: center;
   padding: 0.5rem;
   margin-top: 1rem;
-  border-top: 1px solid #eee;
-  color: #777;
+  color: #1a1a1a; /* 배경이 없으므로 글자색을 더 진하게 조정 */
   font-size: 0.8rem;
   position: relative;
   bottom: 0;
   width: 100%;
+  text-shadow: 0px 0px 1px rgba(255, 255, 255, 0.8); /* 선택적: 가독성을 위한 텍스트 그림자 추가 */
 }
-
 /* 인기 게시물 순위 스타일 */
 .popular-posts .post-list {
   counter-reset: ranking;
