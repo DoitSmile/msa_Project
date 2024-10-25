@@ -4,8 +4,8 @@
 
 
 #my file
-.env.docker
-.env
+# .env.docker
+# .env
 
 
 # Logs
