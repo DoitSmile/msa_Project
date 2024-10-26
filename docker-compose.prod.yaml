@@ -52,7 +52,7 @@ services:
     ports:
       - 3000:3000
     env_file:
-      - ./api-gateway/.env.docker
+      - ./api-gateway/.env.prod
     environment:
       - POST_SERVICE_URL=http://post-service:3003
       - USER_SERVICE_URL=http://user-service:3002
@@ -74,7 +74,7 @@ services:
       context: ./services/auth
       dockerfile: Dockerfile
     env_file:
-      - ./services/auth/.env.dev
+      - ./services/auth/.env.prod
     networks:
       - app-network
     environment:
@@ -92,7 +92,7 @@ services:
       context: ./services/user
       dockerfile: Dockerfile
     env_file:
-      - ./services/user/.env.dev
+      - ./services/user/.env.prod
     networks:
       - app-network
     environment:
@@ -110,7 +110,7 @@ services:
       context: ./services/post
       dockerfile: Dockerfile
     env_file:
-      - ./services/post/.env.dev
+      - ./services/post/.env.prod
     environment:
       - REDIS_URL=redis://my-redis:6379
       - PORT=3003

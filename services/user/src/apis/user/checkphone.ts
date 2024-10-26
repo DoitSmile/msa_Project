@@ -3,7 +3,7 @@ export class PhoneAuthentication {
   coolsms = require('coolsms-node-sdk').default;
 
   async checkphone(myphone) {
-    console.log("myphone:",myphone)
+    console.log('myphone:', myphone);
     if (myphone.length < 10 || myphone.length > 11) {
       console.log('유효하지 않은 핸드폰 번호');
       return false;
@@ -26,7 +26,7 @@ export class PhoneAuthentication {
     const result = await messageService.sendOne({
       to: myphone,
       from: SMS_SENDER,
-      text: `[YEON] 안녕하세요?! 요청하신 인증번호는 [${token}] 입니다.`,
+      text: `[LOPE] 요청하신 인증번호는 [${token}] 입니다.`,
     });
     console.log(result);
   }
