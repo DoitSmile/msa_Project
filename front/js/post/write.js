@@ -2,22 +2,22 @@ import { AuthService } from "../auth/auth.js";
 
 // 전역 카테고리-말머리 매핑
 const prefixesByCategory = {
-  "b11ad7db-92f9-11ef-9166-0242ac120007": {
+  "e1c56315-9360-11ef-a119-42010a400003": {
     // 기타동물
     options: ["잡담", "질문", "정보"],
     required: true,
   },
-  "b11ad743-92f9-11ef-9166-0242ac120007": {
+  "e1c5608b-9360-11ef-a119-42010a400003": {
     // 강아지/고양이
     options: ["강아지", "고양이", "질문", "정보"],
     required: true,
   },
-  "2f61277c-9120-11ef-b125-0242ac120006": {
+  "e1c56398-9360-11ef-a119-42010a400003": {
     // 애완용품
     options: ["강아지", "고양이", "기타동물", "질문", "정보"],
     required: true,
   },
-  "b11ad85d-92f9-11ef-9166-0242ac120007": {
+  "e1c563ec-9360-11ef-a119-42010a400003": {
     // 후기
     options: ["용품후기", "병원후기"],
     required: true,
