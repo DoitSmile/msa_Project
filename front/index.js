@@ -1,4 +1,5 @@
 import { AuthService } from "./js/auth/auth.js";
+import { BannerSlider } from "./banner.js";
 
 document.addEventListener("DOMContentLoaded", function () {
   const popularPostList = document.getElementById("popularPostList");
@@ -184,4 +185,5 @@ document.addEventListener("DOMContentLoaded", function () {
   toggleLoginMypage();
   fetchPopularPosts();
   fetchRecentPosts();
+  new BannerSlider();
 });

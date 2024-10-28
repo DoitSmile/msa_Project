@@ -352,29 +352,59 @@ const PostManager = (function () {
       return;
     }
 
-    const newContent = prompt("수정할 내용을 입력하세요:");
-    if (newContent !== null) {
-      axios
-        .put("/api/post/comment/update", {
-          commentId: commentId,
-          content: newContent,
-        })
-        .then(() => {
-          fetchComments();
-        })
-        .catch((error) => {
-          console.error("댓글 수정 중 오류 발생:", error);
-          if (error.response && error.response.status === 401) {
-            alert("인증이 만료되었습니다. 다시 로그인해주세요.");
-            AuthService.logout();
-            window.location.href = "../../index.html";
-          } else if (error.response && error.response.status === 403) {
-            alert("댓글을 수정할 권한이 없습니다.");
-          } else {
-            alert("댓글 수정에 실패했습니다.");
-          }
-        });
+    const commentElement = document.querySelector(
+      `.comment[data-comment-id="${commentId}"]`
+    );
+    const commentText = commentElement.querySelector(".comment-text");
+    const originalContent = commentText.textContent;
+
+    // 이미 편집 폼이 있다면 제거
+    const existingForm = commentElement.querySelector(".edit-form");
+    if (existingForm) {
+      existingForm.remove();
+      return;
     }
+
+    // 편집 폼 생성
+    const editForm = document.createElement("div");
+    editForm.className = "reply-form edit-form";
+    editForm.innerHTML = `
+        <div class="comment-input-container">
+            <textarea class="edit-text">${originalContent}</textarea>
+            <button class="submit-edit">댓글 수정</button>
+        </div>
+    `;
+
+    // 원래 댓글 내용 뒤에 폼 삽입
+    commentText.parentNode.insertBefore(editForm, commentText.nextSibling);
+
+    // 수정 제출 버튼 이벤트 리스너
+    const submitButton = editForm.querySelector(".submit-edit");
+    submitButton.addEventListener("click", function () {
+      const newContent = editForm.querySelector(".edit-text").value;
+      if (newContent.trim() !== "") {
+        axios
+          .put("/api/post/comment/update", {
+            commentId: commentId,
+            content: newContent,
+          })
+          .then(() => {
+            fetchComments();
+          })
+          .catch((error) => {
+            console.error("댓글 수정 중 오류 발생:", error);
+            if (error.response && error.response.status === 401) {
+              alert("인증이 만료되었습니다. 다시 로그인해주세요.");
+              AuthService.logout();
+              window.location.href = "../../index.html";
+            } else if (error.response && error.response.status === 403) {
+              alert("댓글을 수정할 권한이 없습니다.");
+            } else {
+              alert("댓글 수정에 실패했습니다.");
+            }
+          });
+      }
+    });
   }
 
   function deleteComment(commentId) {

@@ -139,7 +139,7 @@ h1 {
   position: absolute;
   bottom: 0;
   right: 0;
-  background-color: #000;
+  background-color: rgb(65, 55, 40);
   color: white;
   border: none;
   border-radius: 50%;
@@ -188,7 +188,7 @@ input[type="file"] {
   transition: background-color 0.3s, color 0.3s;
 }
 .btn-primary {
-  background-color: #000;
+  background-color: rgb(65, 55, 40);
   color: white;
 }
 .btn-secondary {

@@ -16,12 +16,6 @@
   align-items: center; /* flex-start에서 center로 변경 */
   padding: 20px;
   padding-top: 50px;
-  background-image: url("../assets/signup.png"), url("../assets/signup2.png");
-  background-size: 50%, 35%;
-  background-position: 100% center, left 17% top 30%;
-  /* transform: rotate(30deg); */
-  background-repeat: no-repeat;
-  background-attachment: scroll, fixed;
   position: relative;
 }
 .container {
