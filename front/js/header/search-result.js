@@ -132,12 +132,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async fetchSearchResults() {
-      if (!this.searchParams.query || this.searchParams.query.length < 2) {
-        this.displayError("검색어는 2글자 이상 입력해주세요.");
-        return;
-      }
-
+      // if (!this.searchParams.query || this.searchParams.query.length < 2) {
+      //   this.displayError("검색어는 2글자 이상 입력해주세요.");
+      //   return;
+      // }
+      console.log("fetchSearchResults called with:", {
+        query: this.searchParams.query,
+        sort: this.searchParams.sort,
+        page: this.searchParams.page,
+      });
       const cacheKey = `search:${this.searchParams.query}:${this.searchParams.sort}:${this.searchParams.page}`;
+      console.log("Checking cache with key:", cacheKey);
       const cachedData = sessionStorage.getItem(cacheKey);
 
       if (cachedData) {
@@ -162,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function () {
           headers: { "Cache-Control": "max-age=300" },
           cancelToken: cancelTokenSource.token,
         });
-
+        console.log("Search API response:", response.data);
         sessionStorage.setItem(cacheKey, JSON.stringify(response.data));
         return response.data;
       } catch (error) {
@@ -179,6 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async search() {
+      console.log("Search method called with query:", this.searchParams.query);
       this.setLoading(true);
       try {
         this.currentData = await this.fetchSearchResults();
@@ -192,6 +198,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 검색 상태 초기화 및 이벤트 핸들러 설정
   const searchState = new SearchState();
+  console.log("Search state initialized", {
+    query: searchState.searchParams.query,
+    sort: searchState.searchParams.sort,
+    page: searchState.searchParams.page,
+  });
 
   // 정렬 옵션 변경 이벤트
   sortOption.addEventListener("change", (e) => {
@@ -204,9 +215,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // 초기 검색 실행
   if (searchState.searchParams.query) {
+    console.log("Starting search with query:", searchState.searchParams.query);
     sortOption.value = searchState.searchParams.sort;
     searchState.search();
   } else {
+    console.log("No query found");
     searchState.displayError("검색어를 입력해주세요.");
   }
 });

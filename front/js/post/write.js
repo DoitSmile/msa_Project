@@ -4,22 +4,22 @@ import { AuthService } from "../auth/auth.js";
 const prefixesByCategory = {
   "e1c56315-9360-11ef-a119-42010a400003": {
     // 기타동물
-    options: ["잡담", "질문", "정보"],
+    options: ["자랑", "잡담", "질문", "정보"],
     required: true,
   },
   "e1c5608b-9360-11ef-a119-42010a400003": {
     // 강아지/고양이
-    options: ["강아지", "고양이", "질문", "정보"],
+    options: ["자랑", "잡담", "질문", "정보"],
     required: true,
   },
   "e1c56398-9360-11ef-a119-42010a400003": {
     // 애완용품
-    options: ["강아지", "고양이", "기타동물", "질문", "정보"],
+    options: ["질문", "정보", "판매", "나눔", "구해요"],
     required: true,
   },
   "e1c563ec-9360-11ef-a119-42010a400003": {
     // 후기
-    options: ["용품후기", "병원후기"],
+    options: ["용품후기", "병원후기", "기타후기"],
     required: true,
   },
 };

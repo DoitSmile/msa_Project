@@ -310,6 +310,12 @@ export class PostService {
             throw new NotFoundException('Post not found');
         }
 
+        // Redis에서 현재 조회수 확인
+        const postViewKey = `post:${postId}:views`;
+        const cachedViews = await this.redisClient.get(postViewKey);
+        post.views = cachedViews ? parseInt(cachedViews) : post.views;
+
+        // 조회수 증가 처리
         const views = await this.incrementPostView(postId, currentUserId);
         post.views = views;
 
@@ -320,16 +326,24 @@ export class PostService {
             where: { post: { id: postId } },
         });
 
+        // 댓글 수를 계산
+        const commentCount = await this.commentRepository.count({
+            where: {
+                post: { id: postId },
+                deletedAt: IsNull(),
+            },
+        });
+        console.log('댓글 수 : ', commentCount);
         return {
             ...post,
             isBookmarked: !!bookmark,
             bookmarkCount,
+            commentCount,
         };
     }
 
     // 댓글 생성
     async createComment(createCommentInput, userId: string, userName: string) {
-        // userName을 파라미터로 직접 받아 사용
         const { postId, parentId, content } = createCommentInput;
 
         const post = await this.postRepository.findOne({
@@ -352,15 +366,28 @@ export class PostService {
 
         const comment = this.commentRepository.create({
             content,
-            username: userName, // 전달받은 userName 사용
+            username: userName,
             userId,
             post,
             parent,
         });
 
-        return this.commentRepository.save(comment);
-    }
+        await this.commentRepository.save(comment);
 
+        // 댓글 수를 계산
+        const commentCount = await this.commentRepository.count({
+            where: {
+                post: { id: postId },
+                deletedAt: IsNull(),
+            },
+        });
+
+        // 댓글과 댓글 수를 함께 반환
+        return {
+            comment,
+            commentCount,
+        };
+    }
     async fetchComment(
         postId: string,
     ): Promise<{ comments: Comment[]; total: number }> {
@@ -588,10 +615,13 @@ export class PostService {
      * @returns 검색어가 하이라이트된 텍스트
      */
     private highlightText(text: string, query: string): string {
-        const regex = new RegExp(query, 'gi');
+        // 모든 따옴표 제거 및 처리
+        const cleanQuery = query.replace(/['"]+/g, '').trim();
+        const escapedQuery = cleanQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        console.log('Clean query:', cleanQuery, 'Escaped query:', escapedQuery); // 디버깅용
+        const regex = new RegExp(escapedQuery, 'g');
         return text.replace(regex, (match) => `<mark>${match}</mark>`);
     }
-
     async createBookmark(
         userId: string,
         postId: string,

@@ -194,6 +194,7 @@ export class PostController {
     return this.clientPostService.send({ cmd: 'fetchComment' }, { postId });
   }
 
+  // 유저가 쓴 댓글 조회
   @Get('api/post/comment/user/:userId')
   async fetchUserComments(
     @Param('userId') userId: string,

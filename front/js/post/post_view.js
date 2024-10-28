@@ -214,7 +214,6 @@ const PostManager = (function () {
     const currentUser = await AuthService.getCurrentUserAsync();
     const currentUserId = currentUser ? currentUser.id : null;
 
-    console.log("currentUserId:", currentUserId);
     try {
       const response = await axios.get(`/api/post/fetch/${currentPostId}`, {
         params: { userId: currentUserId },
@@ -226,7 +225,7 @@ const PostManager = (function () {
       );
       const post = response.data;
       console.log("post받아온 값", post);
-      setElementText("comment-count", post.comment.length || "0");
+      setElementText("comment-count", post.commentCount || "0"); // 여기를 수정
 
       if (!post) {
         throw new Error("게시글 데이터가 없습니다.");
@@ -387,10 +386,12 @@ const PostManager = (function () {
 
     if (confirm("정말로 이 댓글을 삭제하시겠습니까?")) {
       axios
-        .delete(`/api/post/comment/delete/${commentId}`, {
-          data: { commentId: commentId },
-        })
-        .then(() => {
+        .delete(`/api/post/comment/delete/${commentId}`)
+        .then((response) => {
+          // 댓글 수 업데이트
+          if (response.data.commentCount) {
+            setElementText("comment-count", response.data.commentCount);
+          }
           fetchComments();
         })
         .catch((error) => {
@@ -524,8 +525,12 @@ const PostManager = (function () {
         postId: currentPostId,
         content: commentText.value.trim(),
       })
-      .then(() => {
+      .then((response) => {
         commentText.value = "";
+        // 댓글 수 업데이트
+        if (response.data.commentCount) {
+          setElementText("comment-count", response.data.commentCount);
+        }
         fetchComments();
       })
       .catch((error) => {
@@ -541,7 +546,6 @@ const PostManager = (function () {
 
     return false;
   }
-
   function updateUIBasedOnAuth() {
     const isAuthenticated = AuthService.isAuthenticated();
     const currentUser = AuthService.getCurrentUser();
@@ -618,6 +622,10 @@ const PostManager = (function () {
       });
 
       if (response.data) {
+        // 댓글 수 업데이트
+        if (response.data.commentCount) {
+          setElementText("comment-count", response.data.commentCount);
+        }
         fetchComments();
       } else {
         alert("답글 추가에 실패했습니다.");
@@ -633,7 +641,6 @@ const PostManager = (function () {
       }
     }
   }
-
   async function init() {
     const editPostBtn = document.getElementById("editPostBtn");
     const deletePostBtn = document.getElementById("deletePostBtn");
