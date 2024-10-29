@@ -5,6 +5,11 @@ export class BannerSlider {
     this.images = document.querySelectorAll(".banner-image");
     this.dotsContainer = document.querySelector(".banner-dots");
 
+    if (!this.slides || !this.images.length || !this.dotsContainer) {
+      console.log("Banner elements not found");
+      return;
+    }
+
     this.initialize();
   }
 
@@ -15,6 +20,14 @@ export class BannerSlider {
       dot.className = `banner-dot ${index === 0 ? "active" : ""}`;
       dot.addEventListener("click", () => this.goToSlide(index));
       this.dotsContainer.appendChild(dot);
+    });
+
+    // 이미지 클릭 이벤트 추가
+    this.images.forEach((image) => {
+      image.style.cursor = "pointer"; // 커서 스타일 변경
+      image.addEventListener("click", () => {
+        alert("준비중인 서비스입니다.");
+      });
     });
 
     // 자동 슬라이드 시작
@@ -37,6 +50,6 @@ export class BannerSlider {
   }
 
   startAutoSlide() {
-    setInterval(() => this.nextSlide(), 3000); // 3초마다 슬라이드 변경
+    setInterval(() => this.nextSlide(), 3000);
   }
 }

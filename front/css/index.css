@@ -1,3 +1,4 @@
+/* 기본 스타일 */
 html,
 body {
   margin: 0;
@@ -43,12 +44,12 @@ body {
 
 .main-content {
   flex: 3;
-  min-height: 600px;
+  min-height: 500px;
 }
 
 .sidebar {
   flex: 1;
-  min-height: 500px;
+  min-height: auto;
 }
 
 /* 게시물 목록 스타일 */
@@ -144,7 +145,7 @@ body {
   text-decoration: none;
 }
 
-/* 마이페이지 새로운 스타일 */
+/* 마이페이지 스타일 */
 .mypage {
   background-color: #ffffff;
   padding: 1rem;
@@ -296,6 +297,7 @@ body {
   position: relative;
   width: 100%;
   height: 300px;
+  background-color: #f8f8f8;
 }
 
 .banner-slides {
@@ -307,8 +309,9 @@ body {
 .banner-image {
   width: 100%;
   height: 300px;
-  object-fit: cover;
+  object-fit: contain;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .banner-dots {
@@ -372,58 +375,6 @@ footer {
   color: #333;
 }
 
-/* 반응형 디자인 */
-@media (max-width: 1200px) {
-  .container {
-    max-width: 95%;
-  }
-}
-
-@media (max-width: 992px) {
-  .container {
-    flex-direction: column;
-  }
-  .main-content,
-  .sidebar {
-    width: 100%;
-  }
-}
-
-@media (max-width: 768px) {
-  .user-actions {
-    flex-direction: column;
-  }
-  .post-list li {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .post-sub-info {
-    margin-top: 5px;
-  }
-}
-
-@media (max-width: 576px) {
-  .post-main-info,
-  .post-sub-info {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .post-sub-info > * {
-    margin-top: 3px;
-  }
-  .separator {
-    display: none;
-  }
-  .profile-main {
-    flex-direction: column;
-    text-align: center;
-  }
-  .user-meta {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
 /* UI 요소 hover 효과 */
 .category-content a:hover {
   background-color: #f0f0f0;
@@ -437,4 +388,108 @@ footer {
 
 a:hover {
   text-decoration: underline;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  .container {
+    max-width: 95%;
+  }
+}
+
+@media (max-width: 992px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mypage {
+    order: -1;
+  }
+
+  .main-content {
+    width: 100%;
+    min-height: 500px;
+  }
+
+  .banner-section,
+  .banner-slider,
+  .banner-image {
+    height: 200px;
+    width: 100%;
+  }
+
+  .banner-section {
+    order: 2;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .post-list li {
+    flex-direction: row;
+    align-items: center;
+    padding: 10px 0;
+  }
+
+  .post-main-info {
+    flex: 1;
+  }
+
+  .post-sub-info {
+    margin-top: 0;
+    white-space: nowrap;
+  }
+
+  .banner-section,
+  .banner-slider,
+  .banner-image {
+    height: 150px;
+    width: 100%;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    margin: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .post-main-info,
+  .post-sub-info {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .post-sub-info > * {
+    margin-top: 0;
+  }
+
+  .separator {
+    display: inline;
+  }
+
+  .profile-main {
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .user-meta {
+    flex-direction: row;
+  }
+
+  .banner-section,
+  .banner-slider,
+  .banner-image {
+    height: 120px;
+    width: 100%;
+  }
 }
