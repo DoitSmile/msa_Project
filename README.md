@@ -1,9 +1,8 @@
 ![header](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=50&section=header&text=🐾PEVE&fontSize=15)
-🐾 PEVE (Pet Entertainment Vision Environment)
-반려동물 소통 포럼 프로젝트
 
 📌 프로젝트 개요
 프로젝트명: PEVE (애완동물 소통 포럼)
+반려동물 소통 포럼 프로젝트
 *개발 인원: 개인 프로젝트
 *개발 기간: 2023.08.20 ~ 2023.10.25
 
