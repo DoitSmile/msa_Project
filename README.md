@@ -6,7 +6,6 @@
 - 개발 기간: 2024.08.20 ~ 2024.10.25
 
 _________
-<br/>
 
 🛠 **기술 스택**<br/><br/>
 ![ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
@@ -22,6 +21,7 @@ _________
 ![googlecloud](https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
 [![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=DoitSmile)](https://github.com/DoitSmile/github-readme-stats)
   Nginx ,nest
+  <img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white">
 ____________
-<br/>
+
 🔍 **ERD**<br/>
