@@ -38,7 +38,9 @@ ____________
 유저페이지 ui 수정
 index 배너 추가
 정식배포 파일 
+
 [ ver 0.0.0~2 ]  
 테스트용 배포
+
 ![footer](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=10&section=header&text=&fontSize=15)
 
