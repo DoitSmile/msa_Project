@@ -24,7 +24,8 @@ _________
 ____________
 
 ## 🔍 **ERD**
-![Uploading 스크린샷 2024-11-05 211610.png…]()
+![스크린샷 2024-11-05 211610](https://github.com/user-attachments/assets/fde6232c-ac05-4f0a-a71e-ff9f23f8ed7a)
+
 
 
 ____________
