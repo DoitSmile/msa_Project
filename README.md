@@ -29,3 +29,13 @@ ____________
 ## 🚀 **주요기능 설명 및 동작**
 
 ![footer](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=10&section=header&text=&fontSize=15)
+
+## 📊  **업데이트 기록**
+
+[ ver 1.0.0 ]  
+검색기능 수정 
+상세게시물조회에서 댓글 수 동적으로 표시 
+유저페이지 ui 수정
+index 배너 추가
+정식배포 파일 
+
