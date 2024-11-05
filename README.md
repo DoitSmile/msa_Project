@@ -1,6 +1,10 @@
-애완동물 소통 포럼 [ PEVE ]
-개발인원 : 개인 프로젝트 
-개발일정 : 08.20~10.25
+🐾 PEVE (Pet Entertainment Vision Environment)
+반려동물 소통 포럼 프로젝트
+📌 프로젝트 개요
+
+프로젝트명: PEVE (애완동물 소통 포럼)
+개발 인원: 개인 프로젝트
+개발 기간: 2023.08.20 ~ 2023.10.25
 
 ![header](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=50&section=header&text=사용기술스택&fontSize=15)
 ![ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
