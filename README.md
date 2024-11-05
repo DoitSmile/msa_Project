@@ -4,7 +4,7 @@
 - 프로젝트명: PEVE (애완동물 소통 포럼)
 - 개발 인원: 개인 프로젝트
 - 개발 기간: 2024.08.20 ~ 2024.10.25
-
+- 홈페이지링크 : ^^
 _________
 
 ## 🛠 **기술 스택** 
@@ -26,3 +26,5 @@ ____________
 ## 🔍 **ERD**
 
 ![footer](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=10&section=header&text=&fontSize=15)
+
+## 🚀  **주요기능 설명 및 동작 **
