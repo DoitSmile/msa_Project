@@ -24,7 +24,8 @@ _________
 ____________
 
 ## 🔍 **ERD**
-
-![footer](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=10&section=header&text=&fontSize=15)
+____________
 
 ## 🚀 **주요기능 설명 및 동작**
+
+![footer](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=10&section=header&text=&fontSize=15)
