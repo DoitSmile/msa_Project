@@ -5,7 +5,8 @@
 - 개발 인원: 개인 프로젝트
 - 개발 기간: 2024.08.20 ~ 2024.10.25
 
-_________<br/>
+_________
+<br/>
 
 🛠 **기술 스택**<br/><br/>
 ![ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
@@ -21,5 +22,6 @@ _________<br/>
 ![googlecloud](https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
 [![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=DoitSmile)](https://github.com/DoitSmile/github-readme-stats)
   Nginx ,nest
-____________<br/>
+____________
+<br/>
 🔍 **ERD**<br/>
