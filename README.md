@@ -20,7 +20,7 @@ _________
 ![docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 ![googlecloud](https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
 [![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=DoitSmile)](https://github.com/DoitSmile/github-readme-stats)
-  Nginx ,nest
+<img src="https://img.shields.io/badge/Github-181717?style=flat-square&logo=Github&logoColor=white"/>
   <img src="https://img.shields.io/badge/nginx-%23009639.svg?style=for-the-badge&logo=nginx&logoColor=white">
 ____________
 
