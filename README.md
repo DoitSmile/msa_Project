@@ -1,11 +1,13 @@
 ![header](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=50&section=header&text=🐾PEVE&fontSize=15)
 
-📌 **프로젝트 개요
+📌 **프로젝트 개요**
 - 프로젝트명: PEVE (애완동물 소통 포럼)
 - 개발 인원: 개인 프로젝트
 - 개발 기간: 2024.08.20 ~ 2024.10.25
 
-🛠 ** **기술 스택
+_________
+
+🛠 **기술 스택**<br/>
 ![ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 ![js](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=JavaScript&logoColor=white)
 ![html](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
@@ -19,5 +21,5 @@
 ![googlecloud](https://img.shields.io/badge/Google_Cloud-4285F4?style=for-the-badge&logo=google-cloud&logoColor=white)
 [![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=DoitSmile)](https://github.com/DoitSmile/github-readme-stats)
   Nginx ,nest
-
-🔍 ##ERD
+____________
+🔍 **ERD**
