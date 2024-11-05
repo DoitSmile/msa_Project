@@ -3,8 +3,8 @@
 📌 프로젝트 개요
 프로젝트명: PEVE (애완동물 소통 포럼)
 반려동물 소통 포럼 프로젝트
-*개발 인원: 개인 프로젝트
-*개발 기간: 2023.08.20 ~ 2023.10.25
+-개발 인원: 개인 프로젝트
+-개발 기간: 2024.08.20 ~ 2024.10.25
 
 🛠 기술 스택
 ![ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
