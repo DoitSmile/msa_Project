@@ -1,4 +1,4 @@
-![header](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=50&section=header&text=🐾PEVE&fontSize=15)
+![header](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=10&section=header&text=🐾PEVE&fontSize=15)
 
 ## 📌 프로젝트 개요
 - 프로젝트명: PEVE (애완동물 소통 포럼)
