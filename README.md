@@ -24,3 +24,5 @@ _________
 ____________
 
 ## 🔍 **ERD**
+
+![footer](https://capsule-render.vercel.app/api?type=Cylinder&color=auto&height=10&section=header&text=&fontSize=15)
