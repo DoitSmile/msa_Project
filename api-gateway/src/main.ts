@@ -1,19 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-// import * as cookieParser from 'cookie-parser';
-
-// api-gateway
+import { json, urlencoded } from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // 요청 크기 제한 설정
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
+
   app.enableCors({
-    origin: true, //여기에 url을 넣어도된다.
-    // credentials: true,
-    // allowedHeaders: ['Content-Type', 'Authorization'],
-    // origin: 'http://127.0.0.1:5500', // 클라이언트의 실제 URL
+    origin: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
+
   await app.listen(3000);
 }
 bootstrap();

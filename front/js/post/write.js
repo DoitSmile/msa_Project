@@ -241,6 +241,9 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!imageUrls?.length) return;
 
     imageUrls.forEach((imageUrl) => {
+      // blob URL인 경우 건너뛰기
+      if (imageUrl.startsWith("blob:")) return;
+
       const wrapper = document.createElement("div");
       wrapper.style.display = "block";
 
@@ -250,6 +253,15 @@ document.addEventListener("DOMContentLoaded", function () {
       const img = document.createElement("img");
       img.src = imageUrl;
       img.setAttribute("contenteditable", "false");
+
+      // 이미지 로드 에러 처리
+      img.onerror = () => {
+        wrapper.remove();
+        const index = state.uploadedImages.indexOf(imageUrl);
+        if (index > -1) {
+          state.uploadedImages.splice(index, 1);
+        }
+      };
 
       const xMark = document.createElement("span");
       xMark.textContent = "×";
@@ -339,8 +351,18 @@ document.addEventListener("DOMContentLoaded", function () {
         imgContainer.className = "image-container";
 
         const img = document.createElement("img");
-        img.src = URL.createObjectURL(file);
-        img.setAttribute("data-filename", file.name);
+        img.file = file;
+        const reader = new FileReader();
+
+        reader.onload = (function (aImg) {
+          return function (e) {
+            aImg.src = e.target.result;
+          };
+        })(img);
+
+        reader.readAsDataURL(file);
+        img.style.maxWidth = "400px";
+        img.style.height = "auto";
 
         const deleteSpan = document.createElement("span");
         deleteSpan.textContent = "×";
@@ -349,13 +371,14 @@ document.addEventListener("DOMContentLoaded", function () {
           const index = state.uploadedImages.indexOf(file);
           if (index > -1) {
             state.uploadedImages.splice(index, 1);
-            wrapper.remove();
           }
+          wrapper.remove();
         });
 
         imgContainer.appendChild(img);
         imgContainer.appendChild(deleteSpan);
         wrapper.appendChild(imgContainer);
+        wrapper.appendChild(document.createElement("br"));
 
         range.insertNode(wrapper);
         range.setStartAfter(wrapper);
@@ -374,7 +397,6 @@ document.addEventListener("DOMContentLoaded", function () {
       selection.addRange(range);
     }
   }
-
   // hidden input
   function updateHiddenInputs(post) {
     const hiddenCategoryInput = document.getElementById("hiddenCategoryId");
@@ -480,9 +502,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const config = {
       headers: {
         "Content-Type": "multipart/form-data",
-        maxContentLength: 5 * 1024 * 1024,
-        maxBodyLength: 5 * 1024 * 1024,
       },
+      // maxContentLength와 maxBodyLength 제거
     };
 
     if (state.isEditMode) {
@@ -495,7 +516,6 @@ document.addEventListener("DOMContentLoaded", function () {
       return await axios.post("/api/post/create/", formData, config);
     }
   }
-
   // 제출 성공 처리
   function handleSubmitSuccess(response) {
     console.log("서버 응답:", response.data);

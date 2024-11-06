@@ -73,7 +73,7 @@
 .post-content p {
   display: block !important;
   margin: 10px 0 !important;
-  clear: both !important; /* float 해제 */
+  clear: both !important;
   word-break: break-word !important;
 }
 
@@ -123,6 +123,10 @@
 
 .bookmark-count {
   font-size: 14px;
+  -webkit-text-fill-color: #666;
+  /* 전화번호 자동 감지 비활성화 */
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .bookmark-icon.bookmarked {
