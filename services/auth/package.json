@@ -20,7 +20,6 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "entity_shared": "^1.0.1",
     "@nestjs/cache-manager": "^2.2.2",
     "@nestjs/common": "^10.0.0",
     "@nestjs/config": "^3.2.3",
@@ -38,6 +37,8 @@
     "class-validator": "^0.14.1",
     "cookie-parser": "^1.4.6",
     "coolsms-node-sdk": "^2.1.0",
+    "entity_shared": "^1.0.1",
+    "jwt-decode": "^4.0.0",
     "mysql2": "^3.11.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

@@ -49,6 +49,8 @@ export class AuthController {
     } catch (error) {
       // 에러 처리
       if (error instanceof UnauthorizedException) {
+        // UnauthorizedException은 자동으로 401 상태 코드 설정해줌
+        // 예외 클래스를 통해 자동으로 상태 코드를 설정
         throw new UnauthorizedException('Invalid credentials');
       }
       throw new InternalServerErrorException('Login failed');
@@ -67,7 +69,7 @@ export class AuthController {
   // 토큰 재발급 api
   @UseGuards(AuthGuard('refresh'))
   //인가를 성공하면 validate의 payload를 열어서 사용자의 정보를 반환해 주기에 유저 정보를 꺼내올 수 있다.
-  @Post('api/auth/reissueToken')
+  @Post('api/auth/refresh')
   async restoreAccessToken(@Req() req) {
     const user = req.user;
     // const refreshToken = req.cookies['refreshToken'];

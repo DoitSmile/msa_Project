@@ -8,7 +8,6 @@ import { Cache } from 'cache-manager';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import 'dotenv/config';
 
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -17,9 +16,7 @@ export class AuthService {
     private readonly jwtService: JwtService, // jwt 관련 비지니스로직 사용가능.
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-
   ) {}
-
 
   // 이메일로 유저 찾기
   async findEmail({ email }) {
@@ -53,7 +50,7 @@ export class AuthService {
   async getAccessToken({ user }) {
     console.log('user.id', user.id);
     const ACCESS_TOKEN_KEY = process.env.ACCESS_TOKEN_KEY;
-    console.log("ACCESS_TOKEN_KEY:",ACCESS_TOKEN_KEY)
+    console.log('ACCESS_TOKEN_KEY:', ACCESS_TOKEN_KEY);
     const test = this.jwtService.sign(
       { id: user.id }, //payload엔 보여줘도 되는 값만 입력
       { secret: ACCESS_TOKEN_KEY, expiresIn: '50m' },
@@ -68,11 +65,7 @@ export class AuthService {
       { id: user.id },
       { secret: '리프레시비밀번호', expiresIn: '1w' },
     );
-    // await this.cacheManager.set(
-    //   `refresh_token:${user.id}`,
-    //   test,
-    //   7 * 24 * 60 * 60, // 1주일
-    // );
+
     return test;
   }
 
@@ -86,6 +79,4 @@ export class AuthService {
     //   throw new ConflictException('다시 로그인해주세요');
     // }
   }
-
-  
 }

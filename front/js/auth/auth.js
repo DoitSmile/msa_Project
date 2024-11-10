@@ -4,8 +4,10 @@ class AuthService {
   }
 
   setupInterceptors() {
+    // 요청 인터셉터
     axios.interceptors.request.use(
       (config) => {
+        console.log("원본 config:", config);
         const token = this.getToken();
         if (token) {
           config.headers["Authorization"] = `Bearer ${token}`;
@@ -15,6 +17,7 @@ class AuthService {
       (error) => Promise.reject(error)
     );
 
+    // 응답 인터셉터
     axios.interceptors.response.use(
       (response) => response,
       async (error) => {
@@ -44,25 +47,14 @@ class AuthService {
   }
 
   async getCurrentUserAsync() {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const user = this.getCurrentUser();
-        resolve(user);
-      }, 100);
-    });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    return this.getCurrentUser();
   }
 
   decodeToken(token) {
     try {
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split("")
-          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join("")
-      );
-      return JSON.parse(jsonPayload);
+      // 전역 변수로 사용 (window
+      return window.jwt_decode(token);
     } catch (error) {
       console.error("Error decoding token:", error);
       return null;
